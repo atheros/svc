@@ -4,6 +4,8 @@
 
 #include "audio.h"
 
+/* Memory is reused. Don't bother freeing anything returned from or passed to callbacks. */
+
 /* Callback which is called by audio_api to send sound to network */
 typedef int(* audio_input_callback_t)(audio_data_t* audio_data);
 
