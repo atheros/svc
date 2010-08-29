@@ -26,7 +26,7 @@ static int pa_callback( const void *inputBuffer, void *outputBuffer,
 		void *userData ) {
 
 	audio_data_t* out_packet = pa_output_callback();
-	outputBuffer = out_packet->data;
+	memcpy(outputBuffer, out_packet->data, sizeof(float) * framesPerBuffer);
 
 	audio_data_t* in_packet = malloc(sizeof(audio_data_t));
 	in_packet->size = framesPerBuffer;
