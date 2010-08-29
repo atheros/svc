@@ -3,8 +3,6 @@
 
 #include <pthread.h>
 
-#define MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
-
 typedef pthread_mutex_t mutex_t;
 typedef pthread_t thread_t;
 
@@ -28,5 +26,8 @@ int mutex_destroy(mutex_t *mutex){
 	return pthread_mutex_destroy(mutex);
 }
 
+int mutex_init(mutex_t *mutex){
+	*mutex = PTHREAD_MUTEX_INITIALIZER;
+}
 
 #endif
