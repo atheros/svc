@@ -1,38 +1,44 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <portaudio.h>
 
 #include "audio_api.h"
-#include "list.h"
 
 PaError err;
 PaStream *stream;
 
+audio_input_callback_t pa_input_callback;
+audio_output_callback_t pa_output_callback;
+
 #define SAMPLE_RATE (44100)
 
-#define DO_PA_ERROR() { \
-	if (err != paNoError) { \
+#define DO_PA_ERROR if (err != paNoError) { \
 		printf(  "PortAudio error: %s\n", Pa_GetErrorText( err ) ); \
 		return -1; \
-	} \
-}
+	}
 
 static int pa_callback( const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
-		void *userData )
-{
-	/* Cast data passed through stream to our structure. */
-	/* paTestData *data = (paTestData*)userData; */
-	float *out = (float*)outputBuffer;
-	memset(out, 0, framesPerBuffer * 2);
+		void *userData ) {
+
+	audio_data_t* out_packet = pa_output_callback();
+	outputBuffer = out_packet->data;
+
+	audio_data_t* in_packet = malloc(sizeof(audio_data_t));
+	in_packet->size = framesPerBuffer;
+	in_packet->data = (float*)inputBuffer;
+
+	pa_input_callback(in_packet);
+	
 }
 
 int init_audio () {
 	err = Pa_Initialize();
-	DO_PA_ERROR();
+	DO_PA_ERROR;
 
 	err = Pa_OpenDefaultStream( &stream,
 			1,          /* input */
@@ -48,20 +54,28 @@ int init_audio () {
 						   possibly changing, buffer size.*/
 			pa_callback, /* this is your callback function */
 			NULL );
-	DO_PA_ERROR();
+	DO_PA_ERROR;
 
 	err = Pa_StartStream( stream );
-	DO_PA_ERROR();
+	DO_PA_ERROR;
 	return 0;
 }
 
 int close_audio () {
 	err = Pa_StopStream(stream);
-	DO_PA_ERROR();
+	DO_PA_ERROR;
 	err = Pa_CloseStream( stream );
-	DO_PA_ERROR();
+	DO_PA_ERROR;
 	err = Pa_Terminate();
-	DO_PA_ERROR();
+	DO_PA_ERROR;
 	return 0;
+}
+
+int set_input_callback(audio_input_callback_t input_callback) {
+	pa_input_callback = input_callback;
+}
+
+int set_output_callback(audio_output_callback_t output_callback) {
+	pa_output_callback = output_callback;
 }
 
