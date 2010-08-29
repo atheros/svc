@@ -5,7 +5,7 @@ SVCC_OBJS=	\
 	src/svcc/main.o	\
 	
 SVCCD_OBJS=	\
-	src/svccd/main.o	\ 
+	src/svccd/main.o src/svccd/audio_api_portaudio.o	\ 
 
 SVCSERVER_OBJS=	\
 	src/svcserver/main.o	\
