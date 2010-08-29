@@ -1,32 +1,46 @@
-#ifndef __THREAD_H_
-#define __THREAD_H_ 
+#ifndef __THREAD_H
+#define __THREAD_H
 
-#include <pthread.h>
-
-#define MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
-
-typedef pthread_mutex_t mutex_t;
-typedef pthread_t thread_t;
-
-int thread_create(thread_t *thread, void *(*start_routine)(void*), void *arg){
-	return pthread_create(thread, NULL, start_routine, arg);
-}
-
-int thread_join(thread_t thread){
-	return pthread_join(thread, NULL);
-}
-
-int mutex_lock(mutex_t *mutex){
-	return pthread_mutex_lock(mutex);
-}
-
-int mutex_unlock(mutex_t *mutex){
-	return pthread_mutex_unlock(mutex);
-}
-
-int mutex_destroy(mutex_t *mutex){
-	return pthread_mutex_destroy(mutex);
-}
-
-
+#ifdef WIN32
+#define THREAD_WIN
+#else
+#define THREAD_POSIX
 #endif
+
+
+#if defined(THREAD_POSIX)
+#include <pthread.h>
+#elif defined(THREAD_WIN)
+#include <windows.h>
+#endif
+
+
+#if defined(THREAD_POSIX)
+typedef pthread_t thread_t;
+typedef pthread_mutex_t mutex_t;
+typedef pthread_cond_t cond_t;
+#else
+typedef HANDLE thread_t;
+typedef HANDLE mutex_t;
+typedef HANDLE cond_t;
+#endif
+
+
+int mutex_create(mutex_t* mutex);
+int mutex_destroy(mutex_t* mutex);
+int mutex_lock(mutex_t* mutex);
+int mutex_trylock(mutex_t* mutex);
+int mutex_unlock(mutex_t* mutex);
+
+
+
+
+int thread_create(thread_t* thread, void* (*proc)(void*), void* param);
+void thread_join(thread_t thread);
+
+/**
+ * Exit from current thread.
+ */
+void thread_exit();
+
+#endif /* __THREAD_H */
