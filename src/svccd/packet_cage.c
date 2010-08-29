@@ -17,7 +17,7 @@ packet_cage_t* packet_cage_create(){
 	packet_cage_t* res_packet_cage = malloc(sizeof(packet_cage_t));
 	
 	res_packet_cage->audio_packet = NULL;
-	mutex_init(res_packet_cage->cage_mutex);
+	mutex_create(res_packet_cage->cage_mutex);
 	res_packet_cage->packet_order = 0;
 	
 	return res_packet_cage;
