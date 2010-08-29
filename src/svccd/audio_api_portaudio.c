@@ -25,14 +25,15 @@ static int pa_callback( const void *inputBuffer, void *outputBuffer,
 		PaStreamCallbackFlags statusFlags,
 		void *userData ) {
 
-	audio_data_t* out_packet = pa_output_callback();
-	outputBuffer = out_packet->data;
+	/* need to somehow assert that packet->size == framesPerBuffer */
+	audio_data_t* packet = pa_output_callback();
+	memcpy(outputBuffer, packet->data, sizeof(float) * framesPerBuffer);
 
-	audio_data_t* in_packet = malloc(sizeof(audio_data_t));
-	in_packet->size = framesPerBuffer;
-	in_packet->data = (float*)inputBuffer;
+	free(packet->data);
 
-	pa_input_callback(in_packet);
+	packet->data = (float*)inputBuffer;
+
+	pa_input_callback(packet);
 	
 }
 
