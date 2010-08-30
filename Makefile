@@ -37,7 +37,6 @@ tests: tests_base test_threads test_audio_api
 
 run_tests: tests
 	tests/test_threads
-	tests/test_audio_api
 
 
 test_threads: src/tests/test_threads.o src/common/thread.o src/common/thread.h
