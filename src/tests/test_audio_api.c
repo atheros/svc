@@ -8,12 +8,10 @@
 audio_data_t *current_data;
 
 audio_data_t *output_callback() {
-	printf("output called");
 	return current_data;
 }
 
 void input_callback(audio_data_t *packet) {
-	printf("input called");
 	current_data = packet;
 	float *data = current_data->data;
 	current_data->data = malloc(sizeof(float) * 256);
@@ -30,6 +28,8 @@ void main() {
 	set_output_callback(output_callback);
 
 	init_audio();
+
+	printf("Your mic input should be loopback to your speakers.\nEnter some text when done with test.\n");
 
 	int xxx;
 	scanf("%d", &xxx);

@@ -1,5 +1,5 @@
 LIBS=-lconfig -lenet
-CFLAGS=-Isrc/common
+CFLAGS=-Isrc/common -Isrc/svccd
 
 SVCC_OBJS=	\
 	src/svcc/main.o	\
@@ -33,7 +33,7 @@ svcserver: $(SVCSERVER_OBJS)
 tests_base:
 	if ! test -d tests; then mkdir tests; fi
 
-tests: tests_base test_threads
+tests: tests_base test_threads test_audio_api
 
 run_tests: tests
 	tests/test_threads
@@ -41,6 +41,9 @@ run_tests: tests
 
 test_threads: src/tests/test_threads.o src/common/thread.o src/common/thread.h
 	gcc -o tests/test_threads src/tests/test_threads.o src/common/thread.o -lpthread
+
+test_audio_api: src/tests/test_audio_api.o src/svccd/audio_api_portaudio.o
+	gcc -o tests/test_audio_api src/tests/test_audio_api.o src/svccd/audio_api_portaudio.o -lportaudio
 
 
 

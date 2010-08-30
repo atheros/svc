@@ -25,7 +25,6 @@ static int pa_callback( const void *inputBuffer, void *outputBuffer,
 		PaStreamCallbackFlags statusFlags,
 		void *userData ) {
 
-	printf("Callback called");
 	/* need to somehow assert that packet->size == framesPerBuffer */
 	audio_data_t* packet = pa_output_callback();
 	memcpy(outputBuffer, packet->data, sizeof(float) * framesPerBuffer);
