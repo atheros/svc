@@ -25,6 +25,7 @@ static int pa_callback( const void *inputBuffer, void *outputBuffer,
 		PaStreamCallbackFlags statusFlags,
 		void *userData ) {
 
+	printf("Callback called");
 	/* need to somehow assert that packet->size == framesPerBuffer */
 	audio_data_t* packet = pa_output_callback();
 	memcpy(outputBuffer, packet->data, sizeof(float) * framesPerBuffer);
@@ -38,37 +39,35 @@ static int pa_callback( const void *inputBuffer, void *outputBuffer,
 }
 
 int init_audio () {
+	printf("Initializing portaudio...");
 	err = Pa_Initialize();
 	DO_PA_ERROR;
 
 	err = Pa_OpenDefaultStream( &stream,
 			1,          /* input */
-			2,          /* stereo output */
+			1,          /* output */
 			paFloat32,  /* 32 bit floating point output */
 			SAMPLE_RATE,
-			256,        /* frames per buffer, i.e. the number
-						   of sample frames that PortAudio will
-						   request from the callback. Many apps
-						   may want to use
-						   paFramesPerBufferUnspecified, which
-						   tells PortAudio to pick the best,
-						   possibly changing, buffer size.*/
-			pa_callback, /* this is your callback function */
+			256,        /* frames per buffer */
+			pa_callback, /* callback function */
 			NULL );
 	DO_PA_ERROR;
 
 	err = Pa_StartStream( stream );
 	DO_PA_ERROR;
+	printf(" done.\n");
 	return 0;
 }
 
 int close_audio () {
+	printf("Closing portaudio...");
 	err = Pa_StopStream(stream);
 	DO_PA_ERROR;
 	err = Pa_CloseStream( stream );
 	DO_PA_ERROR;
 	err = Pa_Terminate();
 	DO_PA_ERROR;
+	printf(" done.\n");
 	return 0;
 }
 
