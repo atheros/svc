@@ -6,11 +6,14 @@
 
 #include "audio_api.h"
 
+
 PaError err;
 PaStream *stream;
 
-audio_input_callback_t pa_input_callback;
-audio_output_callback_t pa_output_callback;
+audio_callback_t pa_interface_callback;
+
+audio_data_t* input_audio_data;
+audio_data_t* output_audio_data;
 
 #define SAMPLE_RATE (44100)
 
@@ -19,29 +22,34 @@ audio_output_callback_t pa_output_callback;
 		return -1; \
 	}
 
+
 static int pa_callback( const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
 		void *userData ) {
 
-	/* need to somehow assert that packet->size == framesPerBuffer */
-	audio_data_t* packet = pa_output_callback();
-	memcpy(outputBuffer, packet->data, sizeof(float) * framesPerBuffer);
-
-	free(packet->data);
-
-	packet->data = (float*)inputBuffer;
-
-	pa_input_callback(packet);
+	input_audio_data->data = (float*)inputBuffer;
+	output_audio_data->data = (float*)outputBuffer;
+	
+	pa_interface_callback(input_audio_data, output_audio_data);
+	return 0;
 	
 }
 
+
 int init_audio () {
+	
 	printf("Initializing portaudio...");
 	err = Pa_Initialize();
 	DO_PA_ERROR;
-
+	
+	input_audio_data  = malloc(sizeof(audio_data_t));
+	output_audio_data = malloc(sizeof(audio_data_t));
+	
+	input_audio_data->size = 256;
+	output_audio_data->size = 256;
+	
 	err = Pa_OpenDefaultStream( &stream,
 			1,          /* input */
 			1,          /* output */
@@ -54,7 +62,7 @@ int init_audio () {
 
 	err = Pa_StartStream( stream );
 	DO_PA_ERROR;
-	printf(" done.\n");
+	printf(" done.\n");	
 	return 0;
 }
 
@@ -70,11 +78,7 @@ int close_audio () {
 	return 0;
 }
 
-int set_input_callback(audio_input_callback_t input_callback) {
-	pa_input_callback = input_callback;
+int set_audio_callback(audio_callback_t audio_callback) {
+	pa_interface_callback = audio_callback;
+	return 0;
 }
-
-int set_output_callback(audio_output_callback_t output_callback) {
-	pa_output_callback = output_callback;
-}
-

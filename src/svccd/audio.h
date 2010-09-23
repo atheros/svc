@@ -5,7 +5,7 @@
 typedef struct _audio_data_t {
 	unsigned int size;
 	float *data;
-} audio_data_t; 
+} audio_data_t;
 
 /* mixes audio streams.
  * count         - number of streams to mix
@@ -15,4 +15,3 @@ typedef struct _audio_data_t {
 int mix_audio_streams(unsigned int count, audio_data_t** input_streams, audio_data_t* result_stream);
 
 #endif
-
