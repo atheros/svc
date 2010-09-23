@@ -4,8 +4,6 @@
 
 #include "audio.h"
 
-
-
 /*  Callback which is called by audio_api  */
 typedef void(* audio_callback_t)(audio_data_t* input_audio_data, audio_data_t* output_audio_data);
 
@@ -20,4 +18,3 @@ int set_audio_callback(audio_callback_t input_callback);
 
 
 #endif
-
