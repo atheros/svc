@@ -2,6 +2,7 @@
 #define __PACKET_CAGE_H_
 
 #include "thread.h"
+#include "audio.h"
 
 #define MAX_TIME 65535
 typedef unsigned int packet_time_t;
