@@ -34,7 +34,7 @@ int packet_cage_destroy(packet_cage_t* packet_cage){
 	return 0;
 }
 
-int packet_cage_put_packet(packet_cage_t* packet_cage, audio_data_t* audio_data, packet_time_t time){
+int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, packet_time_t time){
 	mutex_lock(&packet_cage->cage_mutex);
 	
 	/*replace a packet if there is a newer one or the cage is empty*/
@@ -51,7 +51,7 @@ int packet_cage_put_packet(packet_cage_t* packet_cage, audio_data_t* audio_data,
 }
 
 
-audio_data_t* packet_cage_get_packet(packet_cage_t* packet_cage){
+audio_data_t* packet_cage_get_data(packet_cage_t* packet_cage){
 	mutex_lock(&packet_cage->cage_mutex);
 	
 	audio_data_t* res_audio_data = packet_cage->audio_data;

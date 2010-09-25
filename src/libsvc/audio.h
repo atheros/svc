@@ -1,11 +1,23 @@
-
 #ifndef __AUDIO_H_
 #define __AUDIO_H_ 
 
+#include <stdlib.h>
+#include <string.h>
+
+typedef float sample_t;
+
 typedef struct _audio_data_t {
 	unsigned int size;
-	float *data;
+	sample_t *data;
 } audio_data_t;
+
+audio_data_t* audio_data_create(unsigned int size);
+
+void audio_data_destroy(audio_data_t* audio_data);
+
+/* Make sure the destination is initiated before calling this.
+ * Returns 0 on success. */
+int audio_data_copy(audio_data_t* dest_data, audio_data_t* source_data);
 
 /* mixes audio streams.
  * count         - number of streams to mix
