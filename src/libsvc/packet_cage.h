@@ -3,12 +3,12 @@
 
 #include "thread.h"
 
-#define MAX_TIME 255
-typedef unsigned char packet_time_t;
+#define MAX_TIME 65535
+typedef unsigned int packet_time_t;
 
 typedef struct _packet_cage_t {
 	packet_time_t packet_time;
-	audio_packet_t* audio_packet;
+	audio_data_t* audio_data;
 	mutex_t cage_mutex;
 } packet_cage_t;
 
@@ -23,11 +23,11 @@ int packet_cage_destroy(packet_cage_t* packet_cage);
 /* Puts an audio packet with a specified time into a packet cage.
  * After calling this function all memory management of audio_packet is left 
  * to the packet cage. It is unsafe to access the audio_packet after that. */
-int packet_cage_put_packet(packet_cage_t* packet_cage, audio_packet_t* audio_packet, packet_time_t time);
+int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, packet_time_t time);
 
 /* Returns a packet stored in the packet cage making the cage empty or NULL if the cage was already empty.
- * After calling this function the packet cage no longer manages the audio_packet stored in it.
+ * After calling this function the packet cage no longer manages the audio_data stored in it.
  * The caller is expected to do so. */
-audio_packet_t* packet_cage_get_packet(packet_cage_t* packet_cage);
+audio_data_t* packet_cage_get_data(packet_cage_t* packet_cage);
 
-#endif
+#endif /* __PACKET_CAGE_H */
