@@ -1,5 +1,5 @@
 LIBS=-lconfig -lenet
-CFLAGS=-Isrc/common -Isrc/libsvc
+CFLAGS=-Isrc/common -Isrc/libsvc -std=c89
 
 
 COMMON_OBJS=	\

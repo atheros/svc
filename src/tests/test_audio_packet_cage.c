@@ -33,7 +33,7 @@ void callback(audio_data_t *input_packet, audio_data_t *output_packet) {
 	}
 }
 
-void main() {
+int main() {
 	t=0;
 	shouldBlock = 0;
 	cage = packet_cage_create();
@@ -48,4 +48,5 @@ void main() {
 	scanf("%d", &xxx);
 	close_audio();
 	packet_cage_destroy(cage);
+	return 0;
 }
