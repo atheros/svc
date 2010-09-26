@@ -24,7 +24,7 @@ void packet_queue_destroy(packet_queue_t* packet_queue){
 	int i;
 	for(i=0; i<packet_queue->size; i++)
 		audio_data_destroy(packet_queue->audio_queue[i]);
-	
+	free(packet_queue->audio_queue);
 	mutex_destroy(&packet_queue->queue_mutex);
 	mutex_destroy(&packet_queue->queue_empty_mutex);
 	
