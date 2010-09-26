@@ -10,7 +10,7 @@ void callback(audio_data_t *input_packet, audio_data_t *output_packet) {
 	memcpy(output_packet->data, input_packet->data, sizeof(float) * 256); 
 }
 
-void main() {
+int main() {
 	set_audio_callback(callback);
 
 	init_audio();
@@ -20,5 +20,5 @@ void main() {
 	int xxx;
 	scanf("%d", &xxx);
 	close_audio();
-
+	return 0;
 }
