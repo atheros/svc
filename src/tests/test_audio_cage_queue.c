@@ -33,7 +33,7 @@ void* worker(void* param) {
 	}
 }
 
-void main() {
+int main() {
 	t=0;
 	cage = packet_cage_create();
 	queue = packet_queue_create(100, 256);
@@ -51,4 +51,5 @@ void main() {
 	close_audio();
 	packet_cage_destroy(cage);
 	packet_queue_destroy(queue);
+	return 0;
 }

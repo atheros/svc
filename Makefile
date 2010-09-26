@@ -1,42 +1,38 @@
-LIBS=-lconfig -lenet
-CFLAGS=-Isrc/common -Isrc/libsvc -std=c89
+.SECONDEXPANSION:
+.PHONY: clean
+LIBS=-lconfig -lenet -lportaudio -lpthread
+CFLAGS+=-Isrc/common -Isrc/libsvc -Isrc/libsvc/include -std=c89
+
+# FIXME: this shit doesn't work
+libsvc_OBJS= \
+	src/libsvc/audio_api_portaudio.o src/common/thread.o
+
+test_threads_OBJS := src/tests/test_threads.o src/common/thread.o
+
+test_audio_api_OBJS := src/tests/test_audio_api.o src/libsvc/audio_api_portaudio.o
+
+test_audio_packet_cage_OBJS := src/tests/test_audio_packet_cage.o  src/libsvc/audio.o src/libsvc/audio_api_portaudio.o src/libsvc/packet_cage.o src/common/thread.o
+
+test_audio_cage_queue_OBJS := src/tests/test_audio_cage_queue.o  src/libsvc/packet_queue.o src/libsvc/audio.o src/libsvc/audio_api_portaudio.o src/libsvc/packet_cage.o src/common/thread.o
 
 
-COMMON_OBJS=	\
-	src/common/thread.o	\
+-include $(OBJS:.o=.d)
 
-TESTS_OBJS=	\
-	src/tests/test_threads.o	src/tests/test_audio_api.o src/tests/test_audio_packet_cage.o  \
+%.o: %.c
+	$(CC) -c $(CFLAGS) $*.c -o $*.o
+	$(CC) -MM $(CFLAGS) $*.c > $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
 
-LIBSVC_OBJS= \
-	src/libsvc/audio_api_portaudio.o src/tests/audio.o
+all: libsvc tests
 
-all: 
+libsvc test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage: $$($$@_OBJS)
+	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
 
-
-tests_base:
-	if ! test -d tests; then mkdir tests; fi
-
-tests: tests_base test_threads test_audio_api test_audio_packet_cage test_audio_cage_queue
-
-run_tests: tests
-	tests/test_threads
-
-
-test_threads: src/tests/test_threads.o src/common/thread.o src/common/thread.h
-	gcc -o tests/test_threads src/tests/test_threads.o src/common/thread.o -lpthread
-
-test_audio_api: src/tests/test_audio_api.o src/libsvc/audio_api_portaudio.o
-	gcc -o tests/test_audio_api src/tests/test_audio_api.o src/libsvc/audio_api_portaudio.o  -lportaudio 
-
-test_audio_packet_cage: src/tests/test_audio_packet_cage.o  src/libsvc/audio.o src/libsvc/audio_api_portaudio.o src/libsvc/packet_cage.o
-	gcc -o tests/test_audio_packet_cage src/libsvc/audio.o src/tests/test_audio_packet_cage.o src/libsvc/audio_api_portaudio.o src/libsvc/packet_cage.o src/common/thread.o -lportaudio -lpthread
-
-test_audio_cage_queue: src/tests/test_audio_cage_queue.o  src/libsvc/packet_queue.o src/libsvc/audio.o src/libsvc/audio_api_portaudio.o src/libsvc/packet_cage.o
-	gcc -o tests/test_audio_cage_queue src/tests/test_audio_cage_queue.o src/libsvc/packet_queue.o src/libsvc/audio.o src/libsvc/audio_api_portaudio.o src/libsvc/packet_cage.o src/common/thread.o -lportaudio -lpthread
-
-
-
+tests: test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage
 
 clean:
-	rm -f $(COMMON_OBJS) $(TESTS_OBJS) $(LIBSVC_OBJS)
+	rm -f src/*/*.o src/*/*.d tests/*
