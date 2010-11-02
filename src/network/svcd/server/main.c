@@ -138,7 +138,7 @@ static void handle_receive(ENetEvent* event) {
 		peer_id,
 		event.channelID);
 	
-	if (event.channelID == 0) {
+	if (event->channelID == 0) {
 		/* auth packets */
 		if (peers[peer_id].auth) {
 			printf("Received an auth packet from authorized peer!\n");
@@ -167,11 +167,11 @@ static void handle_receive(ENetEvent* event) {
 		}
 		
 		send_auth(peer_id);
-	} else if (event.channelID == 1) {
+	} else if (event->channelID == 1) {
 		/* system packets */
-	} else if (event.channelID == 2) {
+	} else if (event->channelID == 2) {
 		/* audio packets */
-	} else if (event.channelID == 3) {
+	} else if (event->channelID == 3) {
 		/* errors */
 	}
 
@@ -210,7 +210,7 @@ int main(int argc, char* argv[]) {
 	/* create server host */
 	server = enet_host_create(&address, SVCSERVER_MAX_CLIENTS, SVCSERVER_MAX_CHANNELS, 0, 0);
 	if (server == NULL) {
-		fprintf (stderr, "An error occurred while trying to create an ENet server host on %s:%i.\n",
+		fprintf(stderr, "An error occurred while trying to create an ENet server host on %s:%i.\n",
 					SERVER_HOST, address.port);
 		return 1;
 	}

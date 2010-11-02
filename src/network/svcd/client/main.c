@@ -13,6 +13,27 @@ typedef struct {
 } Peer;
 
 
+static void send_auth(ENetPeer* peer, const char* nick) {
+	ENetPacket* packet;
+	packet = enet_create_packet(nick, strlen(nick),  ENET_PACKET_FLAG_RELIABLE);
+	enet_peer_send(peer, 0, packet);
+	enet_packet_destroy(packet);
+}
+
+
+static void handle_receive(ENetEvent* event) {
+	switch(event->channelID) {
+		
+	}
+	printf ("A packet of length %u {%s} on channel %u.\n",
+		event.packet -> dataLength,
+		event.packet -> data,
+		event.channelID);
+
+	/* Clean up the packet now that we're done using it. */
+	enet_packet_destroy (event.packet);
+}
+
 int main(int argc, char* argv[]) {
     ENetHost* client;
     ENetAddress address;
@@ -65,24 +86,16 @@ int main(int argc, char* argv[]) {
 
 
 	while(!done) {
-		while (enet_host_service(client, &event, 1000) > 0) {
+		while (!done && enet_host_service(client, &event, 1000) > 0) {
 			switch (event.type)	{
 			case ENET_EVENT_TYPE_RECEIVE:
-				printf ("A packet of length %u {%s} on channel %u.\n",
-				event.packet -> dataLength,
-				event.packet -> data,
-				event.channelID);
-
-				/* Clean up the packet now that we're done using it. */
-				enet_packet_destroy (event.packet);
-
+				handle_receive(&event);
 				break;
 
 			case ENET_EVENT_TYPE_DISCONNECT:
-				printf ("server disconected.\n", event.peer -> data);
-				/* Reset the peer's client information. */
-				event.peer -> data = NULL;
+				printf ("Server disconected.\nAborting!");
 				done = 1;
+				break;
 			}
 		}
 	}
