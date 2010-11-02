@@ -13,7 +13,7 @@ void callback(audio_data_t *input_packet, audio_data_t *output_packet) {
 int main() {
 	set_audio_callback(callback);
 
-	init_audio();
+	init_audio(44100, 1024);
 
 	printf("Your mic input should be loopback to your speakers.\nEnter some text when done with test.\n");
 

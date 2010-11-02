@@ -40,7 +40,7 @@ int main() {
 	
 	set_audio_callback(callback);
 
-	init_audio();
+	init_audio(44100, 1024);
 
 	printf("Your mic input should loopback to your speakers with some distortion.\nEnter some text when done with test.\n");
 

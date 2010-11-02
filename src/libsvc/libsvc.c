@@ -62,7 +62,7 @@ void svc_init(svc_send_callback_t send_callback){
 	
 	set_audio_callback(audio_api_callback);
 	
-	init_audio();
+	init_audio(svc_options->sample_rate, svc_options->frame_size);
 	
 }
 
