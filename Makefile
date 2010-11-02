@@ -1,7 +1,7 @@
 .SECONDEXPANSION:
 .PHONY: clean
 LIBS=-lconfig -lenet -lportaudio -lpthread
-CFLAGS+=-Isrc/common -Isrc/libsvc -Isrc/libsvc/include -std=c89
+CFLAGS+=-Isrc/common -Isrc/libsvc -Isrc/libsvc/include -std=c89 -fPIC
 
 # FIXME: this shit doesn't work
 libsvc_OBJS= \
@@ -29,8 +29,11 @@ test_audio_cage_queue_OBJS := src/tests/test_audio_cage_queue.o  src/libsvc/pack
 
 all: libsvc tests
 
-libsvc test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage: $$($$@_OBJS)
+test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage: $$($$@_OBJS)
 	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
+
+libsvc: $$($$@_OBJS)
+	$(CC) -shared $(LDFLAGS) $^ -o $@ $(LIBS)
 
 tests: test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage
 
