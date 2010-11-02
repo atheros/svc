@@ -138,6 +138,8 @@ static int handle_receive(ENetEvent* event) {
 	case 1:
 		/* system packets */
 		p = (unsigned char*)(event->packet->data);
+		printf("Got system message of type %i\n", p[0]);
+		
 		switch (p[0]) {
 		case SYSPACKAGE_LIST:
 			handle_peer_list(p, event->packet->dataLength);
@@ -149,7 +151,7 @@ static int handle_receive(ENetEvent* event) {
 			handle_peer_left(p, event->packet->dataLength);
 			break;
 		default:
-			fprintf(stderr, "Invalid system of type %i\n", p[0]);
+			fprintf(stderr, "Invalid system message of type %i\n", p[0]);
 			break;
 		}
 		break;
