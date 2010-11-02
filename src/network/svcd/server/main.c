@@ -103,7 +103,7 @@ static void send_peer_list(int peer_id) {
 	}
 	
 	s->data[1] = count;
-	
+	printf("Sending peer list to %i\n", peer_id);
 	p = enet_packet_create(s->data, s->len, ENET_PACKET_FLAG_RELIABLE);
 	enet_peer_send(peers[peer_id].peer, 1, p);
 	dfree(s);
@@ -121,6 +121,7 @@ static void send_new_peer_connected(int peer_id) {
 		if (i == peer_id || !peers[i].used || !peers[i].auth) {
 			continue;
 		}
+		printf("Sending new peer notification to %i\n", i);
 		ENetPacket * packet = enet_packet_create(s->data, s->len, ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(peers[i].peer, 1, packet);
 	}

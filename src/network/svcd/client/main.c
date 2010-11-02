@@ -110,11 +110,11 @@ static int handle_receive(ENetEvent* event) {
 	char* buff;
 	unsigned char* p;
 	
-	/*
+	
 	printf("A packet of length %u on channel %u.\n",
 		event->packet->dataLength,
 		event->channelID);
-	*/
+	
 
 	switch(event->channelID) {
 	case 0:
