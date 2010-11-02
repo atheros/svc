@@ -7,7 +7,7 @@
 
 
 void callback(audio_data_t *input_packet, audio_data_t *output_packet) {
-	memcpy(output_packet->data, input_packet->data, sizeof(float) * 256); 
+	memcpy(output_packet->data, input_packet->data, sizeof(float) * 1024); 
 }
 
 int main() {

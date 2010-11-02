@@ -18,7 +18,7 @@ void callback(audio_data_t *input_packet, audio_data_t *output_packet) {
 	packet_queue_push_data(queue, input_packet);
 	audio_data_t *data = packet_cage_get_data(cage);
 	if(data!=NULL){
-		memcpy(output_packet->data, data->data, sizeof(float) * 256); 
+		memcpy(output_packet->data, data->data, sizeof(float) * 1024); 
 		audio_data_destroy(data);
 	 }
 	
@@ -26,7 +26,7 @@ void callback(audio_data_t *input_packet, audio_data_t *output_packet) {
 
 void* worker(void* param) {
 	while(1){
-		audio_data_t *data = audio_data_create(256);
+		audio_data_t *data = audio_data_create(1024);
 		packet_queue_pop_data(queue, data);
 		t = time_inc(t);
 		packet_cage_put_data(cage, data, t); 
@@ -36,7 +36,7 @@ void* worker(void* param) {
 int main() {
 	t=0;
 	cage = packet_cage_create();
-	queue = packet_queue_create(100, 256);
+	queue = packet_queue_create(100, 1024);
 	thread_t thread;
 	thread_create(&thread, worker, NULL);
 	set_audio_callback(callback);
