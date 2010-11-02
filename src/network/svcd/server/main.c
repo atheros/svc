@@ -105,7 +105,7 @@ static void send_peer_list(int peer_id) {
 	s->data[1] = count;
 	
 	p = enet_packet_create(s->data, s->len, ENET_PACKET_FLAG_RELIABLE);
-	enet_peer_send(peers[peer_id].peer, 0, p);
+	enet_peer_send(peers[peer_id].peer, 1, p);
 	dfree(s);
 }
 
