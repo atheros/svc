@@ -3,30 +3,94 @@
 #include <string.h>
 #include <enet/enet.h>
 
+
 #include "enetcheck.h"
 #include "config.h"
+#include "libsvc.h"
 
 
 typedef struct {
 	int id; /* index, stored in peer->data */
 	char nick[32]; /* nickname */
+	int used;
+	peer_t* peer;
 } Peer;
 
+Peer* peers;
 static ENetPeer* serverPeer;
 static int got_auth = 0;
 static int my_id = 0;
+static int max_clients = 0;
 
 
 static void send_auth(ENetPeer* peer, const char* nick) {
 	ENetPacket* packet;
 	packet = enet_packet_create(nick, strlen(nick),  ENET_PACKET_FLAG_RELIABLE);
 	enet_peer_send(peer, 0, packet);
-	/*enet_packet_destroy(packet);*/
 }
 
+static void handle_peer_list(unsigned char* p, unsigned int len) {
+	int pc, x, len, i;
+	int last = 0;
+	int peer_id;
+	
+	x = 2;
+	for(pc = 0; pc < p[1]; pc++) {
+		peer_id = p[x++];
+		len = p[x++];
+		for(i = last; i < peer_id; i++) {
+			if (peers[i].used) {
+				peers[i].used = 0;
+				svc_peer_leave(peers[i].peer);
+			}
+		}
+		
+		if (!peers[peer_id].used) {
+			peers[peer_id].used = 1;
+			peers[peer_id].peer = svc_peer_join();
+		}
+		
+		memcpy(peers[peer_id].nick, p+x, len);
+		peers[peer_id].nick[len] = 0;
+
+		printf("Adding new peer #%i [%s]\n", peer_id, peers[peer_id].nick);
+		if (peer_id == my_id) {
+			printf("Heh, this is me!\n");
+		}
+		
+		last = peer_id;
+	}
+}
+
+static void handle_peer_join(unsigned char* p, unsigned int len) {
+	int peer_id = p[1];
+	int len = p[2];
+	
+	if (peers[peer_id].used) {
+		svc_peer_leave(peers[peer_id].peer);
+	}
+	
+	peers[peer_id].used = 1;
+	peers[peer_id].peer = svc_peer_join();
+	memcpy(peers[peer_id].nick, p+3, len);
+	peers[peer_id].nick[len] = 0;
+	
+	printf("Peer #%i [%s] joined\n", peer_id, peers[peer_id].nick);
+}
+
+static void handle_peer_left(unsigned char* p, unsigned int len) {
+	int peer_id = p[1];
+	
+	if (peers[peer_id].used) {
+		svc_peer_leave(peers[peer_id].peer);
+		peers[peer_id].used = 0;
+		printf("Peer #%i [%s] left\n", peer_id, peers[peer_id].nick);
+	}
+}
 
 static int handle_receive(ENetEvent* event) {
 	char* buff;
+	unsigned char* p;
 	
 	printf("A packet of length %u on channel %u.\n",
 		event->packet->dataLength,
@@ -34,17 +98,40 @@ static int handle_receive(ENetEvent* event) {
 
 	switch(event->channelID) {
 	case 0:
+		if (got_auth) {
+			printf("Second authorization received.\n");
+			break;
+		}
 		/* we got auth */
 		printf("Authorization accepted.\n");
 		/* FIXME: use a temp buffer */
-		my_id = atoi(event->packet->data);
+		p = (unsigned char*)(event->packet->data);
+		my_id = p[0]
+		max_clients = p[1];
 		got_auth = 1;
+		peers = (Peer*)malloc(max_clients);
+		memset(peers, 0, sizeof(Peer) * max_clients);
 		break;
 		
 	case 1:
 		/* system packets */
-		
+		p = (unsigned char*)(event->packet->data);
+		switch (packet) {
+		case SYSPACKAGE_LIST:
+			handle_peer_list(p, event->packet->dataLength);
+			break;
+		case SYSPACKAGE_JOIN:
+			handle_peer_join(p, event->packet->dataLength);
+			break;
+		case SYSPACKAGE_LEFT:
+			handle_peer_left(p, event->packet->dataLength);
+			break;
+		default
+			fprintf(stderr, "Invalid system packet %i\n", peer_id);
+			break;
+		}
 		break;
+		
 	case 2:
 		/* audio packets */
 		break;
@@ -57,7 +144,7 @@ static int handle_receive(ENetEvent* event) {
 		fprintf(stderr, "Received error from server: %s\n", buff);
 		free(buff);
 		enet_peer_reset(serverPeer);
-		return 0;
+		break;
 	}
 
 
@@ -129,7 +216,7 @@ int main(int argc, char* argv[]) {
 				break;
 
 			case ENET_EVENT_TYPE_DISCONNECT:
-				printf ("Server disconected.\nAborting!");
+				printf ("Server disconected.\nAborting!\n");
 				done = 1;
 				break;
 			}
