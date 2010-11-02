@@ -39,6 +39,8 @@ static void handle_peer_list(unsigned char* p, unsigned int length) {
 		peer_id = p[x++];
 		len = p[x++];
 		for(i = last; i < peer_id; i++) {
+			printf("H%i\n", i);
+			fflush(stdout);
 			if (peers[i].used) {
 				peers[i].used = 0;
 				svc_peer_leave(peers[i].peer);
@@ -58,6 +60,7 @@ static void handle_peer_list(unsigned char* p, unsigned int length) {
 			printf("Heh, this is me!\n");
 		}
 		
+		x+= len;
 		last = peer_id;
 	}
 }

@@ -268,6 +268,8 @@ static void handle_receive(ENetEvent* event) {
 		
 		peers[peer_id].auth = 1;
 		send_auth(peer_id);
+		send_peer_list(peer_id);
+		send_new_peer_connected(peer_id);
 	} else if (event->channelID == 1) {
 		/* system packets */
 	} else if (event->channelID == 2) {
