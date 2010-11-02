@@ -1,6 +1,6 @@
 .SECONDEXPANSION:
 .PHONY: clean
-LIBS=-lconfig -lenet -lportaudio -lpthread -lcelt
+LIBS=-lconfig -lenet -lportaudio -lpthread $(shell pkg-config --libs celt)
 CFLAGS+=-Isrc/common -Isrc/libsvc -Isrc/libsvc/include -std=c89 -fPIC
 
 # FIXME: this shit doesn't work
