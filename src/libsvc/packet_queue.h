@@ -24,7 +24,7 @@ void packet_queue_destroy(packet_queue_t* packet_queue);
 
 /* Pushes an audio packet into a packet queue. 
  * This function doesn't allocate any memory when called.
- * The audio_data gets copied so you need to free it up when not needed. 
+ * The audio_data gets copied so you need to free the input it up when not needed. 
  * Returns 0 on success. */
 int packet_queue_push_data(packet_queue_t* packet_queue, audio_data_t* audio_data);
 

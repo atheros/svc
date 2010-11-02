@@ -18,6 +18,11 @@ int audio_data_copy(audio_data_t* dest_data, audio_data_t* source_data){
 	return 0;
 }
 
+void clear_audio_data(audio_data_t* audio_data){
+	unsigned int i;
+	for (i=0; i < audio_data->size; i++) audio_data->data[i] = 0;
+}
+
 int mix_audio_streams(unsigned int count, audio_data_t** input_streams, audio_data_t* result_stream) {
 	unsigned int i;
 	unsigned int k;

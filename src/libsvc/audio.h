@@ -13,6 +13,9 @@ typedef struct _audio_data_t {
 
 audio_data_t* audio_data_create(unsigned int size);
 
+/* Cleans up audio data making it silent */
+void clear_audio_data(audio_data_t* audio_data);
+
 void audio_data_destroy(audio_data_t* audio_data);
 
 /* Make sure the destination is initiated before calling this.
