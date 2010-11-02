@@ -17,7 +17,7 @@ int shouldBlock;
 void callback(audio_data_t *input_packet, audio_data_t *output_packet) {
 	if(!shouldBlock) { 		
 		t = time_inc(t);
-		audio_data_t* tmp_data = audio_data_create(256);
+		audio_data_t* tmp_data = audio_data_create(1024);
 		audio_data_copy(tmp_data, input_packet);		
 		packet_cage_put_data(cage, tmp_data, t); 
 		audio_data_copy(tmp_data, input_packet);		
@@ -28,7 +28,7 @@ void callback(audio_data_t *input_packet, audio_data_t *output_packet) {
 	} else shouldBlock=0;
 	audio_data_t *data = packet_cage_get_data(cage);
 	if(data!=NULL){ 
-		memcpy(output_packet->data, data->data, sizeof(float) * 256); 
+		memcpy(output_packet->data, data->data, sizeof(float) * 1024); 
 		audio_data_destroy(data);
 	}
 }

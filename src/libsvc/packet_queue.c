@@ -1,6 +1,5 @@
 #include "packet_queue.h"
 
-
 packet_queue_t* packet_queue_create(unsigned int queue_size, unsigned int audio_size){
 	packet_queue_t* res_queue = malloc(sizeof(packet_queue_t));
 	
