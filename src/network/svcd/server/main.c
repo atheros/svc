@@ -12,6 +12,7 @@
 
 #include "enetcheck.h"
 #include "config.h"
+#include "dstr.h"
 
 /*
  * Get config file path.
@@ -44,6 +45,10 @@ static char* get_config_file_path() {
 }
 */
 
+#if SVCSERVER_MAX_CLIENTS > 255
+#  error Fix SVCSERVER_MAX_CLIENTS please. Maximum number of clients is 255
+#endif
+
 #define SERVER_HOST		"0.0.0.0"
 
 typedef struct {
@@ -69,29 +74,72 @@ static ENetHost* server;
 static void send_error(int peer_id, const char* message) {
 	ENetPacket* p = enet_packet_create(message, strlen(message)+1, ENET_PACKET_FLAG_RELIABLE);
 	enet_peer_send(peers[peer_id].peer, 3, p);
-	/*enet_packet_destroy(p);*/
 }
 
 static void send_auth(int peer_id) {
 	ENetPacket* p;
-	char buff[32];
+	unsigned char buff[32];
+	buff[0] = peer_id;
+	buff[1] = SVCSERVER_MAX_CLIENTS;
 	
-	sprintf(buff, "%i", peer_id);
-	
-	p = enet_packet_create(buff, strlen(buff)+1, ENET_PACKET_FLAG_RELIABLE);
+	p = enet_packet_create(buff, 32, ENET_PACKET_FLAG_RELIABLE);
 	enet_peer_send(peers[peer_id].peer, 0, p);
-	/*enet_packet_destroy(p);*/
+}
+
+static void send_peer_list(int peer_id) {
+	ENetPacket* p;
+	int i, size = 0, count = 0;
+	dstring* s;
+	s = dnew();
+	dcatc(s, SYSPACKAGE_LIST);
+	dcatc(s, 0);
+	for(i = 0; i < SVCSERVER_MAX_CLIENTS; i++) {
+		if (peers[i].used && peers[i].auth) {
+			count++;
+			dcatc(s, i);
+			dcatc(s, strlen(peers[i].nick));
+			dcatcs(s, peers[i].nick);
+		}
+	}
+	
+	s->data[1] = count;
+	
+	p = enet_packet_create(s->data, s->len, ENET_PACKET_FLAG_RELIABLE);
+	enet_peer_send(peers[peer_id].peer, 0, p);
+	dfree(s);
 }
 
 static void send_new_peer_connected(int peer_id) {
 	int i;
-	/*
+	dstring* s = dnew();
+	dcatc(s, SYSPACKAGE_JOIN);
+	dcatc(s, peer_id);
+	dcatc(s, strlen(peers[peer_id].nick));
+	dcatcs(s, peers[peer_id].nick);
+	
 	for(i = 0; i < SVCSERVER_MAX_CLIENTS; i++) {
-		if (i == peer_id || !peers[i].used || !peers[i].auth) continue;
-		ENetPacket * packet = enet_packet_create(buff, strlen(buff) + 1, ENET_PACKET_FLAG_UNSEQUENCED);
-		enet_peer_send(peers[i].peer, 0, packet);
+		if (i == peer_id || !peers[i].used || !peers[i].auth) {
+			continue;
+		}
+		ENetPacket * packet = enet_packet_create(s->data, s->len, ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_RELIABLE);
+		enet_peer_send(peers[i].peer, 1, packet);
 	}
-	*/
+	dfree(s);
+}
+
+static void send_peer_disconnected(int peer_id) {
+	int i;
+	unsigned char buff[2];
+	buff[0] = SYSPACKAGE_LEFT;
+	buff[1] = peer_id;
+	
+	for(i = 0; i < SVCSERVER_MAX_CLIENTS; i++) {
+		if (i == peer_id || !peers[i].used || !peers[i].auth) {
+			continue;
+		}
+		ENetPacket * packet = enet_packet_create(buff, 2, ENET_PACKET_FLAG_UNSEQUENCED | ENET_PACKET_FLAG_RELIABLE);
+		enet_peer_send(peers[i].peer, 1, packet);
+	}
 }
 
 
@@ -132,15 +180,9 @@ static void handle_disconnect(ENetEvent* event) {
 	peer_id = ((Peer*)event->peer->data)->id;
 	
 	printf("#%i disconected.\n", peer_id);
+	
 	if (peers[peer_id].auth) {
-		/*
-		for(i = 0; i < SVCSERVER_MAX_CLIENTS; i++) {
-			if (client_id == i|| peers[i].used == 0) {
-				continue;
-			}
-			
-		}
-		*/
+		send_peer_disconnected(peer_id);
 	}
 
 	/* reset the peer's client information. */
@@ -149,10 +191,17 @@ static void handle_disconnect(ENetEvent* event) {
 	event->peer->data = NULL;
 }
 
-
+static int valid(int c) {
+	if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z')
+	|| c == '-' || c == '_') {
+		return 1;
+	} else {
+		return 0;
+	}
+}
 
 static void handle_receive(ENetEvent* event) {
-	int i, peer_id;
+	int i, peer_id, c;
 	peer_id = ((Peer*)event->peer->data)->id;
 	
 	printf("A packet of length %u was received from #%i on channel %i.\n",
@@ -163,31 +212,44 @@ static void handle_receive(ENetEvent* event) {
 	if (event->channelID == 0) {
 		/* auth packets */
 		if (peers[peer_id].auth) {
-			printf("Received an auth packet from authorized peer!\n");
+			fprintf(stderr, "Received an auth packet from authorized peer!\n");
 			enet_peer_disconnect(event->peer, 0);
 			return;
 		} else if (event->packet->dataLength > 31) {
-			printf("Nick too long!\n");
+			fprintf(stderr, "Nick too long!\n");
 			enet_peer_disconnect(event->peer, 0);
 			return;
+		} else {
+			for(i = 0; i < event->packet->dataLength; i++) {
+				c = ((char*)(event->packet->data))[i];
+				if (!valid(c)) {
+					fprintf(stderr, "Invalid nick name!\n");
+					enet_peer_disconnect(event->peer, 0);
+					return;
+				}
+			}
 		}
 		
 		memcpy(peers[peer_id].nick, event->packet->data, event->packet->dataLength);
 		peers[peer_id].nick[event->packet->dataLength] = 0;
 		
+		printf("Peer #%i authorized as %s\n", peer_id, peers[peer_id].nick);
+		
 		/* check if this nick is unique */
 		for(i = 0; i < SVCSERVER_MAX_CLIENTS; i++) {
-			if (i == peer_id || peers[i].used == 0 || peers[i].auth == 0) {
+			if (i == peer_id || !peers[i].used || !peers[i].auth) {
 				continue;
 			}
 			
 			if (strcmp(peers[peer_id].nick, peers[i].nick) == 0) {
-				send_error(peer_id, "Nickname already used");
+				fprintf(stderr, "Nickname already in use\n");
+				send_error(peer_id, "Nickname already in use");
 				enet_peer_disconnect(event->peer, 0);
 				return;
 			}
 		}
 		
+		peers[peer_id].auth = 1;
 		send_auth(peer_id);
 	} else if (event->channelID == 1) {
 		/* system packets */
