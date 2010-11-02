@@ -118,12 +118,14 @@ static int handle_receive(ENetEvent* event) {
 			break;
 		}
 		/* we got auth */
-		printf("Authorization accepted.\n");
 		/* FIXME: use a temp buffer */
 		p = (unsigned char*)(event->packet->data);
 		my_id = p[0];
 		max_clients = p[1];
 		got_auth = 1;
+
+		printf("Authorization accepted (my id %, max clients %i).\n", my_id, max_clients);
+
 		peers = (Peer*)malloc(max_clients);
 		memset(peers, 0, sizeof(Peer) * max_clients);
 		break;
