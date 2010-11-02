@@ -1,6 +1,6 @@
 .SECONDEXPANSION:
 .PHONY: clean
-LIBS=-lconfig -lenet -lportaudio -lpthread
+LIBS=-lconfig -lenet -lportaudio -lpthread -lcelt
 CFLAGS+=-Isrc/common -Isrc/libsvc -Isrc/libsvc/include -std=c89 -fPIC
 
 # FIXME: this shit doesn't work
@@ -15,6 +15,9 @@ test_audio_packet_cage_OBJS := src/tests/test_audio_packet_cage.o  src/libsvc/au
 
 test_audio_cage_queue_OBJS := src/tests/test_audio_cage_queue.o  src/libsvc/packet_queue.o src/libsvc/audio.o src/libsvc/audio_api_portaudio.o src/libsvc/packet_cage.o src/common/thread.o
 
+test_libsvc_OBJS := src/tests/test_libsvc.o  src/libsvc/packet_queue.o src/libsvc/audio.o src/libsvc/audio_api_portaudio.o \
+                    src/libsvc/packet_cage.o src/common/thread.o src/libsvc/libsvc.o src/libsvc/libsvc_incoming.o src/libsvc/codec.o \
+                    src/libsvc/network_packet.o
 
 
 -include $(OBJS:.o=.d)

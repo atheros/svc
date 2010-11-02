@@ -5,9 +5,7 @@
 peer_t* peer_self;
 
 void tst_callback(network_packet_t* packet){
-	//printf("sending some stuff\n");
 	if(peer_self!=NULL){
-		//printf("sending some stuff\n");
 		svc_packet_recieve(packet, peer_self);
 	}
 }
