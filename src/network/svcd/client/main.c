@@ -18,9 +18,11 @@ typedef struct {
 
 static Peer* peers = NULL;
 static ENetPeer* serverPeer = NULL;
+static ENetHost* client = NULL;
 static int got_auth = 0;
 static int my_id = 0;
 static int max_clients = 0;
+
 
 
 static void send_auth(ENetPeer* peer, const char* nick) {
@@ -107,6 +109,7 @@ static void handle_audio(void* data, unsigned int len) {
 	} else {
 		printf("Got audio from %i, not playing\n", peer_id);
 	}
+	
 }
 
 static int handle_receive(ENetEvent* event) {
@@ -195,12 +198,12 @@ void send_callback(network_packet_t* packet){
 		memcpy(p->data + 2, packet->data, packet->data_len);
 		
 		enet_peer_send(serverPeer, 2, p);
+		enet_host_flush(client);
 	}
 }
 
 
 int main(int argc, char* argv[]) {
-    ENetHost* client;
     ENetAddress address;
     ENetEvent event;
     

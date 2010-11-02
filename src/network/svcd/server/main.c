@@ -158,6 +158,7 @@ static void send_audio(int peer_id, void* data, unsigned int len) {
 		memcpy(p->data + 1, data, len);
 		enet_peer_send(peers[i].peer, 2, p);
 	}
+	enet_host_flush(server);
 }
 
 static void handle_connection(ENetEvent* event) {
