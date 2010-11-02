@@ -16,8 +16,8 @@ typedef struct {
 	peer_t* peer;
 } Peer;
 
-Peer* peers;
-static ENetPeer* serverPeer;
+static Peer* peers = NULL;
+static ENetPeer* serverPeer = NULL;
 static int got_auth = 0;
 static int my_id = 0;
 static int max_clients = 0;
@@ -126,7 +126,7 @@ static int handle_receive(ENetEvent* event) {
 
 		printf("Authorization accepted (my id %i, max clients %i).\n", my_id, max_clients);
 
-		peers = (Peer*)malloc(max_clients);
+		peers = (Peer*)malloc(sizeof(Peer) * max_clients);
 		memset(peers, 0, sizeof(Peer) * max_clients);
 		break;
 		
@@ -259,6 +259,9 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	
+	if (peers) {
+		free(peers);
+	}
 	svc_close();
     enet_host_destroy(client);
     enet_deinitialize();
