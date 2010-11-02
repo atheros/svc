@@ -47,7 +47,7 @@ void *send_network_thread_function( void *ptr ){
 void svc_init(svc_send_callback_t send_callback){
 	svc_time = 0;
 	svc_options = malloc(sizeof(svc_options_t));
-	svc_options->frame_size = 512;
+	svc_options->frame_size = 1024;
 	svc_options->sample_rate = 44100;
 	svc_options->byte_per_packet = 2560;
 	

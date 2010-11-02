@@ -47,15 +47,15 @@ int init_audio () {
 	input_audio_data  = malloc(sizeof(audio_data_t));
 	output_audio_data = malloc(sizeof(audio_data_t));
 	
-	input_audio_data->size = 512;
-	output_audio_data->size = 512;
+	input_audio_data->size = 1024;
+	output_audio_data->size = 1024;
 	
 	err = Pa_OpenDefaultStream( &stream,
 			1,          /* input */
 			1,          /* output */
 			paFloat32,  /* 32 bit floating point output */
 			SAMPLE_RATE,
-			512,        /* frames per buffer */
+			1024,        /* frames per buffer */
 			pa_callback, /* callback function */
 			NULL );
 	DO_PA_ERROR;
