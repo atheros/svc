@@ -175,13 +175,15 @@ static int handle_receive(ENetEvent* event) {
 void send_callback(network_packet_t* packet){
 	ENetPacket* p;
 	
-	p = enet_packet_create(NULL, packet->data_len+2, 0);
-	p->data[0] = packet->time & 0xFF;
-	p->data[1] = (packet->time >> 8) & 0xFF;
-	
-	memcpy(p->data + 2, packet->data, packet->data_len);
-	
-	enet_peer_send(serverPeer, 2, p);
+	if (!got_auth) {
+		p = enet_packet_create(NULL, packet->data_len+2, 0);
+		p->data[0] = packet->time & 0xFF;
+		p->data[1] = (packet->time >> 8) & 0xFF;
+		
+		memcpy(p->data + 2, packet->data, packet->data_len);
+		
+		enet_peer_send(serverPeer, 2, p);
+	}
 }
 
 
