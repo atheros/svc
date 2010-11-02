@@ -34,7 +34,7 @@ test_libsvc_OBJS := src/tests/test_libsvc.o  src/libsvc/packet_queue.o src/libsv
 all: libsvc tests
 
 test_libsvc test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage: $$($$@_OBJS)
-	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
+	$(CC) $(LDFLAGS) $^ -o ./tests/$@ $(LIBS)
 
 libsvc: $$($$@_OBJS)
 	$(CC) -shared $(LDFLAGS) $^ -o $@ $(LIBS)
