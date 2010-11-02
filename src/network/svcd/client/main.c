@@ -7,6 +7,12 @@
 #include "config.h"
 
 
+typedef struct {
+	int id; /* index, stored in peer->data */
+	char nick[32]; /* nickname */
+} Peer;
+
+
 int main(int argc, char* argv[]) {
     ENetHost* client;
     ENetAddress address;
@@ -15,8 +21,8 @@ int main(int argc, char* argv[]) {
     int done = 0;
 
     /* check if we have host and port set */
-    if (argc != 3) {
-    	fprintf(stderr, "usage: svccd <server_host> <server_port>\n");
+    if (argc != 4) {
+    	fprintf(stderr, "usage: svcclient <nickname> <server_host> <server_port>\n");
     	return 1;
     }
 
@@ -28,13 +34,17 @@ int main(int argc, char* argv[]) {
 	/* create client */
     client = enet_host_create(NULL, 2, SVCSERVER_MAX_CHANNELS, 0, 0);
 	if (client == NULL) {
-		fprintf (stderr, "An error occurred while trying to create an ENet client host.\n");
+		fprintf(stderr, "An error occurred while trying to create an ENet client host.\n");
 		return 1;
 	}
 
 	/* set address to connect to */
-	enet_address_set_host(&address, argv[1]);
-	address.port = atoi(argv[2]);
+	if (enet_address_set_host(&address, argv[2])) {
+		fprintf(stderr, "Failed to resolve %s\n", argv[2]);
+		return 1;
+	}
+	address.port = atoi(argv[3]);
+
 
 	/* connect */
 	peer = enet_host_connect(client, &address, SVCSERVER_MAX_CHANNELS, 0);
@@ -45,10 +55,12 @@ int main(int argc, char* argv[]) {
 
 	/* wait up to 5sec for the connection to succeed */
 	if (enet_host_service(client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
-		fprintf(stdout, "Connection to %s:%s succeeded.\n", argv[1], argv[2]);
+		fprintf(stdout, "Connection to %s:%s succeeded.\n", argv[2], argv[3]);
+		send_auth(peer, argv[1]);
 	} else {
-		enet_peer_reset (peer);
+		enet_peer_reset(peer);
 		fprintf(stderr, "Connection to %s:%s.\n", argv[1], argv[2]);
+		return 1;
 	}
 
 
