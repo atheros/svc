@@ -56,10 +56,6 @@ typedef struct {
 
 
 
-typedef enum {
-	PACKET_AUTH;
-};
-
 
 
 static Peer peers[SVCSERVER_MAX_CLIENTS];
@@ -70,20 +66,40 @@ static ENetHost* server;
 
 
 
+static void send_error(int peer_id, const char* message) {
+	ENetPacket* p = enet_packet_create(message, strlen(message)+1, ENET_PACKET_FLAG_RELIABLE);
+	enet_peer_send(peers[peer_id].peer, 3, p);
+	/*enet_packet_destroy(p);*/
+}
 
+static void send_auth(int peer_id) {
+	ENetPacket* p;
+	char buff[32];
+	
+	sprintf(buff, "%i", peer_id);
+	
+	p = enet_packet_create(buff, strlen(buff)+1, ENET_PACKET_FLAG_RELIABLE);
+	enet_peer_send(peers[peer_id].peer, 0, p);
+	/*enet_packet_destroy(p);*/
+}
 
-static void send_new_client_connected(
+static void send_new_peer_connected(int peer_id) {
+	int i;
+	/*
 	for(i = 0; i < SVCSERVER_MAX_CLIENTS; i++) {
-		if (i == *(int*)(event.peer->data) || peers[i].used == 0) continue;
+		if (i == peer_id || !peers[i].used || !peers[i].auth) continue;
 		ENetPacket * packet = enet_packet_create(buff, strlen(buff) + 1, ENET_PACKET_FLAG_UNSEQUENCED);
 		enet_peer_send(peers[i].peer, 0, packet);
 	}
+	*/
 }
 
 
 
 static void handle_connection(ENetEvent* event) {
 	int i;
+	char buff[128];
+	int peer_id = -1;
 	for(i = 0; i < SVCSERVER_MAX_CLIENTS; i++) {
 		if (!peers[i].used) {
 			peers[i].id = i;
@@ -91,15 +107,21 @@ static void handle_connection(ENetEvent* event) {
 			peers[i].used = 1;
 			peers[i].auth = 0;
 			event->peer->data = &peers[i];
+			peer_id = i;
 			break;
 		}
 	}
 	
-	/* log a nice message */
-	enet_address_get_host_ip(event->peer, buff, 1024);
-	printf("Client #%i connected from %s:%u.", buff, event->peer->address.port);
+	if (peer_id == -1) {
+		/* FIXME: signal server full */
+		enet_peer_disconnect(event->peer, 0);
+		return;
+	}
 	
-	enet_host_flush(server);
+	/* log a nice message */
+	enet_address_get_host_ip(&(event->peer->address), buff, 128);
+	
+	printf("Client #%i connected from %s:%u.\n", peer_id, buff, event->peer->address.port);
 }
 
 
@@ -124,7 +146,7 @@ static void handle_disconnect(ENetEvent* event) {
 	/* reset the peer's client information. */
 	peers[peer_id].used = 0;
 	peers[peer_id].auth = 0;
-	event.peer->data = NULL;
+	event->peer->data = NULL;
 }
 
 
@@ -133,24 +155,24 @@ static void handle_receive(ENetEvent* event) {
 	int i, peer_id;
 	peer_id = ((Peer*)event->peer->data)->id;
 	
-	printf("A packet of length %u was received from #%s on channel %i.\n",
-		event.packet -> dataLength,
+	printf("A packet of length %u was received from #%i on channel %i.\n",
+		event->packet->dataLength,
 		peer_id,
-		event.channelID);
+		event->channelID);
 	
 	if (event->channelID == 0) {
 		/* auth packets */
 		if (peers[peer_id].auth) {
 			printf("Received an auth packet from authorized peer!\n");
-			enet_diconnect(event->peer);
+			enet_peer_disconnect(event->peer, 0);
 			return;
-		} else if (event.packet->dataLength > 31) {
+		} else if (event->packet->dataLength > 31) {
 			printf("Nick too long!\n");
-			enet_disconnect(event->peer);
+			enet_peer_disconnect(event->peer, 0);
 			return;
 		}
 		
-		memcpy(peers[peer_id].nick, event->packet->data, event.packet->dataLength);
+		memcpy(peers[peer_id].nick, event->packet->data, event->packet->dataLength);
 		peers[peer_id].nick[event->packet->dataLength] = 0;
 		
 		/* check if this nick is unique */
@@ -161,7 +183,7 @@ static void handle_receive(ENetEvent* event) {
 			
 			if (strcmp(peers[peer_id].nick, peers[i].nick) == 0) {
 				send_error(peer_id, "Nickname already used");
-				enet_disconnect(event->peer);
+				enet_peer_disconnect(event->peer, 0);
 				return;
 			}
 		}
@@ -177,7 +199,7 @@ static void handle_receive(ENetEvent* event) {
 
 
 	/* Clean up the packet now that we're done using it. */
-	enet_packet_destroy (event.packet);
+	enet_packet_destroy(event->packet);
 }
 
 
@@ -205,7 +227,7 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "Failed to resolve %s\n", SERVER_HOST);
 		return 1;
 	}
-	address.port = SVCSERVER_PORT;
+	address.port = SERVER_PORT;
 
 	/* create server host */
 	server = enet_host_create(&address, SVCSERVER_MAX_CLIENTS, SVCSERVER_MAX_CHANNELS, 0, 0);
@@ -214,6 +236,8 @@ int main(int argc, char* argv[]) {
 					SERVER_HOST, address.port);
 		return 1;
 	}
+	
+	printf("Starting server at %s:%i\n", SERVER_HOST, address.port);
 
 	/* main loop */
 	while(1) {
@@ -228,7 +252,7 @@ int main(int argc, char* argv[]) {
 				break;
 
 			case ENET_EVENT_TYPE_DISCONNECT:
-				handle_disconnect((Peer*)event.peer->data);
+				handle_disconnect(&event);
 				break;
 			}
 		}
