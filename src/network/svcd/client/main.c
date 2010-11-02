@@ -124,7 +124,7 @@ static int handle_receive(ENetEvent* event) {
 		max_clients = p[1];
 		got_auth = 1;
 
-		printf("Authorization accepted (my id %, max clients %i).\n", my_id, max_clients);
+		printf("Authorization accepted (my id %i, max clients %i).\n", my_id, max_clients);
 
 		peers = (Peer*)malloc(max_clients);
 		memset(peers, 0, sizeof(Peer) * max_clients);
