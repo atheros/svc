@@ -1,6 +1,7 @@
 #include "packet_cage.h"
 #include <stdlib.h>
 
+
 packet_time_t time_inc(packet_time_t time){
 	if(time==MAX_TIME) return 0;
 	return time+1;
@@ -44,7 +45,7 @@ int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, p
 		
 		packet_cage->audio_data = audio_data;
 		packet_cage->packet_time = time;
-	}
+	} 
 	
 	mutex_unlock(&packet_cage->cage_mutex);
 	return 0;

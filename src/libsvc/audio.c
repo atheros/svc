@@ -1,5 +1,6 @@
 #include "audio.h"
 
+
 audio_data_t* audio_data_create(unsigned int size){
 	audio_data_t* res_data = malloc(sizeof(audio_data_t));
 	res_data->size = size;
@@ -27,16 +28,17 @@ int mix_audio_streams(unsigned int count, audio_data_t** input_streams, audio_da
 	unsigned int i;
 	unsigned int k;
 	
-	for (i = 0; i < result_stream->size; i++) /* filling the output stream with zeros */
-		result_stream->data[i] = 0;
+	for (k = 0; k < result_stream->size; k++) /* filling the output stream with zeros */
+		result_stream->data[k] = 0;
 
 	for (i = 0; i < count; i++){
 		
 		if (input_streams[i]->size != result_stream->size) 
 			return -1;
 		
-		for (k = 0; k < result_stream->size; i++) 
+		for (k = 0; k < result_stream->size; k++){ 
 			result_stream->data[k] += input_streams[i]->data[k];
+		}
 			
 	}
 	

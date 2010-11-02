@@ -1,12 +1,16 @@
 #include "codec.h"
+#include <string.h>
+#include <stdlib.h>
+int ololo_size;
 
 decoder_t* decoder_create(int Fs, int frame_size, int byte_per_packet){
 	int error;
 	decoder_t* res_decoder = malloc(sizeof(decoder_t));
 	
+	ololo_size = frame_size;
 	res_decoder->celt_mode = celt_mode_create (Fs, frame_size, &error);
 	res_decoder->byte_per_packet = byte_per_packet;
-	res_decoder->celt_decoder = celt_decoder_create (mode, 1, &error);
+	res_decoder->celt_decoder = celt_decoder_create (res_decoder->celt_mode, 1, &error);
 	
 	return res_decoder;
 }
@@ -21,11 +25,12 @@ encoder_t* encoder_create(int Fs, int frame_size, int byte_per_packet){
 	int error;
 	encoder_t* res_encoder = malloc(sizeof(encoder_t));
 	
+	ololo_size = frame_size;
 	res_encoder->celt_mode = celt_mode_create (Fs, frame_size, &error);
 	res_encoder->byte_per_packet = byte_per_packet;
-	res_encoder->celt_encoder = celt_encoder_create (mode, 1, &error);
+	res_encoder->celt_encoder = celt_encoder_create (res_encoder->celt_mode, 1, &error);
 	
-	return res_decoder;
+	return res_encoder;
 }
 
 void encoder_destroy(encoder_t* encoder){
@@ -39,5 +44,5 @@ int encoder_encode(encoder_t* encoder, const float* pcm, unsigned char* compress
 }
 
 int decoder_decode(decoder_t* decoder, unsigned char* data, int len, const float* pcm){
-	return cel_decode_float(decoder->celt->decoder, data, len, pcm);
+	return celt_decode_float(decoder->celt_decoder, data, len, pcm);
 }

@@ -16,6 +16,7 @@ test_audio_packet_cage_OBJS := src/tests/test_audio_packet_cage.o  src/libsvc/au
 test_audio_cage_queue_OBJS := src/tests/test_audio_cage_queue.o  src/libsvc/packet_queue.o src/libsvc/audio.o src/libsvc/audio_api_portaudio.o src/libsvc/packet_cage.o src/common/thread.o
 
 
+
 -include $(OBJS:.o=.d)
 
 %.o: %.c
@@ -29,13 +30,13 @@ test_audio_cage_queue_OBJS := src/tests/test_audio_cage_queue.o  src/libsvc/pack
 
 all: libsvc tests
 
-test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage: $$($$@_OBJS)
+test_libsvc test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage: $$($$@_OBJS)
 	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 libsvc: $$($$@_OBJS)
 	$(CC) -shared $(LDFLAGS) $^ -o $@ $(LIBS)
 
-tests: test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage
+tests: test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage test_libsvc
 
 clean:
 	rm -f src/*/*.o src/*/*.d tests/*
