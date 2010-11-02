@@ -29,7 +29,7 @@ static void send_auth(ENetPeer* peer, const char* nick) {
 	enet_peer_send(peer, 0, packet);
 }
 
-static void handle_peer_list(unsigned char* p, unsigned int len) {
+static void handle_peer_list(unsigned char* p, unsigned int length) {
 	int pc, x, len, i;
 	int last = 0;
 	int peer_id;
@@ -62,7 +62,7 @@ static void handle_peer_list(unsigned char* p, unsigned int len) {
 	}
 }
 
-static void handle_peer_join(unsigned char* p, unsigned int len) {
+static void handle_peer_join(unsigned char* p, unsigned int length) {
 	int peer_id = p[1];
 	int len = p[2];
 	
@@ -78,13 +78,28 @@ static void handle_peer_join(unsigned char* p, unsigned int len) {
 	printf("Peer #%i [%s] joined\n", peer_id, peers[peer_id].nick);
 }
 
-static void handle_peer_left(unsigned char* p, unsigned int len) {
+static void handle_peer_left(unsigned char* p, unsigned int length) {
 	int peer_id = p[1];
 	
 	if (peers[peer_id].used) {
 		svc_peer_leave(peers[peer_id].peer);
 		peers[peer_id].used = 0;
 		printf("Peer #%i [%s] left\n", peer_id, peers[peer_id].nick);
+	}
+}
+
+
+static void handle_audio(void* data, unsigned int len) {
+	network_packet_t np;
+	int peer_id = ((unsigned char*)data)[0];
+	
+	if (peers[peer_id].used) {
+		np.data = (unsigned char*)data+3;
+		np.data_len = len - 3;
+		np.time = ((unsigned char*)data)[0]
+			| ((unsigned char*)data)[1] << 8;
+		
+		svc_packet_recieve(&np, peers[peer_id].peer);
 	}
 }
 
@@ -106,7 +121,7 @@ static int handle_receive(ENetEvent* event) {
 		printf("Authorization accepted.\n");
 		/* FIXME: use a temp buffer */
 		p = (unsigned char*)(event->packet->data);
-		my_id = p[0]
+		my_id = p[0];
 		max_clients = p[1];
 		got_auth = 1;
 		peers = (Peer*)malloc(max_clients);
@@ -116,7 +131,7 @@ static int handle_receive(ENetEvent* event) {
 	case 1:
 		/* system packets */
 		p = (unsigned char*)(event->packet->data);
-		switch (packet) {
+		switch (p[0]) {
 		case SYSPACKAGE_LIST:
 			handle_peer_list(p, event->packet->dataLength);
 			break;
@@ -126,14 +141,15 @@ static int handle_receive(ENetEvent* event) {
 		case SYSPACKAGE_LEFT:
 			handle_peer_left(p, event->packet->dataLength);
 			break;
-		default
-			fprintf(stderr, "Invalid system packet %i\n", peer_id);
+		default:
+			fprintf(stderr, "Invalid system of type %i\n", p[0]);
 			break;
 		}
 		break;
 		
 	case 2:
 		/* audio packets */
+		handle_audio(event->packet->data, event->packet->dataLength);
 		break;
 
 	case 3:
@@ -155,6 +171,20 @@ static int handle_receive(ENetEvent* event) {
 	return 1;
 }
 
+
+void send_callback(network_packet_t* packet){
+	ENetPacket* p;
+	
+	p = enet_packet_create(NULL, packet->data_len+2, 0);
+	p->data[0] = packet->time & 0xFF;
+	p->data[1] = (packet->time >> 8) & 0xFF;
+	
+	memcpy(p->data + 2, packet->data, packet->data_len);
+	
+	enet_peer_send(serverPeer, 2, p);
+}
+
+
 int main(int argc, char* argv[]) {
     ENetHost* client;
     ENetAddress address;
@@ -172,6 +202,8 @@ int main(int argc, char* argv[]) {
 		fprintf (stderr, "An error occurred while initializing ENet.\n");
 		return 1;
 	}
+	
+	svc_init(send_callback);
 
 	/* create client */
     client = enet_host_create(NULL, 2, SVCSERVER_MAX_CHANNELS, 0, 0);
@@ -222,7 +254,8 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
-
+	
+	svc_close();
     enet_host_destroy(client);
     enet_deinitialize();
 }

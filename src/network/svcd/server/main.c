@@ -143,6 +143,21 @@ static void send_peer_disconnected(int peer_id) {
 }
 
 
+static void send_audio(int peer_id, void* data, unsigned int len) {
+	ENetPacket* p;
+	int i;
+	
+	for(i = 0; i < SVCSERVER_MAX_CLIENTS; i++) {
+		if (i == peer_id || !peers[i].used || !peers[i].auth) {
+			continue;
+		}
+		
+		p = enet_packet_create(NULL, len+1, 0);
+		p->data[0] = peer_id;
+		memcpy(p->data + 1, data, len);
+		enet_peer_send(peers[i].peer, 2, p);
+	}
+}
 
 static void handle_connection(ENetEvent* event) {
 	int i;
@@ -203,6 +218,7 @@ static int valid(int c) {
 static void handle_receive(ENetEvent* event) {
 	int i, peer_id, c;
 	peer_id = ((Peer*)event->peer->data)->id;
+	dstring* s;
 	
 	printf("A packet of length %u was received from #%i on channel %i.\n",
 		event->packet->dataLength,
@@ -255,13 +271,17 @@ static void handle_receive(ENetEvent* event) {
 		/* system packets */
 	} else if (event->channelID == 2) {
 		/* audio packets */
+		if (!peers[peer_id].auth) {
+			fprintf(stderr, "Client #%i tried to send audio without autorizing\n", peer_id);
+			return;
+		}
+		send_audio(peer_id, event->packet->data, event->packet->dataLength);
 	} else if (event->channelID == 3) {
 		/* errors */
 	}
 
 
 	/* Clean up the packet now that we're done using it. */
-	enet_packet_destroy(event->packet);
 }
 
 
@@ -311,6 +331,7 @@ int main(int argc, char* argv[]) {
 
 			case ENET_EVENT_TYPE_RECEIVE:
 				handle_receive(&event);
+				enet_packet_destroy(event.packet);
 				break;
 
 			case ENET_EVENT_TYPE_DISCONNECT:
