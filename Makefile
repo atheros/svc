@@ -4,7 +4,7 @@ LIBS=-lconfig -lenet -lportaudio -lpthread $(shell pkg-config --libs celt)
 CFLAGS+=-Isrc/common -Isrc/libsvc -Isrc/libsvc/include -std=c89 -fPIC
 
 # FIXME: this shit doesn't work
-libsvc_OBJS= \
+libsvc.so_OBJS= \
 	src/libsvc/audio_api_portaudio.o src/common/thread.o
 
 test_threads_OBJS := src/tests/test_threads.o src/common/thread.o
@@ -31,15 +31,15 @@ test_libsvc_OBJS := src/tests/test_libsvc.o  src/libsvc/packet_queue.o src/libsv
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
 	@rm -f $*.d.tmp
 
-all: libsvc tests
+all: libsvc.so tests
 
 test_libsvc test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage: $$($$@_OBJS)
 	$(CC) $(LDFLAGS) $^ -o ./tests/$@ $(LIBS)
 
-libsvc: $$($$@_OBJS)
+libsvc.so: $$($$@_OBJS)
 	$(CC) -shared $(LDFLAGS) $^ -o $@ $(LIBS)
 
 tests: test_threads test_audio_api test_audio_cage_queue test_audio_packet_cage test_libsvc
 
 clean:
-	rm -f src/*/*.o src/*/*.d tests/*
+	rm -f src/*/*.o src/*/*.d tests/* libsvc.so
