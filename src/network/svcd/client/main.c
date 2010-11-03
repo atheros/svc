@@ -103,10 +103,10 @@ static void handle_audio(void* data, unsigned int len) {
 		np.time = ((unsigned char*)data)[1]
 			| ((unsigned char*)data)[2] << 8;
 		
-		printf("Got audio from %i, playing %i\n", peer_id, (int)np.time);
+		/*printf("Got audio from %i, playing %i\n", peer_id, (int)np.time);*/
 		svc_packet_recieve(&np, peers[peer_id].peer);
 	} else {
-		printf("Got audio from %i, not playing\n", peer_id);
+		/*printf("Got audio from %i, not playing\n", peer_id);*/
 	}
 	
 }
@@ -124,7 +124,7 @@ static int handle_receive(ENetEvent* event) {
 	switch(event->channelID) {
 	case 0:
 		if (got_auth) {
-			printf("Second authorization received.\n");
+			fprintf(stderr, "Second authorization received.\n");
 			break;
 		}
 		/* we got auth */
@@ -134,7 +134,7 @@ static int handle_receive(ENetEvent* event) {
 		max_clients = p[1];
 		got_auth = 1;
 
-		printf("Authorization accepted (my id %i, max clients %i).\n", my_id, max_clients);
+		/*printf("Authorization accepted (my id %i, max clients %i).\n", my_id, max_clients);*/
 
 		peers = (Peer*)malloc(sizeof(Peer) * max_clients);
 		memset(peers, 0, sizeof(Peer) * max_clients);
@@ -143,7 +143,7 @@ static int handle_receive(ENetEvent* event) {
 	case 1:
 		/* system packets */
 		p = (unsigned char*)(event->packet->data);
-		printf("Got system message of type %i\n", p[0]);
+		/*printf("Got system message of type %i\n", p[0]);*/
 		
 		switch (p[0]) {
 		case SYSPACKAGE_LIST:
