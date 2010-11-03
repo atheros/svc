@@ -222,10 +222,10 @@ static void handle_receive(ENetEvent* event) {
 	peer_id = ((Peer*)event->peer->data)->id;
 	dstring* s;
 	
-	printf("A packet of length %u was received from #%i on channel %i.\n",
+	/*printf("A packet of length %u was received from #%i on channel %i.\n",
 		event->packet->dataLength,
 		peer_id,
-		event->channelID);
+		event->channelID);*/
 	
 	if (event->channelID == 0) {
 		/* auth packets */

@@ -98,12 +98,12 @@ static void handle_audio(void* data, unsigned int len) {
 	int peer_id = ((unsigned char*)data)[0];
 	
 	if (peers[peer_id].used) {
-		printf("Got audio from %i, playing\n", peer_id);
 		np.data = (unsigned char*)data+3;
 		np.data_len = len - 3;
 		np.time = ((unsigned char*)data)[0]
 			| ((unsigned char*)data)[1] << 8;
 		
+		printf("Got audio from %i, playing %i\n", peer_id, (int)np.time);
 		svc_packet_recieve(&np, peers[peer_id].peer);
 	} else {
 		printf("Got audio from %i, not playing\n", peer_id);
@@ -115,11 +115,11 @@ static int handle_receive(ENetEvent* event) {
 	char* buff;
 	unsigned char* p;
 	
-	
+	/*
 	printf("A packet of length %u on channel %u.\n",
 		event->packet->dataLength,
 		event->channelID);
-	
+	*/
 
 	switch(event->channelID) {
 	case 0:
