@@ -1,7 +1,7 @@
 #ifndef __NETWORK_PACKET_H_
 #define __NETWORK_PACKET_H_ 
 #include <stddef.h>
-#include <packet_cage.h>
+#include "packet_cage.h"
 
 typedef struct _network_packet_t {
 	unsigned char* data;
