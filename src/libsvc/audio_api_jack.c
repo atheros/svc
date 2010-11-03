@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <jack/jack.h>
 
 #include "audio_api.h"
@@ -25,15 +26,18 @@ int process (jack_nframes_t nframes, void *arg)
 
 int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
 {
-	printf("Initializing jack client...");
+	printf("Initializing jack client...\n");
 
 	input_audio_data  = malloc(sizeof(audio_data_t));
 	output_audio_data = malloc(sizeof(audio_data_t));
 	
 	input_audio_data->size = frame_size;
 	output_audio_data->size = frame_size;
+
+	char client_name[10];
+	sprintf(client_name, "SVC-%d", getpid());
 	
-	if ((client = jack_client_new ("SVC")) == 0) {
+	if ((client = jack_client_new (client_name)) == 0) {
 		fprintf (stderr, "jack server not running?\n");
 		return -1;
 	}
@@ -43,11 +47,6 @@ int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
 	   */
 
 	jack_set_process_callback (client, process, 0);
-
-	/* display the current sample rate.*/
-
-	printf ("engine sample rate: %" PRIu32 "\n",
-			jack_get_sample_rate (client));
 
 	/* create two ports */
 
@@ -93,7 +92,8 @@ int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
 
 	free (ports);
 
-	printf(" done.\n");	
+	printf(" done.\n Engine sample rate: %" PRIu32 "\n",
+			jack_get_sample_rate (client));
 	return 0;
 }
 
