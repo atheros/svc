@@ -41,7 +41,6 @@ static void handle_peer_list(unsigned char* p, unsigned int length) {
 		peer_id = p[x++];
 		len = p[x++];
 		for(i = last; i < peer_id; i++) {
-			printf("H%i\n", i);
 			fflush(stdout);
 			if (peers[i].used) {
 				peers[i].used = 0;
@@ -204,16 +203,16 @@ void send_callback(network_packet_t* packet){
 
 
 int main(int argc, char* argv[]) {
-    ENetAddress address;
-    ENetEvent event;
-    
-    int done = 0;
+	ENetAddress address;
+	ENetEvent event;
 
-    /* check if we have host and port set */
-    if (argc != 4) {
-    	fprintf(stderr, "usage: svcclient <nickname> <server_host> <server_port>\n");
-    	return 1;
-    }
+	int done = 0;
+
+	/* check if we have host and port set */
+	if (argc != 4) {
+		fprintf(stderr, "usage: svcclient <nickname> <server_host> <server_port>\n");
+		return 1;
+	}
 
 	if (enet_initialize () != 0) {
 		fprintf (stderr, "An error occurred while initializing ENet.\n");
@@ -223,7 +222,7 @@ int main(int argc, char* argv[]) {
 	svc_init(send_callback);
 
 	/* create client */
-    client = enet_host_create(NULL, 2, SVCSERVER_MAX_CHANNELS, 0, 0);
+	client = enet_host_create(NULL, 2, SVCSERVER_MAX_CHANNELS, 0, 0);
 	if (client == NULL) {
 		fprintf(stderr, "An error occurred while trying to create an ENet client host.\n");
 		return 1;
@@ -250,7 +249,7 @@ int main(int argc, char* argv[]) {
 		send_auth(serverPeer, argv[1]);
 	} else {
 		enet_peer_reset(serverPeer);
-		fprintf(stderr, "Connection to %s:%s failed.\n", argv[1], argv[2]);
+		fprintf(stderr, "Connection to %s:%s failed.\n", argv[2], argv[3]);
 		return 1;
 	}
 
@@ -276,6 +275,6 @@ int main(int argc, char* argv[]) {
 		free(peers);
 	}
 	svc_close();
-    enet_host_destroy(client);
-    enet_deinitialize();
+	enet_host_destroy(client);
+	enet_deinitialize();
 }
