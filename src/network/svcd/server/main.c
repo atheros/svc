@@ -153,7 +153,7 @@ static void send_audio(int peer_id, void* data, unsigned int len) {
 			continue;
 		}
 		
-		p = enet_packet_create(NULL, len+1, 0);
+		p = enet_packet_create(NULL, len+1, ENET_PACKET_FLAG_UNSEQUENCED);
 		p->data[0] = peer_id;
 		memcpy(p->data + 1, data, len);
 		enet_peer_send(peers[i].peer, 2, p);

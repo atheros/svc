@@ -190,7 +190,7 @@ void send_callback(network_packet_t* packet){
 	ENetPacket* p;
 	
 	if (got_auth) {
-		p = enet_packet_create(NULL, packet->data_len+2, 0);
+		p = enet_packet_create(NULL, packet->data_len+2, ENET_PACKET_FLAG_UNSEQUENCED);
 		p->data[0] = packet->time & 0xFF;
 		p->data[1] = (packet->time >> 8) & 0xFF;
 		
