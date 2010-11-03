@@ -28,6 +28,7 @@ void request_incoming_audio(audio_data_t* output_audio_data){
 	FORALL_PEERS(peer){
 		mixer_buffer[peers_to_mix] = packet_cage_get_data(peer->cage);
 		if(mixer_buffer[peers_to_mix]==NULL){ mixer_buffer[peers_to_mix] = silent_sound; printf("no audio from peer\n");}
+		else {printf("actually playing something\n");}
 		peers_to_mix++;
 	}
 	mix_audio_streams(peers_to_mix, mixer_buffer, output_audio_data);
