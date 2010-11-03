@@ -36,7 +36,7 @@ void callback(audio_data_t *input_packet, audio_data_t *output_packet) {
 int main() {
 	t=0;
 	shouldBlock = 0;
-	cage = packet_cage_create();
+	cage = packet_cage_create(5);
 	
 	set_audio_callback(callback);
 

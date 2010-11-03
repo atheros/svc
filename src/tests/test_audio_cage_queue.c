@@ -35,7 +35,7 @@ void* worker(void* param) {
 
 int main() {
 	t=0;
-	cage = packet_cage_create();
+	cage = packet_cage_create(5);
 	queue = packet_queue_create(100, 1024);
 	thread_t thread;
 	thread_create(&thread, worker, NULL);

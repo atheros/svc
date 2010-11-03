@@ -8,8 +8,13 @@
 typedef unsigned int packet_time_t;
 
 typedef struct _packet_cage_t {
-	packet_time_t packet_time;
-	audio_data_t* audio_data;
+	unsigned int head;
+	unsigned int size;
+	packet_time_t head_time;
+	packet_time_t tail_time;
+	int cage_starvation;
+	int new_cage;
+	audio_data_t** audio_queue;
 	mutex_t cage_mutex;
 } packet_cage_t;
 
@@ -17,7 +22,7 @@ packet_time_t time_inc(packet_time_t time);
 
 int is_newer(packet_time_t time1, packet_time_t time2);
 
-packet_cage_t* packet_cage_create();
+packet_cage_t* packet_cage_create(unsigned int size);
 
 int packet_cage_destroy(packet_cage_t* packet_cage);
 

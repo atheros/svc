@@ -40,7 +40,7 @@ void request_incoming_audio(audio_data_t* output_audio_data){
 
 peer_t* svc_peer_join(){
 	peer_t* new_peer = malloc(sizeof(peer_t));
-	new_peer->cage = packet_cage_create();
+	new_peer->cage = packet_cage_create(5);
 	new_peer->decoder = decoder_create(svc_options->sample_rate, 
 	                                   svc_options->frame_size, 
 	                                   svc_options->byte_per_packet);
