@@ -4,7 +4,10 @@ syntax: glob
 **/*.orig
 *.orig
 *.so
-tests/*
+tests_*
+svcclient
+svcserver
 CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
+Makefile
