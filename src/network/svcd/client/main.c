@@ -98,6 +98,7 @@ static void handle_audio(void* data, unsigned int len) {
 	int peer_id = ((unsigned char*)data)[0];
 	
 	if (peers[peer_id].used) {
+
 		np.data = (unsigned char*)data+3;
 		np.data_len = len - 3;
 		np.time = ((unsigned char*)data)[1]
