@@ -92,8 +92,6 @@ void packet_cage_pop(packet_cage_t* packet_cage){
 int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, packet_time_t time){
 	mutex_lock(&packet_cage->cage_mutex);
 	
-	printf("put initiated\n");
-	
 	if(packet_cage->new_cage){
 		packet_cage->head_time = time;
 		packet_cage->new_cage = 0;
@@ -106,16 +104,14 @@ int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, p
 		while(is_newer(time, time_inc_by(packet_cage->head_time, packet_cage->size-1))){
 			packet_cage_pop(packet_cage);
 			packet_cage->cage_starvation = 0;
-			printf("dropping useless shit\n");
 		}
-		printf("putting for playback\n");
 		/* Calculating where to write the new packet. */
 		int new_elem_pos = delta_point_in_cage(packet_cage->size, 
 		                                       packet_cage->head, 
 		                                       sub_time(time, packet_cage->head_time));
 		packet_cage->audio_queue[new_elem_pos] = audio_data;
 		if(is_newer(time, packet_cage->tail_time)) packet_cage->tail_time = time;
-	}else printf("old packet, ignoring\n");
+	}
 	
 	mutex_unlock(&packet_cage->cage_mutex);
 	return 0;
@@ -134,7 +130,6 @@ audio_data_t* packet_cage_get_data(packet_cage_t* packet_cage){
 		if(packet_cage_is_empty(packet_cage)) packet_cage->cage_starvation = 1;
 		
 	}else{
-		printf("starving...\n");
 		res_audio_data = NULL;
 	}
 	
