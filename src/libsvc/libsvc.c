@@ -40,6 +40,7 @@ void *send_network_thread_function( void *ptr ){
 	while(svc_running){
 		packet_queue_pop_data(packet_queue, audio_data);
 		network_packet_t* network_packet = create_network_packet_from_audio(audio_data);
+		printf("time:  %d", network_packet->time);
 		svc_send_callback(network_packet);
 		network_packet_destroy(network_packet);
 	}

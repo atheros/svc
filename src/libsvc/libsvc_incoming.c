@@ -74,6 +74,7 @@ void svc_packet_recieve(network_packet_t* packet, peer_t* peer){
 	audio_data_t* audio_data = audio_data_create(svc_options->frame_size);
 	decoder_decode(peer->decoder, packet->data, packet->data_len, audio_data->data);
 	packet_cage_put_data(peer->cage, audio_data, packet->time);	
+	printf("got packet with time: %d", packet->time);
 }
 
 void incoming_init(svc_options_t* options){
