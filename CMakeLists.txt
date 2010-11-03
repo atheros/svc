@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
 PROJECT(SVC C)
+IF("${AUDIO_API}" STREQUAL "")
+	SET(AUDIO_API "portaudio")
+ENDIF("${AUDIO_API}" STREQUAL "")
 
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89")
@@ -9,8 +12,20 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89")
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 FIND_PACKAGE(Celt REQUIRED)
-FIND_PACKAGE(PortAudio REQUIRED)
 FIND_PACKAGE(ENet REQUIRED)
+
+
+IF("${AUDIO_API}" STREQUAL "portaudio")
+	MESSAGE(STATUS "Using PortAudio backend")
+	FIND_PACKAGE(PortAudio REQUIRED)
+	SET(AUDIOAPI_LIBRARIES ${PORTAUDIO_LIBRARIES})
+ELSEIF("${AUDIO_API}" STREQUAL "jack")
+	MESSAGE(STATUS "Using Jack backend")
+	FIND_PACKAGE(Jack REQUIRED)
+	SET(AUDIOAPI_LIBRARIES ${JACK_LIBRARIES})
+ELSE("${AUDIO_API}" STREQUAL "portaudio")
+	MESSAGE(FATAL_ERROR "Unknown AUDIO_API [${AUDIO_API}]")
+ENDIF("${AUDIO_API}" STREQUAL "portaudio")
 
 
 
@@ -25,7 +40,7 @@ INCLUDE_DIRECTORIES(
 ADD_LIBRARY(svc SHARED
 	src/libsvc/packet_queue.c
 	src/libsvc/audio.c
-	src/libsvc/audio_api_portaudio.c
+	src/libsvc/audio_api_${AUDIO_API}.c
 	src/libsvc/packet_cage.c
 	src/common/thread.c
 	src/libsvc/libsvc.c
@@ -41,7 +56,7 @@ ADD_EXECUTABLE(svcclient
 TARGET_LINK_LIBRARIES(svcclient
 	svc
 	${ENET_LIBRARIES}
-	${PORTAUDIO_LIBRARIES}
+	${AUDIOAPI_LIBRARIES}
 	${CELT_LIBRARIES}
 )
 
@@ -66,10 +81,10 @@ TARGET_LINK_LIBRARIES(test_threads
 
 ADD_EXECUTABLE(test_audio_api
 	src/tests/test_audio_api.c
-	src/libsvc/audio_api_portaudio.c
+	src/libsvc/audio_api_${AUDIO_API}.c
 )
 TARGET_LINK_LIBRARIES(test_audio_api
-	${PORTAUDIO_LIBRARIES}
+	${AUDIOAPI_LIBRARIES}
 	${CELT_LIBRARIES}
 )
 
@@ -77,12 +92,12 @@ TARGET_LINK_LIBRARIES(test_audio_api
 ADD_EXECUTABLE(test_audio_packet_cage
 	src/tests/test_audio_packet_cage.c
 	src/libsvc/audio.c
-	src/libsvc/audio_api_portaudio.c
+	src/libsvc/audio_api_${AUDIO_API}.c
 	src/libsvc/packet_cage.c
 	src/common/thread.c
 )
 TARGET_LINK_LIBRARIES(test_audio_packet_cage
-	${PORTAUDIO_LIBRARIES}
+	${AUDIOAPI_LIBRARIES}
 	${CELT_LIBRARIES}
 	pthread
 )
@@ -92,12 +107,12 @@ ADD_EXECUTABLE(test_audio_cage_queue
 	src/tests/test_audio_cage_queue.c
 	src/libsvc/packet_queue.c
 	src/libsvc/audio.c
-	src/libsvc/audio_api_portaudio.c
+	src/libsvc/audio_api_${AUDIO_API}.c
 	src/libsvc/packet_cage.c
 	src/common/thread.c
 )
 TARGET_LINK_LIBRARIES(test_audio_cage_queue
-	${PORTAUDIO_LIBRARIES}
+	${AUDIOAPI_LIBRARIES}
 	${CELT_LIBRARIES}
 	pthread
 )
@@ -108,7 +123,7 @@ ADD_EXECUTABLE(test_libsvc
 	src/tests/test_libsvc.c
 	src/libsvc/packet_queue.c
 	src/libsvc/audio.c
-	src/libsvc/audio_api_portaudio.c
+	src/libsvc/audio_api_${AUDIO_API}.c
 	src/libsvc/packet_cage.c
 	src/common/thread.c
 	src/libsvc/libsvc.c
@@ -117,7 +132,7 @@ ADD_EXECUTABLE(test_libsvc
 	src/libsvc/network_packet.c
 )
 TARGET_LINK_LIBRARIES(test_libsvc
-	${PORTAUDIO_LIBRARIES}
+	${AUDIOAPI_LIBRARIES}
 	${CELT_LIBRARIES}
 	pthread
 )
