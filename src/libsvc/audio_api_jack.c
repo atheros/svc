@@ -91,7 +91,7 @@ int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
 	}
 
 	free (ports);
-
+	
 	printf(" done.\n Engine sample rate: %" PRIu32 "\n",
 			jack_get_sample_rate (client));
 	return 0;

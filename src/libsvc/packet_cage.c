@@ -55,6 +55,8 @@ int packet_cage_destroy(packet_cage_t* packet_cage){
 		if(packet_cage->audio_queue[i]!=NULL) 
 			free(packet_cage->audio_queue[i]);
 	
+	free(packet_cage->audio_queue);
+	
 	mutex_destroy(&packet_cage->cage_mutex);
 	
 	free(packet_cage);
@@ -79,6 +81,8 @@ int packet_cage_is_empty(packet_cage_t* packet_cage){
 
 
 void packet_cage_pop(packet_cage_t* packet_cage){
+	if (packet_cage->audio_queue[packet_cage->head] != NULL)
+		audio_data_destroy(packet_cage->audio_queue[packet_cage->head]);
 	packet_cage->audio_queue[packet_cage->head] = NULL;
 	packet_cage->head = next_point_in_cage(packet_cage->size, packet_cage->head);
 	packet_cage->head_time = time_inc(packet_cage->head_time);

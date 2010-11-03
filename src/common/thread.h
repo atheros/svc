@@ -36,6 +36,7 @@ int mutex_unlock(mutex_t* mutex);
 
 
 int thread_create(thread_t* thread, void* (*proc)(void*), void* param);
+int thread_detach(thread_t thread);
 void thread_join(thread_t thread);
 
 /**
