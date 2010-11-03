@@ -100,8 +100,8 @@ static void handle_audio(void* data, unsigned int len) {
 	if (peers[peer_id].used) {
 		np.data = (unsigned char*)data+3;
 		np.data_len = len - 3;
-		np.time = ((unsigned char*)data)[0]
-			| ((unsigned char*)data)[1] << 8;
+		np.time = ((unsigned char*)data)[1]
+			| ((unsigned char*)data)[2] << 8;
 		
 		printf("Got audio from %i, playing %i\n", peer_id, (int)np.time);
 		svc_packet_recieve(&np, peers[peer_id].peer);
