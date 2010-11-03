@@ -3,10 +3,12 @@ syntax: glob
 **/*.d
 **/*.orig
 *.orig
+
 *.so
-tests_*
+test_*
 svcclient
 svcserver
+
 CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
