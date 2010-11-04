@@ -87,7 +87,7 @@ static void* global_stats_runner(void* dummy) {
 		up_pps = ((float)l_up_packets) / slept;
 		down_pps = ((float)l_down_packets) / slept;
 		
-		printf("UP %.2fkbps (%.0fpps), DOWN %.2fkbps (%.0fpps)\n", up_bps, up_pps, down_bps, down_pps);
+		printf("UP %.2fkbps (%.0fpps - %i), DOWN %.2fkbps (%.0fpps - %i)\n", up_bps, up_pps, l_up_packets, down_bps, down_pps, l_down_packets);
 		
 		if (done) {
 			return NULL;
@@ -223,8 +223,6 @@ int main(int argc, char* argv[]) {
 		down_bytes+= r;
 		down_packets++;
 		mutex_unlock(&global_stats_lock);
-		printf("down %i %i\n", down_bytes, down_packets);
-
 	
 		for(i = 0; i < peers_count; i++) {
 			if (peers[i].address.sin_port == remote.sin_port &&
