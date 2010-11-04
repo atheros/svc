@@ -31,8 +31,18 @@ static int alsa_open(uint_fast16_t rate) {
 	snd_pcm_hw_params_malloc(&playback_hwparams);
 	snd_pcm_hw_params_malloc(&capture_hwparams);
 
-	if (snd_pcm_open(&pcm_playback_handle, "default", SND_PCM_STREAM_PLAYBACK, 0) < 0) {
-		fprintf(stderr, "Error opening playback PCM device default\n");
+	char *playback_device = getenv("SVC_ALSA_PLAYBACK");
+	if (!playback_device) {
+		playback_device = "default";
+	}
+
+	char *capture_device = getenv("SVC_ALSA_CAPTURE");
+	if (!capture_device) {
+		capture_device = "default";
+	}
+
+	if (snd_pcm_open(&pcm_playback_handle, playback_device, SND_PCM_STREAM_PLAYBACK, 0) < 0) {
+		fprintf(stderr, "Error opening playback PCM device %s\n", playback_device);
 		return(-1);
 	}
 
@@ -41,8 +51,8 @@ static int alsa_open(uint_fast16_t rate) {
 		return(-1);
 	}
 
-	if (snd_pcm_open(&pcm_capture_handle, "default", SND_PCM_STREAM_CAPTURE, 0) < 0) {
-		fprintf(stderr, "Error opening capture PCM device default\n");
+	if (snd_pcm_open(&pcm_capture_handle, capture_device, SND_PCM_STREAM_CAPTURE, 0) < 0) {
+		fprintf(stderr, "Error opening capture PCM device %s\n", capture_device);
 		return(-1);
 	}
 

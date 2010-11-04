@@ -24,6 +24,36 @@ int process (jack_nframes_t nframes, void *arg)
 	return 0;      
 }
 
+int strcnt (char list[], char c) {
+	int i;
+	int count = 0;
+
+	for (i = 0; list[i] != '\0'; i++)
+		if (list[i] == c)
+			count++;
+
+	return (count);
+}
+
+const char **getenv_array(const char *env) {
+	const char *raw = getenv(env);
+	if (!raw)
+		return NULL;
+
+	char *value = strdup(raw);
+	int size = strcnt(value, ' ') + 2;
+	const char **tokens = malloc(sizeof (char*) * size);
+
+	int i;
+	tokens[0] = strtok(value, " ");
+	for (i = 1; i < size; i++) {
+		tokens[i] = strtok(NULL, " ");
+	}
+	tokens[i + 1] = NULL;
+
+	return tokens;
+}
+
 int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
 {
 	input_audio_data  = malloc(sizeof(audio_data_t));
@@ -60,31 +90,37 @@ int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
 
 	/* connect the ports. */
 
-	const char **ports;
-
-	if ((ports = jack_get_ports (client, NULL, NULL, JackPortIsPhysical|JackPortIsOutput)) == NULL) {
-		fprintf(stderr, "Cannot find any physical capture ports\n");
-		return -1;
+	const char **ports = getenv_array("SVC_JACK_INPUT");
+	if (!ports) {
+		if ((ports = jack_get_ports (client, NULL, NULL, JackPortIsPhysical|JackPortIsOutput)) == NULL) {
+			fprintf(stderr, "Cannot find any physical capture ports\n");
+			return -1;
+		}
 	}
 
-	if (jack_connect (client, ports[0], jack_port_name (input_port)),
-		jack_connect (client, ports[1], jack_port_name (input_port))) {
-		fprintf (stderr, "cannot connect input ports\n");
+	int i = 0;
+	while (ports[i] != NULL) {
+		if (jack_connect (client, ports[i], jack_port_name (input_port))) {
+			fprintf (stderr, "cannot connect input ports\n");
+		}
+		i++;
 	}
 
-	free (ports);
-
-	if ((ports = jack_get_ports (client, NULL, NULL, JackPortIsPhysical|JackPortIsInput)) == NULL) {
-		fprintf(stderr, "Cannot find any physical playback ports\n");
-		return -1;
+	ports = getenv_array("SVC_JACK_OUTPUT");
+	if (!ports) {
+		if ((ports = jack_get_ports (client, NULL, NULL, JackPortIsPhysical|JackPortIsInput)) == NULL) {
+			fprintf(stderr, "Cannot find any physical playback ports\n");
+			return -1;
+		}
 	}
 
-	if (jack_connect (client, jack_port_name (output_port), ports[0]),
-	    jack_connect (client, jack_port_name (output_port), ports[1])) {
-		fprintf (stderr, "cannot connect output ports\n");
+	i = 0;
+	while (ports[i] != NULL) {
+		if (jack_connect (client, jack_port_name (output_port), ports[i])) {
+			fprintf (stderr, "cannot connect output ports\n");
+		}
+		i++;
 	}
-
-	free (ports);
 	
 	return 0;
 }
