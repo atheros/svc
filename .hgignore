@@ -2,6 +2,7 @@ syntax: glob
 **/*.o
 **/*.d
 **/*.orig
+**/*.swp
 *.orig
 
 *.so
