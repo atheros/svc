@@ -10,7 +10,7 @@ jack_client_t *client;
 jack_port_t *input_port;
 jack_port_t *output_port;
 
-audio_callback_t pa_interface_callback;
+audio_callback_t interface_callback;
 
 audio_data_t* input_audio_data;
 audio_data_t* output_audio_data;
@@ -20,14 +20,12 @@ int process (jack_nframes_t nframes, void *arg)
 	output_audio_data->data = (float *) jack_port_get_buffer (output_port, nframes);
 	input_audio_data->data = (float *) jack_port_get_buffer (input_port, nframes);
 
-	pa_interface_callback(input_audio_data, output_audio_data);
+	interface_callback(input_audio_data, output_audio_data);
 	return 0;      
 }
 
 int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
 {
-	printf("Initializing jack client...\n");
-
 	input_audio_data  = malloc(sizeof(audio_data_t));
 	output_audio_data = malloc(sizeof(audio_data_t));
 	
@@ -60,11 +58,7 @@ int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
 		return -1;
 	}
 
-	/* connect the ports. Note: you can't do this before
-	   the client is activated, because we can't allow
-	   connections to be made to clients that aren't
-	   running.
-	   */
+	/* connect the ports. */
 
 	const char **ports;
 
@@ -92,20 +86,16 @@ int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
 
 	free (ports);
 	
-	printf(" done.\n Engine sample rate: %" PRIu32 "\n",
-			jack_get_sample_rate (client));
 	return 0;
 }
 
 int close_audio () {
-	printf("Closing jack client...");
 	jack_client_close (client);
-	printf(" done.\n");
 	return 0;
 }
 
 int set_audio_callback(audio_callback_t audio_callback) {
-	pa_interface_callback = audio_callback;
+	interface_callback = audio_callback;
 	return 0;
 }
 
