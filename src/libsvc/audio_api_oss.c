@@ -6,6 +6,7 @@
 
 #include <error.h>
 #include <errno.h>
+#include <assert.h>
 
 #include <soundcard.h>
 
@@ -41,9 +42,12 @@ static void oss_open(uint_fast16t rate) {
 static void reader(void *) {
 	size_t s = fs * 1;
 	while (true) {
-		assert(s == read(fd, &(input_audio_data->data), s));	// FIXME
+		int i;
+		i = read(fd, &(input_audio_data->data), s);
+		assert(i == s);	// FIXME
 		pa_interface_callback(input_audio_data, output_audio_data);
-		assert(s == write(fd, &(output_audio_data->data), s));	// FIXME
+		i = write(fd, &(output_audio_data->data), s);
+		assert(i == s);	// FIXME
 	}
 }
 
@@ -56,7 +60,8 @@ int init_audio(uint_fast16_t rate, uint_fast32_t frame_size) {
 	oss_open(rate);
 
 	fs = frame_size;
-	assert((rt = thread_create(NULL, reader, NULL)) > 0);	// undocumented crap
+	rt = thread_create(NULL, reader, NULL);	// undocumented crap
+	assert(rt > 0);
 
 	return 0;
 }
