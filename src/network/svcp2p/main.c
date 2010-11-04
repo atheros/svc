@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 	socklen_t remote_len;
 	
 	if (argc < 3) {
-		fprintf(stderr, "usage: %s port peer_address[, peer_address[...]]\n", argv[0]);
+		fprintf(stderr, "usage: %s port peer_address[ peer_address[...]]\n", argv[0]);
 		return 1;
 	}
 	
@@ -84,27 +84,35 @@ int main(int argc, char* argv[]) {
 	
 	
 	/* init peers */
-	svc_init(send_callback);
 	peers_count = argc - 2;
 	peers = (Peer*)malloc(sizeof(Peer) * peers_count);
+	memset(peers, 0, sizeof(Peer) * peers_count);
 	
-	/* create each individual peer */
+	/* resolve peers */
 	for(i = 0; i < peers_count; i++) {
-		peers[i].peer = svc_peer_join();
-		printf("Resolving %s...\n", argv[i+2]);
+		printf("Resolving %s... ", argv[i+2]);
 		peers[i].address.sin_family = AF_INET;
 		hp = gethostbyname(argv[i+2]);
 		if (!hp) {
-			fprintf(stderr, "Failed to resolve %s\n", argv[i+2]);
+			fprintf(stderr, "failed: %s\n", argv[i+2]);
 			return 1;
+		} else {
+			printf("done\n");
 		}
 		memcpy(&(peers[i].address.sin_addr.s_addr), hp->h_addr_list[0], hp->h_length);
 		peers[i].address.sin_port = htons(port);
 	}
 
 	
-	
-	printf("Host started");
+	/* create each individual peer */
+	svc_init(send_callback);
+	printf("Creating libsvc peers... ");
+	for(i = 0; i < peers_count; i++) {
+		peers[i].peer = svc_peer_join();
+	}
+	printf("done\n");
+
+	printf("Host started.\n");
 	initialized = 1;
 	
 	while (1) {
