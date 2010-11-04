@@ -55,6 +55,7 @@ ADD_LIBRARY(svc SHARED
 
 ADD_EXECUTABLE(svcp2p
 	src/network/svcp2p/main.c
+	src/common/thread.c
 )
 TARGET_LINK_LIBRARIES(svcp2p
 	svc

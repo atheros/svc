@@ -12,8 +12,19 @@
 #include <unistd.h>
 
 #include "libsvc.h"
+#include "thread.h"
 
 extern int errno;
+
+/* global stats */
+static mutex_t global_stats_lock;
+static thread_t global_stats_thread;
+static int up_bytes = 0;
+static int down_bytes = 0;
+static int up_packets = 0;
+static int down_packets = 0;
+
+
 
 typedef struct _Peer {
 	peer_t* peer;
@@ -25,6 +36,64 @@ static int peers_count;
 static struct sockaddr_in host;
 static int host_sock;
 static int initialized = 0;
+static int done = 0;
+
+/**
+ * Returns time in milliseconds between time in 2 timeval structures.
+ */
+static int msdiff(struct timeval *start, struct timeval *end) {
+	long ms;
+	ms = (end->tv_sec - start->tv_sec) * 1000;
+	ms+= (end->tv_usec - start->tv_usec) / 1000;
+	return ms;
+}
+
+/**
+ * Print nice global stats.
+ */
+static void* global_stats_runner(void* dummy) {
+	struct timeval tv1, tv2;
+	float slept;
+
+	int l_up_bytes;
+	int l_down_bytes;
+	int l_up_packets;
+	int l_down_packets;
+	
+	float up_bps, down_bps;
+	float up_pps, down_pps;
+	
+	while(1) {
+		/* sleep 5 seconds */
+		gettimeofday(&tv1, NULL);
+		sleep(5);
+		gettimeofday(&tv2, NULL);
+		slept = ((float)msdiff(&tv1, &tv2))/1000.0;
+		
+		/* read and reset global stats */
+		mutex_lock(&global_stats_lock);
+		l_up_bytes = up_bytes;
+		l_down_bytes = down_bytes;
+		l_up_packets = up_packets;
+		l_down_packets = down_packets;
+		up_bytes = 0;
+		down_bytes = 0;
+		up_packets = 0;
+		down_packets = 0;
+		mutex_unlock(&global_stats_lock);
+		
+		up_bps = ((float)l_up_bytes) / slept / 1024;
+		down_bps = ((float)l_down_bytes) / slept / 1024;
+		up_pps = ((float)l_up_packets) / slept;
+		down_pps = ((float)l_down_packets) / slept;
+		
+		printf("UP %.2fkbps (%.0fpps), DOWN %.2fkbps (%.0fpps)\n", up_bps, up_pps, down_bps, down_pps);
+		
+		if (done) {
+			return NULL;
+		}
+	}
+}
 
 void send_callback(network_packet_t* packet){
 	int i;
@@ -43,6 +112,13 @@ void send_callback(network_packet_t* packet){
 			(struct sockaddr*)&(peers[i].address),
 			sizeof(struct sockaddr_in));
 	}
+	
+	/* update stats */
+	mutex_lock(&global_stats_lock);
+	up_bytes+= (packet->data_len+2) * peers_count;
+	up_packets+= peers_count;
+	mutex_unlock(&global_stats_lock);
+	
 	
 	free(data);
 }
@@ -111,11 +187,16 @@ int main(int argc, char* argv[]) {
 		peers[i].peer = svc_peer_join();
 	}
 	printf("done\n");
+	
+	/* create global stats thread */
+	mutex_create(&global_stats_lock);
+	thread_create(&global_stats_thread, global_stats_runner, NULL);
+	
 
 	printf("Host started.\n");
 	initialized = 1;
 	
-	while (1) {
+	while (!done) {
 		FD_ZERO(&rset);
 		FD_SET(host_sock, &rset);
 		tv.tv_sec = 1;
@@ -137,6 +218,13 @@ int main(int argc, char* argv[]) {
 			continue;
 		}
 		
+		/* update stats */
+		mutex_lock(&global_stats_lock);
+		down_bytes+= r;
+		down_packets++;
+		mutex_unlock(&global_stats_lock);
+		printf("down %i %i\n", down_bytes, down_packets);
+
 	
 		for(i = 0; i < peers_count; i++) {
 			if (peers[i].address.sin_port == remote.sin_port &&
@@ -151,6 +239,15 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
+	
+	printf("Waiting for threads... ");
+	fflush(stdout);
+	thread_join(&global_stats_thread);
+	mutex_destroy(&global_stats_lock);
+	printf("done\n");
+	
+	
+	
 
 	/* close peers */
 	for(i = 0; i < peers_count; i++) {
