@@ -8,6 +8,7 @@ syntax: glob
 test_*
 svcclient
 svcserver
+svcp2p
 
 CMakeCache.txt
 CMakeFiles
