@@ -89,9 +89,10 @@ void packet_cage_pop(packet_cage_t* packet_cage){
 	packet_cage->audio_queue[packet_cage->head] = NULL;
 	packet_cage->head = next_point_in_cage(packet_cage->size, packet_cage->head);
 	packet_cage->head_time = time_inc(packet_cage->head_time);
-	
+
 	if(packet_cage_is_empty(packet_cage)) {
 		packet_cage->cage_starvation = 1;
+		packet_cage->new_cage = 1;
 	}
 }
 
@@ -110,6 +111,7 @@ int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, p
 		while(is_newer(time, time_inc_by(packet_cage->head_time, packet_cage->size-1))){
 			packet_cage_pop(packet_cage);
 			packet_cage->cage_starvation = 0;
+			printf("poped useless stuff\n");
 		}
 		/* Calculating where to write the new packet. */
 		int new_elem_pos = delta_point_in_cage(packet_cage->size, 
@@ -117,7 +119,7 @@ int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, p
 		                                       sub_time(time, packet_cage->head_time));
 		packet_cage->audio_queue[new_elem_pos] = audio_data;
 		if(is_newer(time, packet_cage->tail_time)) packet_cage->tail_time = time;
-	}
+	} else printf("a realy old packet arived\n");
 	
 	mutex_unlock(&packet_cage->cage_mutex);
 	return 0;
@@ -133,9 +135,13 @@ audio_data_t* packet_cage_get_data(packet_cage_t* packet_cage){
 		packet_cage->head = next_point_in_cage(packet_cage->size, packet_cage->head);
 		packet_cage->head_time = time_inc(packet_cage->head_time);
 		
-		if(packet_cage_is_empty(packet_cage)) packet_cage->cage_starvation = 1;
+		if(packet_cage_is_empty(packet_cage)){ 
+			packet_cage->cage_starvation = 1;
+			packet_cage->new_cage = 1;
+		}
 		
 	}else{
+		printf("starving...\n");
 		res_audio_data = NULL;
 	}
 	
