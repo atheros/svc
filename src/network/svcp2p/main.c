@@ -24,10 +24,15 @@ static Peer* peers;
 static int peers_count;
 static struct sockaddr_in host;
 static int host_sock;
+static int initialized = 0;
 
 void send_callback(network_packet_t* packet){
 	int i;
-	unsigned char* data = (unsigned char*)malloc(packet->data_len+2);
+	unsigned char* data;
+	if (!initialized) return;
+	
+	
+	data = (unsigned char*)malloc(packet->data_len+2);
 	
 	data[0] = packet->time & 0xFF;
 	data[1] = (packet->time >> 8) & 0xFF;
@@ -58,7 +63,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	
-	svc_init(send_callback);
+	
 	
 	/* create local socket */
 	host_sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -79,27 +84,28 @@ int main(int argc, char* argv[]) {
 	
 	
 	/* init peers */
+	svc_init(send_callback);
 	peers_count = argc - 2;
 	peers = (Peer*)malloc(sizeof(Peer) * peers_count);
 	
 	/* create each individual peer */
 	for(i = 0; i < peers_count; i++) {
 		peers[i].peer = svc_peer_join();
-	}
-
-
-	/* close peers */
-	for(i = 0; i < peers_count; i++) {
+		printf("Resolving %s...\n", argv[i+2]);
 		peers[i].address.sin_family = AF_INET;
-		hp = gethostbyname(argv[i+3]);
+		hp = gethostbyname(argv[i+2]);
 		if (!hp) {
-			fprintf(stderr, "Failed to resolve %s\n", argv[i+3]);
+			fprintf(stderr, "Failed to resolve %s\n", argv[i+2]);
 			return 1;
 		}
 		memcpy(&(peers[i].address.sin_addr.s_addr), hp->h_addr_list[0], hp->h_length);
 		peers[i].address.sin_port = htons(port);
-		svc_peer_leave(peers[i].peer);
 	}
+
+	
+	
+	printf("Host started");
+	initialized = 1;
 	
 	while (1) {
 		FD_ZERO(&rset);
@@ -136,6 +142,11 @@ int main(int argc, char* argv[]) {
 				break;
 			}
 		}
+	}
+
+	/* close peers */
+	for(i = 0; i < peers_count; i++) {
+		svc_peer_leave(peers[i].peer);
 	}
 
 	svc_close();
