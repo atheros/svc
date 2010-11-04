@@ -49,6 +49,15 @@ ADD_LIBRARY(svc SHARED
 	src/libsvc/network_packet.c
 )
 
+ADD_EXECUTABLE(svcp2p
+	src/network/svcp2p/main.c
+)
+TARGET_LINK_LIBRARIES(svcp2p
+	svc
+	${AUDIOAPI_LIBRARIES}
+	${CELT_LIBRARIES}
+)
+
 
 ADD_EXECUTABLE(svcclient
 	src/network/svcd/client/main.c
