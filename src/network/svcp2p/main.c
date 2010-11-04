@@ -11,6 +11,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <signal.h>
+
 #include "libsvc.h"
 #include "thread.h"
 
@@ -87,7 +89,7 @@ static void* global_stats_runner(void* dummy) {
 		up_pps = ((float)l_up_packets) / slept;
 		down_pps = ((float)l_down_packets) / slept;
 		
-		printf("UP %.2fkbps (%.0fpps - %i), DOWN %.2fkbps (%.0fpps - %i)\n", up_bps, up_pps, l_up_packets, down_bps, down_pps, l_down_packets);
+		printf("UP %.2fKBps (%.0fpps - %i), DOWN %.2fKBps (%.0fpps - %i)\n", up_bps, up_pps, l_up_packets, down_bps, down_pps, l_down_packets);
 		
 		if (done) {
 			return NULL;
@@ -121,6 +123,11 @@ void send_callback(network_packet_t* packet){
 	
 	
 	free(data);
+}
+
+static void sigint() {
+	printf("SIGINT, quitting.\n");
+	done = 1;
 }
 
 
@@ -195,7 +202,7 @@ int main(int argc, char* argv[]) {
 
 	printf("Host started.\n");
 	initialized = 1;
-	
+	signal(SIGINT, sigint);
 	while (!done) {
 		FD_ZERO(&rset);
 		FD_SET(host_sock, &rset);
@@ -206,8 +213,8 @@ int main(int argc, char* argv[]) {
 		if (r == 0) {
 			continue;
 		} else if (r < 0) {
-			fprintf(stderr, "select() failed: %s\n", strerror(errno));
-			return 1;
+			done = 1;
+			continue;
 		}
 		
 		remote_len = sizeof(remote);
@@ -237,21 +244,25 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
+	signal(SIGINT, SIG_DFL);
 	
+	
+	
+	/* close peers */
+	for(i = 0; i < peers_count; i++) {
+		svc_peer_leave(peers[i].peer);
+	}
+	svc_close();
+
 	printf("Waiting for threads... ");
 	fflush(stdout);
-	thread_join(&global_stats_thread);
+	thread_join(global_stats_thread);
 	mutex_destroy(&global_stats_lock);
 	printf("done\n");
 	
 	
 	
 
-	/* close peers */
-	for(i = 0; i < peers_count; i++) {
-		svc_peer_leave(peers[i].peer);
-	}
 
-	svc_close();
 	return 0;
 }
