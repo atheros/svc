@@ -86,7 +86,10 @@ void packet_cage_pop(packet_cage_t* packet_cage){
 	packet_cage->audio_queue[packet_cage->head] = NULL;
 	packet_cage->head = next_point_in_cage(packet_cage->size, packet_cage->head);
 	packet_cage->head_time = time_inc(packet_cage->head_time);
-	if(packet_cage_is_empty(packet_cage)) packet_cage->cage_starvation = 1;
+	if(packet_cage_is_empty(packet_cage)){ 
+		packet_cage->cage_starvation = 1;
+		packet_cage->new_cage = 1;
+	}
 }
 
 int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, packet_time_t time){
@@ -128,7 +131,10 @@ audio_data_t* packet_cage_get_data(packet_cage_t* packet_cage){
 		packet_cage->head = next_point_in_cage(packet_cage->size, packet_cage->head);
 		packet_cage->head_time = time_inc(packet_cage->head_time);
 		
-		if(packet_cage_is_empty(packet_cage)) packet_cage->cage_starvation = 1;
+		if(packet_cage_is_empty(packet_cage)){ 
+			packet_cage->cage_starvation = 1;
+			packet_cage->new_cage = 1;
+		}
 		
 	}else{
 		printf("starving...\n");
