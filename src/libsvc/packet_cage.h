@@ -14,6 +14,7 @@ typedef struct _packet_cage_t {
 	packet_time_t tail_time;
 	int cage_starvation;
 	int new_cage;
+	int elements_count;
 	audio_data_t** audio_queue;
 	mutex_t cage_mutex;
 } packet_cage_t;

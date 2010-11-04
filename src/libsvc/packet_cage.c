@@ -34,6 +34,7 @@ packet_cage_t* packet_cage_create(unsigned int queue_size){
 	res_packet_cage->size = queue_size;
 	res_packet_cage->head = 0;
 	res_packet_cage->new_cage = 1;
+	res_packet_cage->elements_count = 0;
 	
 	res_packet_cage->audio_queue = malloc(queue_size*sizeof(audio_data_t*));
 	int i;
@@ -77,13 +78,14 @@ static unsigned int delta_point_in_cage(unsigned int size, unsigned int pos, int
  * This function is not! threadsafe. 
  * !!! */
 int packet_cage_is_empty(packet_cage_t* packet_cage){
-	return packet_cage->tail_time==packet_cage->head_time;
+	return packet_cage->elements_count == 0;
 }
 
 
 void packet_cage_pop(packet_cage_t* packet_cage){
 	if (packet_cage->audio_queue[packet_cage->head] != NULL) {
 		audio_data_destroy(packet_cage->audio_queue[packet_cage->head]);
+		packet_cage->elements_count--;
 	}
 	
 	packet_cage->audio_queue[packet_cage->head] = NULL;
@@ -91,6 +93,7 @@ void packet_cage_pop(packet_cage_t* packet_cage){
 	packet_cage->head_time = time_inc(packet_cage->head_time);
 
 	if(packet_cage_is_empty(packet_cage)) {
+		printf("entering starvation from popping useless.\n");
 		packet_cage->cage_starvation = 1;
 		packet_cage->new_cage = 1;
 	}
@@ -103,6 +106,7 @@ int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, p
 	if (packet_cage->new_cage||is_newer(time, packet_cage->head_time)){
 		if(packet_cage->new_cage){
 			packet_cage->head_time = time;
+			packet_cage->tail_time = time;
 			packet_cage->new_cage = 0;
 		}
 		/* If by some chance we have some realy old packets in the cage, we must drop them. 
@@ -117,6 +121,7 @@ int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, p
 		                                       packet_cage->head, 
 		                                       sub_time(time, packet_cage->head_time));
 		packet_cage->audio_queue[new_elem_pos] = audio_data;
+		packet_cage->elements_count++;
 		if(is_newer(time, packet_cage->tail_time)) packet_cage->tail_time = time;
 	} else printf("a realy old packet arived\n");
 	
@@ -129,12 +134,16 @@ audio_data_t* packet_cage_get_data(packet_cage_t* packet_cage){
 	audio_data_t* res_audio_data;
 	if(!packet_cage->cage_starvation){
 		res_audio_data = packet_cage->audio_queue[packet_cage->head];
+		if(res_audio_data!=NULL){
+			packet_cage->elements_count--;
+		}
 		packet_cage->audio_queue[packet_cage->head] = NULL;
 		
 		packet_cage->head = next_point_in_cage(packet_cage->size, packet_cage->head);
 		packet_cage->head_time = time_inc(packet_cage->head_time);
 		
 		if(packet_cage_is_empty(packet_cage)){ 
+			printf("entering starvation from getting data\n");
 			packet_cage->cage_starvation = 1;
 			packet_cage->new_cage = 1;
 		}
