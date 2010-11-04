@@ -31,8 +31,8 @@ static int alsa_open(uint_fast16_t rate) {
 	snd_pcm_hw_params_malloc(&playback_hwparams);
 	snd_pcm_hw_params_malloc(&capture_hwparams);
 
-	if (snd_pcm_open(&pcm_playback_handle, "plughw:0,0", SND_PCM_STREAM_PLAYBACK, 0) < 0) {
-		fprintf(stderr, "Error opening playback PCM device plughw:0,0\n");
+	if (snd_pcm_open(&pcm_playback_handle, "default", SND_PCM_STREAM_PLAYBACK, 0) < 0) {
+		fprintf(stderr, "Error opening playback PCM device default\n");
 		return(-1);
 	}
 
@@ -41,8 +41,8 @@ static int alsa_open(uint_fast16_t rate) {
 		return(-1);
 	}
 
-	if (snd_pcm_open(&pcm_capture_handle, "plughw:0,0", SND_PCM_STREAM_CAPTURE, 0) < 0) {
-		fprintf(stderr, "Error opening capture PCM device plughw:0,0\n");
+	if (snd_pcm_open(&pcm_capture_handle, "default", SND_PCM_STREAM_CAPTURE, 0) < 0) {
+		fprintf(stderr, "Error opening capture PCM device default\n");
 		return(-1);
 	}
 
@@ -50,6 +50,16 @@ static int alsa_open(uint_fast16_t rate) {
 		fprintf(stderr, "Can not configure this PCM device.\n");
 		return(-1);
 	}
+
+	if (snd_pcm_hw_params_set_access(pcm_playback_handle, playback_hwparams, SND_PCM_ACCESS_RW_INTERLEAVED)) {
+		fprintf(stderr, "Error setting access\n");
+		return(-1);
+	};
+
+	if (snd_pcm_hw_params_set_access(pcm_capture_handle, capture_hwparams, SND_PCM_ACCESS_RW_INTERLEAVED)) {
+		fprintf(stderr, "Error setting access\n");
+		return(-1);
+	};
 
 	int exact_rate;
 	int periods = 2;       /* Number of periods */
@@ -113,13 +123,15 @@ static void *reader(void *arg) {
 	int err;
 	while (running) {
 		/* read */
-		while (err = snd_pcm_readn(pcm_capture_handle, (void **) &input_audio_data->data, frame_size) < 0) {
+		snd_pcm_wait(pcm_capture_handle, 1000);
+		while (err = snd_pcm_readi(pcm_capture_handle, input_audio_data->data, frame_size) < 0) {
 			snd_pcm_prepare(pcm_capture_handle);
 			fprintf(stderr, "Capture error: %s\n", snd_strerror(err));
 		}
 		process_callback(input_audio_data, output_audio_data);
 		/* write */
-		while (err = snd_pcm_writen(pcm_playback_handle, (void **) &output_audio_data->data, frame_size * sizeof(float)) < 0) {
+		snd_pcm_wait(pcm_playback_handle, 1000);
+		while (err = snd_pcm_writei(pcm_playback_handle, output_audio_data->data, frame_size) < 0) {
 			snd_pcm_prepare(pcm_playback_handle);
 			fprintf(stderr, "Playback error: %s\n", snd_strerror(err));
 		}
@@ -127,14 +139,14 @@ static void *reader(void *arg) {
 }
 
 int init_audio(uint_fast16_t rate, uint_fast32_t frame_size_i) {
-	input_audio_data  = malloc(sizeof(audio_data_t));
-	input_audio_data->data = malloc(sizeof(float) * frame_size_i);
+	frame_size = frame_size_i;
+	input_audio_data = malloc(sizeof(audio_data_t));
+	input_audio_data->data = malloc(sizeof(float) * frame_size);
 	output_audio_data = malloc(sizeof(audio_data_t));
-	output_audio_data->data = malloc(sizeof(float) * frame_size_i);
+	output_audio_data->data = malloc(sizeof(float) * frame_size);
 	input_audio_data->size = frame_size;
 	output_audio_data->size = frame_size;
 
-	frame_size = frame_size_i;
 	alsa_open(rate);
 
 	running = 1;
