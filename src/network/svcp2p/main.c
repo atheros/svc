@@ -231,7 +231,7 @@ int main(int argc, char* argv[]) {
 		down_packets++;
 		mutex_unlock(&global_stats_lock);
 	
-		printf("port %i\n", ntohs(remote.sin_port));
+		/*printf("port %i\n", ntohs(remote.sin_port));*/
 	
 		for(i = 0; i < peers_count; i++) {
 			if (peers[i].address.sin_port == remote.sin_port &&
