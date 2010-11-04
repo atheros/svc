@@ -63,12 +63,13 @@ int packet_cage_destroy(packet_cage_t* packet_cage){
 	return 0;
 }
 
-unsigned int next_point_in_cage(unsigned int size, unsigned int pos){
+static unsigned int next_point_in_cage(unsigned int size, unsigned int pos){
 	if (pos == (size-1)) return 0;
 	return pos+1;
 }
 
-unsigned int delta_point_in_cage(unsigned int size, unsigned int pos, int delta){
+/* FIXME: Is is used? */
+static unsigned int delta_point_in_cage(unsigned int size, unsigned int pos, int delta){
 	return ((pos+delta)%size + size)%size;
 }
 
@@ -81,12 +82,17 @@ int packet_cage_is_empty(packet_cage_t* packet_cage){
 
 
 void packet_cage_pop(packet_cage_t* packet_cage){
-	if (packet_cage->audio_queue[packet_cage->head] != NULL)
+	if (packet_cage->audio_queue[packet_cage->head] != NULL) {
 		audio_data_destroy(packet_cage->audio_queue[packet_cage->head]);
+	}
+	
 	packet_cage->audio_queue[packet_cage->head] = NULL;
 	packet_cage->head = next_point_in_cage(packet_cage->size, packet_cage->head);
 	packet_cage->head_time = time_inc(packet_cage->head_time);
-	if(packet_cage_is_empty(packet_cage)) packet_cage->cage_starvation = 1;
+	
+	if(packet_cage_is_empty(packet_cage)) {
+		packet_cage->cage_starvation = 1;
+	}
 }
 
 int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, packet_time_t time){
