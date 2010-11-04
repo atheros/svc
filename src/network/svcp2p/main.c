@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 	
 	svc_init(send_callback);
 	
-	/* create local socket *.
+	/* create local socket */
 	host_sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (host_sock < 0) {
 		fprintf(stderr, "Failed to create socket: %s\n", strerror(errno));
