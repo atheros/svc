@@ -1,4 +1,5 @@
 #include "libsvc_incoming.h"
+#include <stdio.h>
 
 #define MAX_PEERS 1000
 
@@ -26,7 +27,7 @@ void request_incoming_audio(audio_data_t* output_audio_data){
 	int peers_to_mix = 0;
 	FORALL_PEERS(peer){
 		mixer_buffer[peers_to_mix] = packet_cage_get_data(peer->cage);
-		if(mixer_buffer[peers_to_mix]==NULL) mixer_buffer[peers_to_mix] = silent_sound; 
+		if(mixer_buffer[peers_to_mix]==NULL){ mixer_buffer[peers_to_mix] = silent_sound; printf("no audio from peer\n"); }
 		peers_to_mix++;
 	}
 	mix_audio_streams(peers_to_mix, mixer_buffer, output_audio_data);
