@@ -99,13 +99,12 @@ void packet_cage_pop(packet_cage_t* packet_cage){
 int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, packet_time_t time){
 	mutex_lock(&packet_cage->cage_mutex);
 	
-	if(packet_cage->new_cage){
-		packet_cage->head_time = time;
-		packet_cage->new_cage = 0;
-	}
-	
-	/* We only place the packet when it is newer then the one expected. */
-	if (is_newer(time, packet_cage->head_time)){
+	/* We only place the packet when it is newer then the one expected or we have no packets in the queue. */
+	if (packet_cage->new_cage||is_newer(time, packet_cage->head_time)){
+		if(packet_cage->new_cage){
+			packet_cage->head_time = time;
+			packet_cage->new_cage = 0;
+		}
 		/* If by some chance we have some realy old packets in the cage, we must drop them. 
 		 * This also signals us that the cage is full.*/
 		while(is_newer(time, time_inc_by(packet_cage->head_time, packet_cage->size-1))){
