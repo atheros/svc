@@ -22,7 +22,7 @@ packet_time_t time_inc(packet_time_t time);
 
 int is_newer(packet_time_t time1, packet_time_t time2);
 
-int sub_time(packet_time_t time1, packet_time_t time2){
+int sub_time(packet_time_t time1, packet_time_t time2);
 
 
 packet_cage_t* packet_cage_create(unsigned int size);
