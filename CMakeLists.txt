@@ -133,21 +133,21 @@ ENDIF(BUILD_P2P)
 
 # Build SVC ENet client and server
 IF(BUILD_ENET_SVC)
-	ADD_EXECUTABLE(svcclient
-		src/network/svcd/client/main.c
+	ADD_EXECUTABLE(svceclient
+		src/network/svcenet/client/main.c
 	)
-	TARGET_LINK_LIBRARIES(svcclient
+	TARGET_LINK_LIBRARIES(svceclient
 		svc
 		${ENET_LIBRARIES}
 		${AUDIOAPI_LIBRARIES}
 		${CELT_LIBRARIES}
 	)
 
-	ADD_EXECUTABLE(svcserver
-		src/network/svcd/server/main.c
+	ADD_EXECUTABLE(svceserver
+		src/network/svcenet/server/main.c
 		src/common/dstr.c
 	)
-	TARGET_LINK_LIBRARIES(svcserver
+	TARGET_LINK_LIBRARIES(svceserver
 		${ENET_LIBRARIES}
 	)
 ENDIF(BUILD_ENET_SVC)
