@@ -48,7 +48,7 @@ IF("${AUDIO_API}" STREQUAL "portaudio")
 	MESSAGE(STATUS "Using PortAudio backend")
 	
 	IF(NOT PORTAUDIO_LIBRARIES)
-		MESSAGE(FATAL_ERROR "Can't use PortAudio backed, libraries not found.")
+		MESSAGE(FATAL_ERROR "Can't use PortAudio backend, libraries not found.")
 	ENDIF(NOT PORTAUDIO_LIBRARIES)
 	
 	SET(AUDIOAPI_LIBRARIES ${PORTAUDIO_LIBRARIES})
