@@ -1,0 +1,85 @@
+h1. SVC client/server architecture
+
+h2. SVCD audio transmission
+
+SVCD can be configured in 3 modes.
+
+
+h3. P2P mode
+
+Allow only peer to peer connections, don't open the audio socket. In
+this mode peers behind NAT can't operate at all.
+
+
+h3. Server mode
+
+Allows only server based mode. This allows peers to stay anonymous by
+not sending IP addesses to other peers. This mode is a good choice for
+ladder matches.
+
+
+h3. Hybrid mode
+
+Uses server connection for audio when client is behind NAT and uses P2P
+when client is directly exposed to the internet.
+
+
+h3. Mode preferences.
+
+The client may be configured to work in any one or all of those modes.
+
+For example a client may enfoce server mode while the server runs in
+hybrid mode.
+
+If a client enforces a mode and the server doesn't provide it (or the
+client is behind NAT and client demands P2P), the server will drop the
+client with an apropriate error message.
+
+
+
+
+h2. Network channels
+
+
+h3. SVCD controller socket
+
+The server controller socket is used as way of controlling all the
+connected peers. It is used to:
+
+* handles initial handshake between server and peers.
+* checks if peers are behind NAT
+* broadcasts info about joining and leaving peers.
+* broadcasts info about peers being kicked
+
+Controller packets are encoded using *protobuf-c*
+
+
+h3. SVCD admin socket
+
+The server admin socket (TCP/Unix) is used to admin the server.
+The server may be started without an admin socket using default options
+or options from command line (and maybe a config file).
+
+The protocol on this socket is in plain text, format:
+
+@code@ COMMAND[ ARG1 [ARG2 [...]]];
+
+
+h3. SVCD audio socket
+
+This socket implements a simple protocol. It receives plain audio
+packets from peers and broadcast this packet to all peers that don't
+have a direct connection with the source peer (or in *server mode*).
+When an audio packet get send to peers, an additional field of peer ID
+is in front of that audio packet.
+
+
+h3. SVCC P2P connects
+
+When a peer receives info about the server running in *p2p mode* or
+*hybrid mode* and after a successfull NAT test (conducted by
+the server), the peer starts broadcasting to all peers audio from that
+socket and listens on it for audio from other peers. The raw audio
+packet is used in the transmission.
+
+
