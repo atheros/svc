@@ -4,9 +4,6 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#include <error.h>
-#include <errno.h>
-
 #include "audio_api.h"
 #include "thread.h"
 
