@@ -99,11 +99,12 @@ int thread_create(thread_t* thread, void* (*proc)(void*), void* param) {
 
 int thread_detach(thread_t thread){
 #if defined(THREAD_POSIX)
-	pthread_detach(thread);
+	return pthread_detach(thread);
 #elif defined(THREAD_WIN)
  /*  TODO  */
- Not implemented 
+#error Not implemented 
 #endif	
+
 }
 
 void thread_join(thread_t thread) {

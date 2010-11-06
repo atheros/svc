@@ -30,7 +30,7 @@
 /**
  * Dynamic strings library.
  *
- * @version 0.1
+ * @version 0.2
  */
 
 #ifndef DSTR_H_
@@ -61,6 +61,7 @@ typedef struct _dstring dstring;
 
 
 dstring* dnew();
+dstring* dnewcopy(const dstring* str);
 void dfree(dstring* str);
 dstring* dfromc(int chr);
 dstring* dfromcs(const char* str);

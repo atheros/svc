@@ -7,7 +7,7 @@ ENDIF("${AUDIO_API}" STREQUAL "")
 
 
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89 -Wall")
 
 # tell where to look for additional cmake modules
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
@@ -25,6 +25,18 @@ FIND_PACKAGE(PortAudio REQUIRED)
 FIND_PACKAGE(Jack REQUIRED)
 #FIND_PACKAGE(OSS REQUIRED)
 FIND_PACKAGE(ALSA REQUIRED)
+
+# correct pthread to use
+IF(CMAKE_HOST_WIN32)
+	find_library(PTHREAD_WIN32 pthreadGC2)
+	IF(NOT PTHREAD_WIN32)
+		MESSAGE(FATAL_ERROR "Win32 SVC needs pthread-win32")
+	ENDIF(NOT PTHREAD_WIN32)
+	
+	SET(PTHREAD_LIB	"${PTHREAD_WIN32}")
+ELSE(CMAKE_HOST_WIN32)
+	SET(PTHREAD_LIB "pthread")
+ENDIF(CMAKE_HOST_WIN32)
 
 
 # check if ENet SVC client and server should be built
@@ -125,6 +137,7 @@ IF(BUILD_P2P)
 		svc
 		${AUDIOAPI_LIBRARIES}
 		${CELT_LIBRARIES}
+		${PTHREAD_LIB}
 	)
 ELSE(BUILD_P2P)
 	MESSAGE(STATUS "Simple P2P client disabled.")
@@ -141,6 +154,7 @@ IF(BUILD_ENET_SVC)
 		${ENET_LIBRARIES}
 		${AUDIOAPI_LIBRARIES}
 		${CELT_LIBRARIES}
+		${PTHREAD_LIB}
 	)
 
 	ADD_EXECUTABLE(svceserver
@@ -149,6 +163,7 @@ IF(BUILD_ENET_SVC)
 	)
 	TARGET_LINK_LIBRARIES(svceserver
 		${ENET_LIBRARIES}
+		${PTHREAD_LIB}
 	)
 ENDIF(BUILD_ENET_SVC)
 
@@ -163,7 +178,7 @@ IF(BUILD_TESTS)
 		src/common/thread.c
 	)
 	TARGET_LINK_LIBRARIES(test_threads
-		pthread
+		${PTHREAD_LIB}
 	)
 
 
@@ -175,6 +190,7 @@ IF(BUILD_TESTS)
 	TARGET_LINK_LIBRARIES(test_audio_api
 		${AUDIOAPI_LIBRARIES}
 		${CELT_LIBRARIES}
+		${PTHREAD_LIB}
 	)
 
 
@@ -188,7 +204,7 @@ IF(BUILD_TESTS)
 	TARGET_LINK_LIBRARIES(test_audio_packet_cage
 		${AUDIOAPI_LIBRARIES}
 		${CELT_LIBRARIES}
-		pthread
+		${PTHREAD_LIB}
 	)
 
 
@@ -203,7 +219,7 @@ IF(BUILD_TESTS)
 	TARGET_LINK_LIBRARIES(test_audio_cage_queue
 		${AUDIOAPI_LIBRARIES}
 		${CELT_LIBRARIES}
-		pthread
+		${PTHREAD_LIB}
 	)
 
 
@@ -223,7 +239,21 @@ IF(BUILD_TESTS)
 	TARGET_LINK_LIBRARIES(test_libsvc
 		${AUDIOAPI_LIBRARIES}
 		${CELT_LIBRARIES}
-		pthread
+		${PTHREAD_LIB}
+	)
+	
+	
+	ADD_EXECUTABLE(test_dstr
+		src/tests/test_dstr.c
+		src/common/dstr.c
+		src/tests/tests_utils.c
+	)
+	
+	ADD_EXECUTABLE(test_dstrutils
+		src/tests/test_dstrutils.c
+		src/common/dstrutils.c
+		src/common/dstr.c
+		src/tests/tests_utils.c
 	)
 	
 ELSE(BUILD_TESTS)

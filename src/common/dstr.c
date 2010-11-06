@@ -75,6 +75,15 @@ dstring* dnew() {
 	return s;
 }
 
+dstring* dnewcopy(const dstring* str) {
+	dstring* s = (dstring*)malloc(sizeof(dstring));
+	s->len = str->len;
+	s->size = align(str->len);
+	s->data = (char*)malloc(s->size);
+	memcpy(s->data, str->data, str->len+1);
+	return s;
+}
+
 void dfree(dstring* str) {
 	free(str->data);
 	free(str);
@@ -112,6 +121,7 @@ dstring* dfrommem(const void* mem, size_t size) {
 dstring* dcpy(dstring* dst, const dstring* src) {
 	set_size(dst, src->len + 1);
 	memcpy(dst->data, src->data, src->len+1);
+	dst->len = src->len;
 	return dst;
 }
 
@@ -128,12 +138,14 @@ dstring* dcpycs(dstring* dst, const char* src) {
 	size_t len = strlen(src);
 	set_size(dst, len+1);
 	memcpy(dst->data, src, len+1);
+	dst->len = len;
 	return dst;
 }
 
-dstring* dstrcpymem(dstring* dst, const void* mem, size_t size) {
+dstring* dcpymem(dstring* dst, const void* mem, size_t size) {
 	set_size(dst, size+1);
 	memcpy(dst->data, mem, size);
+	dst->len = size;
 	put_z(dst);
 	return dst;
 }
@@ -142,6 +154,7 @@ dstring* dncpy(dstring* dst, const dstring* src, dstrlen_t n) {
 	if (src->len < n) n = src->len;
 	set_size(dst, n+1);
 	memcpy(dst->data, src->data, n);
+	dst->len = n;
 	put_z(dst);
 	return dst;
 }
@@ -151,6 +164,7 @@ dstring* dncpycs(dstring* dst, const char* src, dstrlen_t n) {
 	if (len < n) n = len;
 	set_size(dst, n+1);
 	memcpy(dst->data, src, n);
+	dst->len = n;
 	put_z(dst);
 	return dst;
 }
@@ -235,7 +249,7 @@ int dcmpcs(const dstring* a, const char* b) {
 	} else if (a->len > len) {
 		return 1;
 	} else {
-		return memcmp(a->data, b, a->len);
+		return memcmp(a->data, b, len);
 	}
 }
 

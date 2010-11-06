@@ -1,18 +1,22 @@
 #ifndef __THREAD_H
 #define __THREAD_H
 
+/*
 #ifdef WIN32
 #define THREAD_WIN
 #else
 #define THREAD_POSIX
 #endif
+*/
 
+#define THREAD_POSIX
 
 #if defined(THREAD_POSIX)
 #include <pthread.h>
 #elif defined(THREAD_WIN)
 #include <windows.h>
 #endif
+
 
 
 #if defined(THREAD_POSIX)
