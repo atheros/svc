@@ -40,7 +40,7 @@ const char **getenv_array(const char *env) {
 	if (!raw)
 		return NULL;
 
-	char *value = strdup(raw);
+	char *value = (char *)strdup(raw);
 	int size = strcnt(value, ' ') + 2;
 	const char **tokens = malloc(sizeof (char*) * size);
 
@@ -65,7 +65,7 @@ int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
 	char client_name[10];
 	sprintf(client_name, "SVC-%d", getpid());
 	
-	if ((client = jack_client_new (client_name)) == 0) {
+	if ((client = jack_client_open (client_name, (jack_options_t) 0, NULL)) == 0) {
 		fprintf (stderr, "jack server not running?\n");
 		return -1;
 	}
