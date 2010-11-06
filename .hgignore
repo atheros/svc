@@ -6,7 +6,6 @@ syntax: glob
 *.orig
 
 libsvc.*
-test_*
 svcclient
 svcserver
 svcp2p
