@@ -1,9 +1,4 @@
 syntax: glob
-**/*.o
-**/*.d
-**/*.orig
-**/*.swp
-*.orig
 
 libsvc.*
 svcclient
@@ -14,3 +9,6 @@ CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
 Makefile
+
+syntax: regexp
+test_[^.]*$
