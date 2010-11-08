@@ -29,6 +29,6 @@ void encoder_destroy(encoder_t* encoder);
 
 int encoder_encode(encoder_t* encoder, const float* pcm, unsigned char* compressed);
 
-int decoder_decode(decoder_t* decoder, unsigned char* data, int len, const float* pcm);
+int decoder_decode(decoder_t* decoder, unsigned char* data, int len, float* pcm);
 
 #endif

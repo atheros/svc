@@ -8,7 +8,7 @@
 
 int main(int argc, char* argv[]) {
 	dstrlist* l1;
-	dstrnode *n1, *n2, *n3, *n4;
+	dstrnode *n1;
 	dstring* s1;
 	
 	

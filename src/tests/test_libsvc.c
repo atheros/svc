@@ -21,4 +21,5 @@ int main(){
 	printf("You should be able to here yourslef in the speakers\n");
 	scanf("%d", &xxx);
 	svc_close();
+	return 0;
 }

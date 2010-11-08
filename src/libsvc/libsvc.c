@@ -1,10 +1,12 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "libsvc.h"
 #include "packet_cage.h"
 #include "packet_queue.h"
 #include "thread.h"
 #include "audio.h"
-#include <stdlib.h>
-#include <string.h>
+#include "audio_api.h"
 
 svc_options_t* svc_options;
 
@@ -43,6 +45,7 @@ void *send_network_thread_function( void *ptr ){
 		svc_send_callback(network_packet);
 		network_packet_destroy(network_packet);
 	}
+	return NULL;
 }
 
 
