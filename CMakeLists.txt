@@ -7,7 +7,7 @@ ENDIF("${AUDIO_API}" STREQUAL "")
 
 
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89 -Wall")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89 -Wall ${CFLAGS}")
 
 # tell where to look for additional cmake modules
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
