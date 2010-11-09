@@ -12,7 +12,13 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <soundcard.h>
+/* using sys/soundcard.h to avoid adding /usr/include/sys/ to the include path
+ * because it causes the nasty include loop[1]; it is against 4front's 
+ * recommendations though[2]
+ *
+ * [1] http://sprunge.us/VZXW
+ * [2] http://manuals.opensound.com/developer/programming.html */
+#include <sys/soundcard.h>
 
 #include "audio_api.h"
 #include "thread.h"
