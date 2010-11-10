@@ -2,28 +2,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
+#include "audio.h"
 #include "audio_api.h"
 
-/* TODO:
- * Please fix this test
- * /
-
-/*
 #define FRAME_SIZE 1024
 
-void callback(audio_data_t *input_packet, audio_data_t *output_packet) {
-	memcpy(output_packet->data, input_packet->data, sizeof(sample_t) * FRAME_SIZE); 
+audio_data_t *i_data;
 
+void read(audio_data_t *packet) {
+	memcpy(i_data->data, packet->data, sizeof(sample_t) * FRAME_SIZE);
 }
 
-*/
+void write(audio_data_t *packet) {
+	memcpy(packet->data, i_data->data, sizeof(sample_t) * FRAME_SIZE); 
+}
 
 int main() {
 	
-	/*
-	set_audio_callback(callback);
+	audio_data_create(FRAME_SIZE);
+
+	set_audio_callbacks(read, write);
 
 	init_audio(48000, FRAME_SIZE);
 
@@ -31,7 +30,6 @@ int main() {
 
 	getchar();
 	close_audio();
-	*/
-	printf("This test is depricated. Please fix it...");
 	return 0;
 }
+

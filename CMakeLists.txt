@@ -196,6 +196,7 @@ IF(BUILD_TESTS)
 
 	ADD_EXECUTABLE(test_audio_api
 		src/tests/test_audio_api.c
+		src/libsvc/audio.c
 		src/libsvc/audio_api_${AUDIO_API}.c
 		src/common/thread.c
 	)
