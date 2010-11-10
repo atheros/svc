@@ -28,8 +28,8 @@
 static capture_audio_callback_t oss_capture_callback;
 static playback_audio_callback_t oss_playback_callback;
 
-audio_data_t* input_audio_data;
-audio_data_t* output_audio_data;
+static audio_data_t* input_audio_data;
+static audio_data_t* output_audio_data;
 
 static int fd;
 static unsigned int fs;	/* frame size  */
@@ -108,8 +108,8 @@ int init_audio(unsigned int rate, unsigned int frame_size) {
 	oss_open(rate);
 
 	fs = frame_size;
-	thread_create(&rt, reader, NULL);	/* undocumented crap */ /* L29Ah - /\OX */ /* L29Ah - man pthread_create */
-	thread_create(&wt, writer, NULL);
+	thread_create(&rt, reader, NULL);
+	thread_create(&wt, writer, NULL);	
 	assert(rt > 0);
 
 	return 0;
