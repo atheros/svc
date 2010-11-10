@@ -108,7 +108,7 @@ int init_audio (unsigned int rate, unsigned int frame_size){
 	oss_open(rate);
 
 	fs = frame_size;
-	thread_create(&rt, reader, NULL);	/* undocumented crap */ /* L29Ah - /\OX */
+	thread_create(&rt, reader, NULL);
 	thread_create(&wt, writer, NULL);	
 	assert(rt > 0);
 
