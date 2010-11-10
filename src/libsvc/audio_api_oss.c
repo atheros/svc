@@ -28,8 +28,8 @@
 static capture_audio_callback_t pa_interface_capture_callback;
 static playback_audio_callback_t pa_interface_playback_callback;
 
-audio_data_t* input_audio_data;
-audio_data_t* output_audio_data;
+static audio_data_t* input_audio_data;
+static audio_data_t* output_audio_data;
 
 static int fd;
 static int fs;	/* frame size  */
