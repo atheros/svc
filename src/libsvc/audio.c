@@ -13,6 +13,16 @@ void audio_data_destroy(audio_data_t* audio_data){
 	free(audio_data);
 }
 
+audio_data_t* audio_fake_data_create(unsigned int size){
+	audio_data_t* res_data = malloc(sizeof(audio_data_t));
+	res_data->size = size;
+	return res_data;
+}
+
+void audio_fake_data_destroy(audio_data_t* audio_data){
+	free(audio_data);
+}
+
 int audio_data_copy(audio_data_t* dest_data, audio_data_t* source_data){
 	if(dest_data->size!=source_data->size) return -1;
 	memcpy(dest_data->data, source_data->data, source_data->size*sizeof(sample_t));

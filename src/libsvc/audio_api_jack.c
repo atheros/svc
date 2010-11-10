@@ -58,8 +58,8 @@ static const char **getenv_array(const char *env) {
 
 int init_audio (unsigned int rate, unsigned int frame_size)
 {	
-	input_audio_data = audio_data_create(frame_size);
-	output_audio_data = audio_data_create(frame_size);
+	input_audio_data = audio_fake_data_create(frame_size);
+	output_audio_data = audio_fake_data_create(frame_size);
 
 	char client_name[10];
 	sprintf(client_name, "SVC-%d", getpid());
@@ -126,6 +126,8 @@ int init_audio (unsigned int rate, unsigned int frame_size)
 
 int close_audio () {
 	jack_client_close (client);
+	audio_fake_data_destroy(input_audio_data);
+	audio_fake_data_destroy(output_audio_data);
 	return 0;
 }
 

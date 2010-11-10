@@ -11,11 +11,12 @@
 audio_data_t *i_data;
 
 void read(audio_data_t *packet) {
-	memcpy(i_data->data, packet->data, sizeof(sample_t) * FRAME_SIZE);
+	if(packet==NULL) {printf("NULL!!!!!\n");}
+	/*memcpy(i_data->data, packet->data, sizeof(sample_t) * FRAME_SIZE);*/
 }
 
 void write(audio_data_t *packet) {
-	memcpy(packet->data, i_data->data, sizeof(sample_t) * FRAME_SIZE); 
+	/*memcpy(packet->data, i_data->data, sizeof(sample_t) * FRAME_SIZE); */
 }
 
 int main() {

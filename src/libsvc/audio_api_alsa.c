@@ -159,8 +159,8 @@ static void *writer(void *arg) {
 int init_audio(unsigned int rate, unsigned int frame_size_i) {
 	frame_size = frame_size_i;
 	
-	input_audio_data = audio_data_create(frame_size);
-	output_audio_data = audio_data_create(frame_size);
+	input_audio_data = audio_fake_data_create(frame_size);
+	output_audio_data = audio_fake_data_create(frame_size);
 
 	alsa_open(rate);
 
@@ -183,6 +183,8 @@ int close_audio() {
 	thread_join(wt);
 	snd_pcm_close(pcm_playback_handle);
 	snd_pcm_close(pcm_capture_handle);
+	audio_fake_data_destroy(input_audio_data);
+	audio_fake_data_destroy(output_audio_data);
 	return 0;
 }
 

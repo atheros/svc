@@ -14,10 +14,16 @@ typedef struct _audio_data_t {
 
 audio_data_t* audio_data_create(unsigned int size);
 
+/* Same thing as create but does not allocate memory for the actual data. */
+audio_data_t* audio_fake_data_create(unsigned int size);
+
 /* Cleans up audio data making it silent */
 void clear_audio_data(audio_data_t* audio_data);
 
 void audio_data_destroy(audio_data_t* audio_data);
+
+/* Same thing as destroy but does not free the memory for actual data. */
+void audio_fake_data_destroy(audio_data_t* audio_data);
 
 /* Make sure the destination is initiated before calling this.
  * Returns 0 on success. */
