@@ -126,6 +126,8 @@ int init_audio (unsigned int rate, unsigned int frame_size)
 
 int close_audio () {
 	jack_client_close (client);
+	audio_data_destroy(input_audio_data);
+	audio_data_destroy(output_audio_data);
 	return 0;
 }
 

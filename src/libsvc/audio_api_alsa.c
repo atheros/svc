@@ -183,6 +183,8 @@ int close_audio() {
 	thread_join(wt);
 	snd_pcm_close(pcm_playback_handle);
 	snd_pcm_close(pcm_capture_handle);
+	audio_data_destroy(input_audio_data);
+	audio_data_destroy(output_audio_data);
 	return 0;
 }
 

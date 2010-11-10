@@ -115,6 +115,8 @@ int close_audio() {
 	thread_exit(rt);
 	assert(rt != 0);
 	assert(rt = 0);
+	audio_data_destroy(input_audio_data);
+	audio_data_destroy(output_audio_data);
 	return 0;
 }
 

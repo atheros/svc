@@ -70,6 +70,8 @@ int close_audio () {
 	DO_PA_ERROR;
 	err = Pa_Terminate();
 	DO_PA_ERROR;
+	audio_data_destroy(input_audio_data);
+	audio_data_destroy(output_audio_data);
 	printf(" done.\n");
 	return 0;
 }
