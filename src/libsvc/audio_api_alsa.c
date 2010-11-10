@@ -134,7 +134,6 @@ static void *reader(void *arg) {
 	int err;
 	while (running) {
 		/* read */
-		snd_pcm_wait(pcm_capture_handle, 1000);
 		while (err = snd_pcm_readi(pcm_capture_handle, input_audio_data->data, frame_size) < 0) {
 			snd_pcm_prepare(pcm_capture_handle);
 			fprintf(stderr, "Capture error: %s\n", snd_strerror(err));
@@ -154,7 +153,6 @@ static void *writer(void *arg) {
 			snd_pcm_prepare(pcm_playback_handle);
 			fprintf(stderr, "Playback error: %s\n", snd_strerror(err));
 		}
-		snd_pcm_wait(pcm_playback_handle, 1000);
 	}
 }
 

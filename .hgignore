@@ -1,5 +1,7 @@
 syntax: glob
 
+tags
+
 **.swp
 **.orig
 

@@ -25,14 +25,14 @@
 #include "audio_api.h"
 #include "thread.h"
 
-static capture_audio_callback_t pa_interface_capture_callback;
-static playback_audio_callback_t pa_interface_playback_callback;
+static capture_audio_callback_t oss_capture_callback;
+static playback_audio_callback_t oss_playback_callback;
 
 audio_data_t* input_audio_data;
 audio_data_t* output_audio_data;
 
 static int fd;
-static int fs;	/* frame size  */
+static unsigned int fs;	/* frame size  */
 static thread_t rt;
 static thread_t wt;
 
@@ -71,7 +71,7 @@ static void *reader(void *_) {
 		for (i = 0; i < fs; i++)
 			input_audio_data->data[i] = buf[i];
 
-		pa_interface_capture_callback(input_audio_data);
+		oss_capture_callback(input_audio_data);
 	}
 	return NULL;
 }
@@ -83,7 +83,7 @@ static void *writer(void *_) {
 	while (true) {
 		ssize_t i;
 
-		pa_interface_playback_callback(output_audio_data);
+		oss_playback_callback(output_audio_data);
 
 		for (i = 0; i < fs; i++)
 			buf[i] = output_audio_data->data[i];
@@ -97,7 +97,7 @@ static void *writer(void *_) {
 	return NULL;
 }
 
-int init_audio (unsigned int rate, unsigned int frame_size){
+int init_audio(unsigned int rate, unsigned int frame_size) {
 	input_audio_data  = malloc(sizeof(audio_data_t));
 	output_audio_data = malloc(sizeof(audio_data_t));
 	input_audio_data->size = frame_size;
@@ -108,8 +108,8 @@ int init_audio (unsigned int rate, unsigned int frame_size){
 	oss_open(rate);
 
 	fs = frame_size;
-	thread_create(&rt, reader, NULL);	/* undocumented crap */ /* L29Ah - /\OX */
-	thread_create(&wt, writer, NULL);	
+	thread_create(&rt, reader, NULL);	/* undocumented crap */ /* L29Ah - /\OX */ /* L29Ah - man pthread_create */
+	thread_create(&wt, writer, NULL);
 	assert(rt > 0);
 
 	return 0;
@@ -124,8 +124,8 @@ int close_audio() {
 
 int set_audio_callbacks(capture_audio_callback_t capture_callback, 
                         playback_audio_callback_t playback_callback){
-	pa_interface_capture_callback = capture_callback;
-	pa_interface_playback_callback = playback_callback;
+	oss_capture_callback = capture_callback;
+	oss_playback_callback = playback_callback;
 	return 0;
 }
 
