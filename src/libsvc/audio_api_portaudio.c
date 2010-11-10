@@ -43,11 +43,8 @@ int init_audio (unsigned int rate, unsigned int frame_size) {
 	err = Pa_Initialize();
 	DO_PA_ERROR;
 	
-	input_audio_data  = malloc(sizeof(audio_data_t));
-	output_audio_data = malloc(sizeof(audio_data_t));
-	
-	input_audio_data->size = frame_size;
-	output_audio_data->size = frame_size;
+	input_audio_data = audio_data_create(frame_size);
+	output_audio_data = audio_data_create(frame_size);
 	
 	err = Pa_OpenDefaultStream( &stream,
 			1,          /* input */

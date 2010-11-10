@@ -57,12 +57,9 @@ static const char **getenv_array(const char *env) {
 }
 
 int init_audio (unsigned int rate, unsigned int frame_size)
-{
-	input_audio_data  = malloc(sizeof(audio_data_t));
-	output_audio_data = malloc(sizeof(audio_data_t));
-	
-	input_audio_data->size = frame_size;
-	output_audio_data->size = frame_size;
+{	
+	input_audio_data = audio_data_create(frame_size);
+	output_audio_data = audio_data_create(frame_size);
 
 	char client_name[10];
 	sprintf(client_name, "SVC-%d", getpid());

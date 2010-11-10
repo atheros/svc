@@ -158,12 +158,9 @@ static void *writer(void *arg) {
 
 int init_audio(unsigned int rate, unsigned int frame_size_i) {
 	frame_size = frame_size_i;
-	input_audio_data = malloc(sizeof(audio_data_t));
-	input_audio_data->data = malloc(sizeof(float) * frame_size);
-	output_audio_data = malloc(sizeof(audio_data_t));
-	output_audio_data->data = malloc(sizeof(float) * frame_size);
-	input_audio_data->size = frame_size;
-	output_audio_data->size = frame_size;
+	
+	input_audio_data = audio_data_create(frame_size);
+	output_audio_data = audio_data_create(frame_size);
 
 	alsa_open(rate);
 

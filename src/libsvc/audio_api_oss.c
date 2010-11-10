@@ -98,12 +98,8 @@ static void *writer(void *_) {
 }
 
 int init_audio(unsigned int rate, unsigned int frame_size) {
-	input_audio_data  = malloc(sizeof(audio_data_t));
-	output_audio_data = malloc(sizeof(audio_data_t));
-	input_audio_data->size = frame_size;
-	output_audio_data->size = frame_size;
-	input_audio_data->data = malloc(sizeof(sample_t) * frame_size);
-	output_audio_data->data = malloc(sizeof(sample_t) * frame_size);
+	input_audio_data = audio_data_create(frame_size);
+	output_audio_data = audio_data_create(frame_size);
 
 	oss_open(rate);
 
