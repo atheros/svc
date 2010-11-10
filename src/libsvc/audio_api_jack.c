@@ -128,6 +128,7 @@ int close_audio () {
 	jack_client_close (client);
 	audio_fake_data_destroy(input_audio_data);
 	audio_fake_data_destroy(output_audio_data);
+
 	return 0;
 }
 
