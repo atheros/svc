@@ -12,22 +12,23 @@
 #include "audio_api.h"
 #include "thread.h"
 
-audio_callback_t process_callback;
+static capture_audio_callback_t alsa_capture_callback;
+static playback_audio_callback_t alsa_playback_callback;
 
-audio_data_t* input_audio_data;
-audio_data_t* output_audio_data;
+static audio_data_t* input_audio_data;
+static audio_data_t* output_audio_data;
 
-uint_fast32_t frame_size;
+static unsigned int frame_size;
 
-snd_pcm_t *pcm_playback_handle;
-snd_pcm_t *pcm_capture_handle;
-snd_pcm_hw_params_t *playback_hwparams;
-snd_pcm_hw_params_t *capture_hwparams;
+static snd_pcm_t *pcm_playback_handle;
+static snd_pcm_t *pcm_capture_handle;
+static snd_pcm_hw_params_t *playback_hwparams;
+static snd_pcm_hw_params_t *capture_hwparams;
 
-static thread_t rt;
-int running;
+static thread_t rt, wt;
+static int running;
 
-static int alsa_open(uint_fast16_t rate) {
+static int alsa_open(unsigned int rate) {
 	snd_pcm_hw_params_malloc(&playback_hwparams);
 	snd_pcm_hw_params_malloc(&capture_hwparams);
 
@@ -71,7 +72,7 @@ static int alsa_open(uint_fast16_t rate) {
 		return(-1);
 	};
 
-	int exact_rate;
+	unsigned int exact_rate;
 	int periods = 2;       /* Number of periods */
 	snd_pcm_uframes_t size = frame_size * sizeof(float); /* Periodsize (bytes) */
 
@@ -127,8 +128,8 @@ static int alsa_open(uint_fast16_t rate) {
 	snd_pcm_hw_params_free (capture_hwparams);
 }
 
+
 static void *reader(void *arg) {
-	snd_pcm_prepare(pcm_playback_handle);
 	snd_pcm_prepare(pcm_capture_handle);
 	int err;
 	while (running) {
@@ -138,17 +139,26 @@ static void *reader(void *arg) {
 			snd_pcm_prepare(pcm_capture_handle);
 			fprintf(stderr, "Capture error: %s\n", snd_strerror(err));
 		}
-		process_callback(input_audio_data, output_audio_data);
+		
+		alsa_capture_callback(input_audio_data);
+	}
+}
+
+static void *writer(void *arg) {
+	snd_pcm_prepare(pcm_playback_handle);
+	int err;
+	while (running) {
 		/* write */
-		snd_pcm_wait(pcm_playback_handle, 1000);
+		alsa_playback_callback(output_audio_data);
 		while (err = snd_pcm_writei(pcm_playback_handle, output_audio_data->data, frame_size) < 0) {
 			snd_pcm_prepare(pcm_playback_handle);
 			fprintf(stderr, "Playback error: %s\n", snd_strerror(err));
 		}
+		snd_pcm_wait(pcm_playback_handle, 1000);
 	}
 }
 
-int init_audio(uint_fast16_t rate, uint_fast32_t frame_size_i) {
+int init_audio(unsigned int rate, unsigned int frame_size_i) {
 	frame_size = frame_size_i;
 	input_audio_data = malloc(sizeof(audio_data_t));
 	input_audio_data->data = malloc(sizeof(float) * frame_size);
@@ -164,6 +174,10 @@ int init_audio(uint_fast16_t rate, uint_fast32_t frame_size_i) {
 		fprintf(stderr, "Failed creating thread");
 		return -1;
 	}
+	if (thread_create(&wt, writer, NULL) > 0) {
+		fprintf(stderr, "Failed creating thread");
+		return -1;
+	}
 
 	return 0;
 }
@@ -171,13 +185,16 @@ int init_audio(uint_fast16_t rate, uint_fast32_t frame_size_i) {
 int close_audio() {
 	running = 0;
 	thread_join(rt);
+	thread_join(wt);
 	snd_pcm_close(pcm_playback_handle);
 	snd_pcm_close(pcm_capture_handle);
 	return 0;
 }
 
-int set_audio_callback(audio_callback_t audio_callback) {
-	process_callback = audio_callback;
+int set_audio_callbacks(capture_audio_callback_t capture_callback, 
+                        playback_audio_callback_t playback_callback){
+	alsa_capture_callback = capture_callback;
+	alsa_playback_callback = playback_callback;
 	return 0;
 }
 

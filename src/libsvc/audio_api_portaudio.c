@@ -6,13 +6,14 @@
 #include "audio_api.h"
 
 
-PaError err;
-PaStream *stream;
+static PaError err;
+static PaStream *stream;
 
-audio_callback_t pa_interface_callback;
+static capture_audio_callback_t pa_interface_capture_callback;
+static playback_audio_callback_t pa_interface_playback_callback;
 
-audio_data_t* input_audio_data;
-audio_data_t* output_audio_data;
+static audio_data_t* input_audio_data;
+static audio_data_t* output_audio_data;
 
 #define DO_PA_ERROR if (err != paNoError) { \
 		printf(  "PortAudio error: %s\n", Pa_GetErrorText( err ) ); \
@@ -29,13 +30,14 @@ static int pa_callback( const void *inputBuffer, void *outputBuffer,
 	input_audio_data->data = (float*)inputBuffer;
 	output_audio_data->data = (float*)outputBuffer;
 	
-	pa_interface_callback(input_audio_data, output_audio_data);
+	pa_interface_capture_callback(input_audio_data);
+	pa_interface_playback_callback(output_audio_data);
 	return 0;
 	
 }
 
 
-int init_audio (uint_fast16_t rate, uint_fast32_t frame_size) {
+int init_audio (unsigned int rate, unsigned int frame_size) {
 	
 	printf("Initializing portaudio...");
 	err = Pa_Initialize();
@@ -75,7 +77,9 @@ int close_audio () {
 	return 0;
 }
 
-int set_audio_callback(audio_callback_t audio_callback) {
-	pa_interface_callback = audio_callback;
+int set_audio_callbacks(capture_audio_callback_t capture_callback, 
+                        playback_audio_callback_t playback_callback){
+	pa_interface_capture_callback = capture_callback;
+	pa_interface_playback_callback = playback_callback;
 	return 0;
 }

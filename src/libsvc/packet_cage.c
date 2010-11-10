@@ -37,7 +37,7 @@ packet_cage_t* packet_cage_create(unsigned int queue_size){
 	res_packet_cage->elements_count = 0;
 	
 	res_packet_cage->audio_queue = malloc(queue_size*sizeof(audio_data_t*));
-	int i;
+	unsigned int i;
 	for(i=0; i<queue_size; i++) 
 		res_packet_cage->audio_queue[i] = NULL;
 	
@@ -51,7 +51,7 @@ packet_cage_t* packet_cage_create(unsigned int queue_size){
 
 
 int packet_cage_destroy(packet_cage_t* packet_cage){
-	int i;
+	unsigned int i;
 	for(i=0; i<packet_cage->size; i++)
 		if(packet_cage->audio_queue[i]!=NULL) 
 			free(packet_cage->audio_queue[i]);

@@ -6,25 +6,27 @@
 
 #include "audio_api.h"
 
-jack_client_t *client;
-jack_port_t *input_port;
-jack_port_t *output_port;
+static jack_client_t *client;
+static jack_port_t *input_port;
+static jack_port_t *output_port;
 
-audio_callback_t interface_callback;
+static capture_audio_callback_t jack_capture_callback;
+static playback_audio_callback_t jack_playback_callback;
 
-audio_data_t* input_audio_data;
-audio_data_t* output_audio_data;
+static audio_data_t* input_audio_data;
+static audio_data_t* output_audio_data;
 
-int process (jack_nframes_t nframes, void *arg)
+static int process (jack_nframes_t nframes, void *arg)
 {
 	output_audio_data->data = (float *) jack_port_get_buffer (output_port, nframes);
 	input_audio_data->data = (float *) jack_port_get_buffer (input_port, nframes);
 
-	interface_callback(input_audio_data, output_audio_data);
+	jack_capture_callback(input_audio_data);
+	jack_playback_callback(output_audio_data);
 	return 0;      
 }
 
-int strcnt (char list[], char c) {
+static int strcnt (char list[], char c) {
 	int i;
 	int count = 0;
 
@@ -35,7 +37,7 @@ int strcnt (char list[], char c) {
 	return (count);
 }
 
-const char **getenv_array(const char *env) {
+static const char **getenv_array(const char *env) {
 	const char *raw = getenv(env);
 	if (!raw)
 		return NULL;
@@ -54,7 +56,7 @@ const char **getenv_array(const char *env) {
 	return tokens;
 }
 
-int init_audio (uint_fast16_t rate, uint_fast32_t frame_size)
+int init_audio (unsigned int rate, unsigned int frame_size)
 {
 	input_audio_data  = malloc(sizeof(audio_data_t));
 	output_audio_data = malloc(sizeof(audio_data_t));
@@ -130,8 +132,9 @@ int close_audio () {
 	return 0;
 }
 
-int set_audio_callback(audio_callback_t audio_callback) {
-	interface_callback = audio_callback;
+int set_audio_callbacks(capture_audio_callback_t capture_callback, 
+                        playback_audio_callback_t playback_callback){
+	jack_capture_callback = capture_callback;
+	jack_playback_callback = playback_callback;
 	return 0;
 }
-

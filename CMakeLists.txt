@@ -10,7 +10,7 @@ IF(NOT CFLAGS)
 	SET(CFLAGS ${ENV_CFLAGS})
 ENDIF(NOT CFLAGS)
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c99 -Wall -Wextra ${CFLAGS} -D_XOPEN_SOURCE=501L")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89 -Wall ${CFLAGS} -D_XOPEN_SOURCE=501L")
 
 # tell where to look for additional cmake modules
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")

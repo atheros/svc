@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+#include <stropts.h>
+
 #include <error.h>
 #include <errno.h>
 #include <assert.h>
@@ -23,19 +25,21 @@
 #include "audio_api.h"
 #include "thread.h"
 
-audio_callback_t pa_interface_callback;
+static capture_audio_callback_t pa_interface_capture_callback;
+static playback_audio_callback_t pa_interface_playback_callback;
 
 audio_data_t* input_audio_data;
 audio_data_t* output_audio_data;
 
 static int fd;
-static uint_fast32_t fs;	// frame size
+static int fs;	/* frame size  */
 static thread_t rt;
+static thread_t wt;
 
-static void oss_open(uint_fast16_t rate) {
-	assert(fd == 0);	// making sure we don't do double-open
-	const char* dsp = "/dev/dsp";	// TODO device setting, also see http://manuals.opensound.com/developer/SNDCTL_AUDIOINFO.html
-	// TODO duplexity check, see http://manuals.opensound.com/developer/full_duplex.html
+static void oss_open(unsigned int rate) {
+	assert(fd == 0);	/* making sure we don't do double-open */
+	const char* dsp = "/dev/dsp";	/* TODO device setting, also see http://manuals.opensound.com/developer/SNDCTL_AUDIOINFO.html */
+	/* TODO duplexity check, see http://manuals.opensound.com/developer/full_duplex.html */
 	if ((fd = open(dsp, O_RDWR)) == -1) {
 		error(1, errno, "failed to open %s", dsp);
 	}
@@ -67,7 +71,19 @@ static void *reader(void *_) {
 		for (i = 0; i < fs; i++)
 			input_audio_data->data[i] = buf[i];
 
-		pa_interface_callback(input_audio_data, output_audio_data);
+		pa_interface_capture_callback(input_audio_data);
+	}
+	return NULL;
+}
+
+static void *writer(void *_) {
+	size_t s = fs * 2;
+	int16_t *buf = malloc(s);
+	assert(buf);
+	while (true) {
+		ssize_t i;
+
+		pa_interface_playback_callback(output_audio_data);
 
 		for (i = 0; i < fs; i++)
 			buf[i] = output_audio_data->data[i];
@@ -81,7 +97,7 @@ static void *reader(void *_) {
 	return NULL;
 }
 
-int init_audio(uint_fast16_t rate, uint_fast32_t frame_size) {
+int init_audio (unsigned int rate, unsigned int frame_size){
 	input_audio_data  = malloc(sizeof(audio_data_t));
 	output_audio_data = malloc(sizeof(audio_data_t));
 	input_audio_data->size = frame_size;
@@ -92,7 +108,8 @@ int init_audio(uint_fast16_t rate, uint_fast32_t frame_size) {
 	oss_open(rate);
 
 	fs = frame_size;
-	thread_create(&rt, reader, NULL);	// undocumented crap
+	thread_create(&rt, reader, NULL);	/* undocumented crap */ /* L29Ah - /\OX */
+	thread_create(&wt, writer, NULL);	
 	assert(rt > 0);
 
 	return 0;
@@ -105,8 +122,10 @@ int close_audio() {
 	return 0;
 }
 
-int set_audio_callback(audio_callback_t audio_callback) {
-	pa_interface_callback = audio_callback;
+int set_audio_callbacks(capture_audio_callback_t capture_callback, 
+                        playback_audio_callback_t playback_callback){
+	pa_interface_capture_callback = capture_callback;
+	pa_interface_playback_callback = playback_callback;
 	return 0;
 }
 
