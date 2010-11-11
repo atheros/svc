@@ -15,11 +15,15 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89 -Wall ${CFLAGS} -D_XOPEN_SOURCE=
 # tell where to look for additional cmake modules
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
-OPTION(BUILD_SHARED "Build libsvc as a shared library" OFF)
-OPTION(BUILD_ENET_SVC "Build SVC ENet client/server" OFF)
-OPTION(BUILD_TESTS "Build libsvc tests" OFF)
-OPTION(BUILD_P2P "Build libsvc P2P simple client" ON)
+OPTION(BUILD_SHARED	"Build libsvc as a shared library" OFF)
+OPTION(BUILD_ENET_SVC	"Build SVC ENet client/server" OFF)
+OPTION(BUILD_TESTS	"Build libsvc tests" OFF)
+OPTION(BUILD_P2P	"Build libsvc P2P simple client" ON)
 
+OPTION(BUILD_SVCD	"Build SVC daemon" ON)
+OPTION(BUILD_SVCDC	"Build SVC daemon cli controller" ON)
+OPTION(BUILD_SVCC	"Build SVC client" ON)
+OPTION(BUILD_SVCCC	"Build SVC client cli controller" ON)
 
 
 FIND_PACKAGE(Celt REQUIRED)
@@ -110,6 +114,8 @@ ENDIF("${AUDIO_API}" STREQUAL "portaudio")
 INCLUDE_DIRECTORIES(
 	src/common
 	src/libsvc
+# FIXME: this is only for SVC[D/DC/C/CC] targets!
+	src/network/svc/common
 #	${ENET_INCLUDE_DIR}
 #	${CELT_INCLUDE_DIR}
 #	${PORTAUDIO_INCLUDE_DIR}
@@ -137,6 +143,24 @@ ADD_LIBRARY(svc ${LIBSVC_TYPE}
 	src/libsvc/codec.c
 	src/libsvc/network_packet.c
 )
+
+# Build SVC main daemon
+IF(BUILD_SVCD)
+	MESSAGE(STATUS "Main SVC daemon build enabled.")
+	ADD_EXECUTABLE(svcd
+		src/network/svc/server/main.c
+		src/network/svc/server/peer.c
+		src/network/svc/common/net.c
+		src/common/dstr.c
+		src/common/dstrutils.c
+	)
+	
+	TARGET_LINK_LIBRARIES(svcd
+		svc	
+	)
+ELSE(BUILD_SVCD)
+	MESSAGE(STATUS "Main SVC daemon build disabled.")
+ENDIF(BUILD_SVCD)
 
 # Build SVC P2P simple client
 IF(BUILD_P2P)

@@ -1,4 +1,3 @@
-#define __USE_GNU
 #include <sys/time.h>
 #include <string.h>
 #include <errno.h>

@@ -7,9 +7,9 @@
 #include "tests_utils.h"
 
 int main(int argc, char* argv[]) {
-	dstrlist* l1;
+	dstrlist *l1, *l2;
 	dstrnode *n1;
-	dstring* s1;
+	dstring *s1, *s2;
 	
 	
 	test_start("dlist_new()");
@@ -157,27 +157,158 @@ int main(int argc, char* argv[]) {
 	test_end();
 	
 	test_start("dlist_join()");
+	l1 = dlist_new();
+	dlist_addcs(l1, "hello");
+	dlist_addcs(l1, "world");
+	s1 = dfromcs(" ");
+	
+	s2 = dlist_join(l1, s1);
+	
+	test_assert(s2 != NULL);
+	test_assert(s2->data != NULL);
+	test_assert(dcmpcs(s2, "hello world") == 0);
+	
+	dfree(s2);
+	dfree(s1);
+	dlist_free(l1);
 	test_end();
+
 	
 	test_start("dlist_joinc()");
+	l1 = dlist_new();
+	dlist_addcs(l1, "hello");
+	dlist_addcs(l1, "world");
+	
+	s1 = dlist_joinc(l1, ' ');
+	
+	test_assert(s1 != NULL);
+	test_assert(s1->data != NULL);
+	test_assert(dcmpcs(s1, "hello world") == 0);
+	
+	dfree(s1);
+	dlist_free(l1);
 	test_end();
+
 	
 	test_start("dlist_joincs()");
+	l1 = dlist_new();
+	dlist_addcs(l1, "hello");
+	dlist_addcs(l1, "world");
+	
+	s1 = dlist_joincs(l1, " - ");
+	
+	test_assert(s1 != NULL);
+	test_assert(s1->data != NULL);
+	test_assert(dcmpcs(s1, "hello - world") == 0);
+	
+	dfree(s1);
+	dlist_free(l1);
 	test_end();
 	
 	test_start("dlist_equals()");
+	l1 = dlist_new();
+	l2 = dlist_new();
+	
+	test_assert(dlist_equals(l1, l2));
+	
+	dlist_addcs(l1, "foo");
+	dlist_addcs(l2, "foo");
+	
+	test_assert(dlist_equals(l1, l2));
+	
+	dlist_addcs(l1, "foo");
+	dlist_addcs(l2, "bar");
+	
+	test_assert(dlist_equals(l1, l2) == 0);
+	
+	dlist_erase(l1, l1->back);
+	dlist_addcs(l1, "bar");
+	
+	test_assert(dlist_equals(l1, l2));
+	
+	dlist_free(l1);
+	dlist_free(l2);
+	
 	test_end();
+	
 	
 	test_start("dsplit()");
+	s1 = dfromcs("foo bar");
+	s2 = dfromcs(" ");
+	l1 = dsplit(s1, s2, 0);
+	
+	test_assert(l1 != NULL);
+	test_assert(l1->size == 2);
+	test_assert(strcmp(l1->front->string->data, "foo") == 0);
+	test_assert(strcmp(l1->back->string->data, "bar") == 0);
+	
+	dlist_free(l1);
+	
+	l1 = dsplit(s1, s2, 1);
+	test_assert(l1 != NULL);
+	test_assert(l1->size == 1);
+	test_assert(strcmp(l1->front->string->data, "foo bar") == 0);
+	dlist_free(l1);
+	
+	dfree(s1);
+	dfree(s2);
 	test_end();
+	
 	
 	test_start("dsplit_on_cs()");
+	s1 = dfromcs("foo bar");
+	l1 = dsplit_on_cs(s1, " ", 0);
+	
+	test_assert(l1 != NULL);
+	test_assert(l1->size == 2);
+	test_assert(strcmp(l1->front->string->data, "foo") == 0);
+	test_assert(strcmp(l1->back->string->data, "bar") == 0);
+	
+	dlist_free(l1);
+	
+	l1 = dsplit_on_cs(s1, " ", 1);
+	test_assert(l1 != NULL);
+	test_assert(l1->size == 1);
+	test_assert(strcmp(l1->front->string->data, "foo bar") == 0);
 	test_end();
+	
 	
 	test_start("dsplitcs()");
+	s2 = dfromcs(" ");
+	l1 = dsplitcs("foo bar", s2, 0);
+	
+	test_assert(l1 != NULL);
+	test_assert(l1->size == 2);
+	test_assert(strcmp(l1->front->string->data, "foo") == 0);
+	test_assert(strcmp(l1->back->string->data, "bar") == 0);
+	
+	dlist_free(l1);
+	
+	l1 = dsplitcs("foo bar", s2, 1);
+	test_assert(l1 != NULL);
+	test_assert(l1->size == 1);
+	test_assert(strcmp(l1->front->string->data, "foo bar") == 0);
+	dlist_free(l1);
+	
+	dfree(s2);
 	test_end();
+
 	
 	test_start("dsplitcs_on_cs()");
+	l1 = dsplitcs_on_cs("foo bar", " ", 0);
+	
+	test_assert(l1 != NULL);
+	test_assert(l1->size == 2);
+	test_assert(strcmp(l1->front->string->data, "foo") == 0);
+	test_assert(strcmp(l1->back->string->data, "bar") == 0);
+	
+	dlist_free(l1);
+	
+	l1 = dsplitcs_on_cs("foo bar", " ", 1);
+	test_assert(l1 != NULL);
+	test_assert(l1->size == 1);
+	test_assert(strcmp(l1->front->string->data, "foo bar") == 0);
+	dlist_free(l1);
 	test_end();
 	
 	printf("Success.\n");

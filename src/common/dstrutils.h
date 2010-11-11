@@ -82,19 +82,19 @@ void dlist_erase(dstrlist* list, dstrnode* node);
 void dlist_remove(dstrlist* list, dstrnode* node);
 
 /** return a node with matching string (or NULL if not found) */
-dstrnode* dlist_find(dstrlist* list, const dstring* match);
+dstrnode* dlist_find(const dstrlist* list, const dstring* match);
 
 /** return a node with matching string (or NULL if not found) */
-dstrnode* dlist_findcs(dstrlist* list, const char* match);
+dstrnode* dlist_findcs(const dstrlist* list, const char* match);
 
 /** joins all elements in the list using glue and returns a new string */
-dstring* dlist_join(dstrlist* list, const dstring* glue);
+dstring* dlist_join(const dstrlist* list, const dstring* glue);
 
 /** joins all elements in the list using glue and returns a new string */
-dstring* dlist_joinc(dstrlist* list, int c);
+dstring* dlist_joinc(const dstrlist* list, int c);
 
 /** joins all elements in the list using glue and returns a new string */
-dstring* dlist_joincs(dstrlist* list, const char* glue);
+dstring* dlist_joincs(const dstrlist* list, const char* glue);
 
 /** returns 1 if both list are equal in size and in contents */
 int dlist_equals(const dstrlist* l1, const dstrlist* l2);
@@ -102,16 +102,16 @@ int dlist_equals(const dstrlist* l1, const dstrlist* l2);
 
 
 
-/** splits a on find and returns a list */
+/** splits on on and returns a list */
 dstrlist* dsplit(const dstring* text, const dstring* on, size_t max);
 
-/** splits a on find and returns a list */
+/** splits on on and returns a list */
 dstrlist* dsplit_on_cs(const dstring* text, const char* on, size_t max);
 
-/** splits a on find and returns a list */
+/** splits on on and returns a list */
 dstrlist* dsplitcs(const char* text, const dstring* on, size_t max);
 
-/** splits a on find and returns a list */
+/** splits on on find and returns a list */
 dstrlist* dsplitcs_on_cs(const char* text, const char* on, size_t max);
 
 

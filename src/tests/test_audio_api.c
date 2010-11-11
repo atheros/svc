@@ -14,18 +14,10 @@ audio_data_t *i_data;
 
 
 void shit_read(audio_data_t *packet) {
-	assert(i_data != NULL);
-	assert(i_data->data != NULL);
-	assert(packet != NULL);
-	assert(packet->data != NULL);
 	memcpy(i_data->data, packet->data, sizeof(sample_t) * FRAME_SIZE);
 }
 
 void shit_write(audio_data_t *packet) {
-	assert(i_data != NULL);
-	assert(i_data->data != NULL);
-	assert(packet != NULL);
-	assert(packet->data != NULL);
 	memcpy(packet->data, i_data->data, sizeof(sample_t) * FRAME_SIZE);
 }
 

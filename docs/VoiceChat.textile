@@ -62,7 +62,7 @@ or options from command line (and maybe a config file).
 
 The protocol on this socket is in plain text, format:
 
-@code@ COMMAND[ ARG1 [ARG2 [...]]];
+@COMMAND[ ARG1 [ARG2 [...]]];@
 
 
 h3. SVCD audio socket

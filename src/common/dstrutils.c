@@ -187,7 +187,7 @@ void dlist_remove(dstrlist* list, dstrnode* node) {
 }
 
 
-dstrnode* dlist_find(dstrlist* list, const dstring* match) {
+dstrnode* dlist_find(const dstrlist* list, const dstring* match) {
 	dstrnode* node = list->front;
 	while(node) {
 		if (dcmp(node->string, match) == 0) {
@@ -200,7 +200,7 @@ dstrnode* dlist_find(dstrlist* list, const dstring* match) {
 }
 
 
-dstrnode* dlist_findcs(dstrlist* list, const char* match) {
+dstrnode* dlist_findcs(const dstrlist* list, const char* match) {
 	dstrnode* node = list->front;
 	while(node) {
 		if (dcmpcs(node->string, match) == 0) {
@@ -213,7 +213,7 @@ dstrnode* dlist_findcs(dstrlist* list, const char* match) {
 }
 
 
-dstring* dlist_join(dstrlist* list, const dstring* glue) {
+dstring* dlist_join(const dstrlist* list, const dstring* glue) {
 	dstrnode* node = list->front;
 	dstring* s = dnew();
 	
@@ -228,7 +228,7 @@ dstring* dlist_join(dstrlist* list, const dstring* glue) {
 	return s;
 }
 
-dstring* dlist_joinc(dstrlist* list, int c) {
+dstring* dlist_joinc(const dstrlist* list, int c) {
 	dstrnode* node = list->front;
 	dstring* s = dnew();
 	
@@ -244,7 +244,7 @@ dstring* dlist_joinc(dstrlist* list, int c) {
 }
 
 
-dstring* dlist_joincs(dstrlist* list, const char* glue) {
+dstring* dlist_joincs(const dstrlist* list, const char* glue) {
 	dstrnode* node = list->front;
 	dstring* s = dnew();
 	int len = strlen(glue);
@@ -289,9 +289,11 @@ dstrlist* dsplit(const dstring* text, const dstring* on, size_t max) {
 	int slen = on->len;
 	unsigned int i, j, k = 0;
 
-	if (max <= 1) {
+	if (max == 1) {
 		dlist_add(result, text);
 		return result;
+	} else if (max <= 0) {
+		max = text->len;
 	}
 
 	j = 0;
@@ -317,9 +319,11 @@ dstrlist* dsplit_on_cs(const dstring* text, const char* on, size_t max) {
 	int slen = strlen(on);
 	unsigned int i, j, k = 0;
 
-	if (max <= 1) {
+	if (max == 1) {
 		dlist_add(result, text);
 		return result;
+	} else if (max <= 0) {
+		max = text->len;
 	}
 
 	j = 0;
