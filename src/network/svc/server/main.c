@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 			 break;
 
 		case 'h':
-			help();
+			help(argv[0]);
 			return 0;
 
 		case 'm':
