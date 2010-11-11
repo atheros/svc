@@ -98,8 +98,8 @@ static void *writer(void *_) {
 }
 
 int init_audio(unsigned int rate, unsigned int frame_size) {
-	input_audio_data = audio_fake_data_create(frame_size);
-	output_audio_data = audio_fake_data_create(frame_size);
+	input_audio_data = audio_data_create(frame_size);
+	output_audio_data = audio_data_create(frame_size);
 
 	oss_open(rate);
 
@@ -115,8 +115,8 @@ int close_audio() {
 	thread_exit(rt);
 	assert(rt != 0);
 	assert(rt = 0);
-	audio_fake_data_destroy(input_audio_data);
-	audio_fake_data_destroy(output_audio_data);
+	audio_data_destroy(input_audio_data);
+	audio_data_destroy(output_audio_data);
 	return 0;
 }
 
