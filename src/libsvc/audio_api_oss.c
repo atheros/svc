@@ -14,6 +14,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#if defined(__OpenBSD__) || defined(__NetBSD__) // Stolen from mpd; seems sensible
+#include <soundcard.h>
+#else
 /* using sys/soundcard.h to avoid adding /usr/include/sys/ to the include path
  * because it causes the nasty include loop[1]; it is against 4front's 
  * recommendations though[2]
@@ -21,6 +24,7 @@
  * [1] http://sprunge.us/VZXW
  * [2] http://manuals.opensound.com/developer/programming.html */
 #include <sys/soundcard.h>
+#endif
 
 #include "audio_api.h"
 #include "thread.h"
@@ -32,7 +36,7 @@ static audio_data_t* input_audio_data;
 static audio_data_t* output_audio_data;
 
 static int fd;
-static unsigned int fs;	/* frame size  */
+static uint_fast32_t fs;	/* frame size  */
 static thread_t rt;
 static thread_t wt;
 
@@ -56,11 +60,12 @@ static void oss_open(unsigned int rate) {
 }
 
 static void *reader(void *_) {
+	(void)_;
 	size_t s = fs * 2;
 	int16_t *buf = malloc(s);
 	assert(buf);
 	while (true) {
-		ssize_t i;
+		size_t i;
 
 		i = 0;
 		while (i < s) {
@@ -77,11 +82,12 @@ static void *reader(void *_) {
 }
 
 static void *writer(void *_) {
+	(void)_;
 	size_t s = fs * 2;
 	int16_t *buf = malloc(s);
 	assert(buf);
 	while (true) {
-		ssize_t i;
+		size_t i;
 
 		oss_playback_callback(output_audio_data);
 
@@ -115,6 +121,11 @@ int close_audio() {
 	thread_exit(rt);
 	assert(rt != 0);
 	assert(rt = 0);
+
+	thread_exit(wt);
+	assert(wt != 0);
+	assert(wt = 0);
+
 	audio_data_destroy(input_audio_data);
 	audio_data_destroy(output_audio_data);
 	return 0;
