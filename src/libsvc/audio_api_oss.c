@@ -38,7 +38,6 @@ static audio_data_t* output_audio_data;
 static int fd;
 static uint_fast32_t fs;	/* frame size  */
 static thread_t rt;
-static thread_t wt;
 
 static void oss_open(unsigned int rate) {
 	assert(fd == 0);	/* making sure we don't do double-open */
@@ -77,18 +76,7 @@ static void *reader(void *_) {
 			input_audio_data->data[i] = buf[i];
 
 		oss_capture_callback(input_audio_data);
-	}
-	return NULL;
-}
-
-static void *writer(void *_) {
-	(void)_;
-	size_t s = fs * 2;
-	int16_t *buf = malloc(s);
-	assert(buf);
-	while (true) {
-		size_t i;
-
+	
 		oss_playback_callback(output_audio_data);
 
 		for (i = 0; i < fs; i++)
@@ -111,7 +99,6 @@ int init_audio(unsigned int rate, unsigned int frame_size) {
 
 	fs = frame_size;
 	thread_create(&rt, reader, NULL);
-	thread_create(&wt, writer, NULL);
 	assert(rt > 0);
 
 	return 0;
@@ -121,10 +108,6 @@ int close_audio() {
 	thread_exit(rt);
 	assert(rt != 0);
 	assert(rt = 0);
-
-	thread_exit(wt);
-	assert(wt != 0);
-	assert(wt = 0);
 
 	audio_data_destroy(input_audio_data);
 	audio_data_destroy(output_audio_data);
