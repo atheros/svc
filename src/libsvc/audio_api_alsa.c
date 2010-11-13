@@ -73,9 +73,6 @@ static int alsa_open(unsigned int rate) {
 	};
 
 	unsigned int exact_rate;
-	int periods = 2;       /* Number of periods */
-	snd_pcm_uframes_t size = frame_size * sizeof(float); /* Periodsize (bytes) */
-
 	if (snd_pcm_hw_params_set_format(pcm_playback_handle, playback_hwparams, SND_PCM_FORMAT_FLOAT_LE) < 0) {
 		fprintf(stderr, "Error setting format.\n");
 		return(-1);
@@ -126,6 +123,7 @@ static int alsa_open(unsigned int rate) {
 
 	snd_pcm_hw_params_free (playback_hwparams);
 	snd_pcm_hw_params_free (capture_hwparams);
+	return 0;
 }
 
 
@@ -134,13 +132,14 @@ static void *reader(void *arg) {
 	int err;
 	while (running) {
 		/* read */
-		while (err = snd_pcm_readi(pcm_capture_handle, input_audio_data->data, frame_size) < 0) {
+		while ((err = snd_pcm_readi(pcm_capture_handle, input_audio_data->data, frame_size * 4)) < 0) {
 			snd_pcm_prepare(pcm_capture_handle);
 			fprintf(stderr, "Capture error: %s\n", snd_strerror(err));
 		}
 		
 		alsa_capture_callback(input_audio_data);
 	}
+	return NULL;
 }
 
 static void *writer(void *arg) {
@@ -149,18 +148,19 @@ static void *writer(void *arg) {
 	while (running) {
 		/* write */
 		alsa_playback_callback(output_audio_data);
-		while (err = snd_pcm_writei(pcm_playback_handle, output_audio_data->data, frame_size) < 0) {
+		while ((err = snd_pcm_writei(pcm_playback_handle, output_audio_data->data, frame_size)) < 0) {
 			snd_pcm_prepare(pcm_playback_handle);
 			fprintf(stderr, "Playback error: %s\n", snd_strerror(err));
 		}
 	}
+	return NULL;
 }
 
 int init_audio(unsigned int rate, unsigned int frame_size_i) {
 	frame_size = frame_size_i;
 	
-	input_audio_data = audio_fake_data_create(frame_size);
-	output_audio_data = audio_fake_data_create(frame_size);
+	input_audio_data = audio_data_create(frame_size);
+	output_audio_data = audio_data_create(frame_size);
 
 	alsa_open(rate);
 
@@ -173,6 +173,8 @@ int init_audio(unsigned int rate, unsigned int frame_size_i) {
 		fprintf(stderr, "Failed creating thread");
 		return -1;
 	}
+	thread_detach(rt);
+	thread_detach(wt);
 
 	return 0;
 }
@@ -183,8 +185,8 @@ int close_audio() {
 	thread_join(wt);
 	snd_pcm_close(pcm_playback_handle);
 	snd_pcm_close(pcm_capture_handle);
-	audio_fake_data_destroy(input_audio_data);
-	audio_fake_data_destroy(output_audio_data);
+	audio_data_destroy(input_audio_data);
+	audio_data_destroy(output_audio_data);
 	return 0;
 }
 
