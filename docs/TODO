@@ -14,7 +14,7 @@ Milestone XI:
 * waterlaz: rebuffering/resampling of incoming packets
 * atheros: Write a socket library for IPv4 and Unix sockets
 * atheros: svcd - only channel and peer management
-* ?: svcdc - svcd cli manager
+* naryl: svcdc - svcd cli manager
 * atheros: svcc - connect to server and do nothing
 
 Milestone XII:
@@ -27,7 +27,7 @@ Milestone XIII:
 * atheros: Fix cmake to compile on windows with dummy backend
 * atheros: Add windows named pipes to socket library and WinSock2
 * naryl: WMME or DirectSound backend
-* ???: bitch Div to integrate process management into DP (fork, pipes & stuff)
+* naryl: bitch Div to integrate process management into DP (fork, pipes & stuff)
 
 Milestone XIV:
 * atheros: p2p audio transmission
