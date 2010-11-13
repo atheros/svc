@@ -231,36 +231,6 @@ IF(BUILD_TESTS)
 	)
 
 
-	ADD_EXECUTABLE(test_audio_packet_cage
-		src/tests/test_audio_packet_cage.c
-		src/libsvc/audio.c
-		src/libsvc/audio_api_${AUDIO_API}.c
-		src/libsvc/packet_cage.c
-		src/common/thread.c
-	)
-	TARGET_LINK_LIBRARIES(test_audio_packet_cage
-		${AUDIOAPI_LIBRARIES}
-		${CELT_LIBRARIES}
-		${PTHREAD_LIB}
-	)
-
-
-	ADD_EXECUTABLE(test_audio_cage_queue
-		src/tests/test_audio_cage_queue.c
-		src/libsvc/packet_queue.c
-		src/libsvc/audio.c
-		src/libsvc/audio_api_${AUDIO_API}.c
-		src/libsvc/packet_cage.c
-		src/common/thread.c
-	)
-	TARGET_LINK_LIBRARIES(test_audio_cage_queue
-		${AUDIOAPI_LIBRARIES}
-		${CELT_LIBRARIES}
-		${PTHREAD_LIB}
-	)
-
-
-
 	ADD_EXECUTABLE(test_libsvc
 		src/tests/test_libsvc.c
 		src/libsvc/packet_queue.c
