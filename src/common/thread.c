@@ -109,10 +109,19 @@ int thread_detach(thread_t thread){
 
 void thread_join(thread_t thread) {
 #if defined(THREAD_POSIX)
-	pthread_join(thread, 0);
+	pthread_join(thread, NULL);
 #elif defined(THREAD_WIN)
 	WaitForSingleObject(thread, INFINITE);
 	CloseHandle(thread);
+#endif
+}
+
+int thread_cancel(thread_t thread) {
+#if defined(THREAD_POSIX)
+	return pthread_cancel(thread);
+#elif defined(THREAD_WIN)
+	TerminateThread(thread, 0);
+	return 0;
 #endif
 }
 

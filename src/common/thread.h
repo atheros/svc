@@ -40,11 +40,13 @@ int mutex_unlock(mutex_t* mutex);
 
 
 int thread_create(thread_t* thread, void* (*proc)(void*), void* param);
-int thread_detach(thread_t thread);
-void thread_join(thread_t thread);
+int thread_detach(thread_t thread); /* Set the thread to automatically release resources */
+int thread_cancel(thread_t thread); /* Terminate a thread */
+void thread_join(thread_t thread); /* Wait until the thread terminates */
 
 /**
  * Exit from current thread.
+ * REQUIRED to run either detach or exit on EVERY created thread
  */
 void thread_exit();
 
