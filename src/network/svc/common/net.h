@@ -1,7 +1,12 @@
+/**
+ * Helper functions to support reliable UDP communication.
+ */
 #ifndef __SVC_COMMON_NET_H
 #define __SVC_COMMON_NET_H
 
 #include <sys/time.h>
+
+
 
 /**
  * Holds acknowledgments sent.
