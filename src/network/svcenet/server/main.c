@@ -88,7 +88,7 @@ static void send_auth(int peer_id) {
 
 static void send_peer_list(int peer_id) {
 	ENetPacket* p;
-	int i, size = 0, count = 0;
+	int i, count = 0;
 	dstring* s;
 	s = dnew();
 	dcatc(s, SYSPACKAGE_LIST);
@@ -192,8 +192,7 @@ static void handle_connection(ENetEvent* event) {
 
 
 static void handle_disconnect(ENetEvent* event) {
-	ENetPacket* packet;
-	int i, peer_id;
+	int peer_id;
 	peer_id = ((Peer*)event->peer->data)->id;
 	
 	printf("#%i disconected.\n", peer_id);
@@ -220,7 +219,6 @@ static int valid(int c) {
 static void handle_receive(ENetEvent* event) {
 	int i, peer_id, c;
 	peer_id = ((Peer*)event->peer->data)->id;
-	dstring* s;
 	
 	/*printf("A packet of length %u was received from #%i on channel %i.\n",
 		event->packet->dataLength,
@@ -296,9 +294,6 @@ int main(int argc, char* argv[]) {
 	/* event */
 	ENetEvent event;
 	/* temporary buffer for string operations */
-	char buff[1024];
-
-	int i;
 
 	/* initialize peers */
 	memset(peers, 0, sizeof(Peer) * SVCSERVER_MAX_CLIENTS);
@@ -340,6 +335,10 @@ int main(int argc, char* argv[]) {
 
 			case ENET_EVENT_TYPE_DISCONNECT:
 				handle_disconnect(&event);
+				break;
+
+			case ENET_EVENT_TYPE_NONE:
+				fprintf(stderr, "Unexpected event type %i.\n", event.type);
 				break;
 			}
 		}

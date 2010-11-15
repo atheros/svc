@@ -268,6 +268,11 @@ int main(int argc, char* argv[]) {
 				printf ("Server disconected.\nAborting!\n");
 				done = 1;
 				break;
+
+			case ENET_EVENT_TYPE_CONNECT:
+			case ENET_EVENT_TYPE_NONE:
+				fprintf(stderr, "Unexpected event %i.\n", event.type);
+				break;
 			}
 		}
 	}
@@ -278,4 +283,6 @@ int main(int argc, char* argv[]) {
 	svc_close();
 	enet_host_destroy(client);
 	enet_deinitialize();
+
+	return 0;
 }
