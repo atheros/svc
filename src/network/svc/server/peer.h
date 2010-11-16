@@ -24,6 +24,7 @@ typedef struct {
 	unsigned int count;
 } PeerList;
 
-
+PeerList* peers_alloc(unsigned int max);
+void peers_free(PeerList* list);
 
 #endif /* !__SVC_SERVER_PEER_H */

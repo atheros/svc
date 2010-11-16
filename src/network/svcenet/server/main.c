@@ -347,4 +347,6 @@ int main(int argc, char* argv[]) {
 
     enet_host_destroy(server);
     enet_deinitialize();
+
+    return 0;
 }

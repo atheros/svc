@@ -20,12 +20,36 @@ static unsigned int max_peers;
 static unsigned int port;
 static char bindto[100];
 
+
+static PeerList* peers;
+
+
+
+
 void help(const char* app) {
 	printf("usage: %s [options]\n", app);
 	printf("Options:\n");
 	printf("  -p,--port=PORT                    Specify server port number (default 49001).\n");
 	printf("  -m,--max-peers=MAX                Specify maximum peers count (default 16).\n");
 	printf("  -b,--bind=ADDR                    Bind to specified address (default 0.0.0.0).\n");
+}
+
+
+
+int server() {
+	/* init peers */
+	peers = peers_alloc(max_peers);
+
+	/* init server socket */
+
+	/* server loop */
+	/* send close to peers */
+	/* close sockets */
+	/* close server socket */
+
+	/* free peers */
+	peers_free(peers);
+	return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -50,7 +74,10 @@ int main(int argc, char* argv[]) {
 		case 'm':
 			max_peers = atoi(optarg);
 			if (max_peers < 2) {
-				fprintf(stderr, "Max peers must be atleast 2\n");
+				fprintf(stderr, "Peers limit must be atleast 2.\n");
+				return 1;
+			} else if (max_peers > 255) {
+				fprintf(stderr, "Peers hard limit is 255.\n");
 				return 1;
 			}
 			break;
@@ -66,5 +93,5 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	return 0;
+	return server();
 }
