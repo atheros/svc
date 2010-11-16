@@ -1,5 +1,5 @@
 #include <stdlib.h>
-
+#include "peer.h"
 
 
 PeerList* peers_alloc(unsigned int max) {

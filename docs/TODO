@@ -1,38 +1,38 @@
-Milestone X:
-* waterlaz: Cleanup the namespace in libsvc (svc_ prefix for all non static members) 
-* waterlaz: Check each non-static in libsvc to make sure it should be non-static
-* waterlaz: Split process_callback into 2 separate calls
-* waterlaz: Make 1 audio backend work with new layout (portaudio probably)
-* L29Ah: fix OSS to support new API
-* naryl: fix ALSA to support new API
-* naryl: fix Jack to support new API
-* atheros: fix svcp2p to support new API
-* atheros: fix svce* to support new API
-* ?: fix tests
+[ ] Milestone X:
+[ ] - waterlaz: Cleanup the namespace in libsvc (svc_ prefix for all non static members) 
+[ ] - waterlaz: Check each non-static in libsvc to make sure it should be non-static
+[ ] - waterlaz: Split process_callback into 2 separate calls
+[ ] - waterlaz: Make 1 audio backend work with new layout (portaudio probably)
+[ ] - L29Ah: fix OSS to support new API
+[ ] - naryl: fix ALSA to support new API
+[ ] - naryl: fix Jack to support new API
+[?] - atheros: fix svcp2p to support new API
+[?] - atheros: fix svce* to support new API
+[ ] - ?: fix tests
 
-Milestone XI:
-* waterlaz: rebuffering/resampling of incoming packets
-* atheros: Write a socket library for IPv4 and Unix sockets
-* atheros: svcd - only channel and peer management
-* naryl: svcdc - svcd cli manager
-* atheros: svcc - connect to server and do nothing
+[ ] Milestone XI:
+[ ] - waterlaz: rebuffering/resampling of incoming packets
+[ ] - atheros: Write a socket library for IPv4 and Unix sockets
+[ ] - atheros: svcd - only channel and peer management
+[ ] - naryl: svcdc - svcd cli manager
+[ ] - atheros: svcc - connect to server and do nothing
 
-Milestone XII:
-* waterlaz: audio filter api (noice and echo suppression)
-* atheros: svcd server audio transmission
-* ???: svc/svcd signal: peer join/leave, moving of peers betwwen channels, local muting
+[ ] Milestone XII:
+[ ] - waterlaz: audio filter api (noice and echo suppression)
+[ ] - atheros: svcd server audio transmission
+[ ] - ???: svc/svcd signal: peer join/leave, moving of peers betwwen channels, local muting
 
-Milestone XIII:
-* atheros: svcc/svcd P2P handshake
-* atheros: Fix cmake to compile on windows with dummy backend
-* atheros: Add windows named pipes to socket library and WinSock2
-* naryl: WMME or DirectSound backend
-* naryl: bitch Div to integrate process management into DP (fork, pipes & stuff)
+[ ] Milestone XIII:
+[ ] - atheros: svcc/svcd P2P handshake
+[ ] - atheros: Fix cmake to compile on windows with dummy backend
+[ ] - atheros: Add windows named pipes to socket library and WinSock2
+[ ] - naryl: WMME or DirectSound backend
+[ ] - naryl: bitch Div to integrate process management into DP (fork, pipes & stuff)
 
-Milestone XIV:
-* atheros: p2p audio transmission
-* ???: big tests
+[ ] Milestone XIV:
+[ ] - atheros: p2p audio transmission
+[ ] - ???: big tests
 
-Milestone XV:
+[ ] Milestone XV:
 
 
