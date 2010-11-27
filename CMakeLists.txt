@@ -20,10 +20,11 @@ OPTION(BUILD_ENET_SVC	"Build SVC ENet client/server" OFF)
 OPTION(BUILD_TESTS	"Build libsvc tests" OFF)
 OPTION(BUILD_P2P	"Build libsvc P2P simple client" ON)
 
-OPTION(BUILD_SVCD	"Build SVC daemon" ON)
-OPTION(BUILD_SVCDC	"Build SVC daemon cli controller" ON)
-OPTION(BUILD_SVCC	"Build SVC client" ON)
-OPTION(BUILD_SVCCC	"Build SVC client cli controller" ON)
+OPTION(BUILD_SVC	"Build all SVC applications" ON)
+OPTION(BUILD_SVCD	"Build SVC daemon" ${BUILD_SVC})
+OPTION(BUILD_SVCDC	"Build SVC daemon cli controller" ${BUILD_SVC})
+OPTION(BUILD_SVCC	"Build SVC client" ${BUILD_SVC})
+OPTION(BUILD_SVCCC	"Build SVC client cli controller" ${BUILD_SVC})
 
 
 FIND_PACKAGE(Celt REQUIRED)
@@ -144,23 +145,28 @@ ADD_LIBRARY(svc ${LIBSVC_TYPE}
 	src/libsvc/network_packet.c
 )
 
+
 # Build SVC main daemon
 IF(BUILD_SVCD)
 	MESSAGE(STATUS "Main SVC daemon build enabled.")
 	ADD_EXECUTABLE(svcd
 		src/network/svc/server/main.c
 		src/network/svc/server/peer.c
-		src/network/svc/common/net.c
 		src/common/dstr.c
 		src/common/dstrutils.c
 	)
 	
 	TARGET_LINK_LIBRARIES(svcd
-		svc	
+		svc
+		${ENET_LIBRARIES}
 	)
 ELSE(BUILD_SVCD)
 	MESSAGE(STATUS "Main SVC daemon build disabled.")
 ENDIF(BUILD_SVCD)
+
+
+
+
 
 # Build SVC P2P simple client
 IF(BUILD_P2P)
