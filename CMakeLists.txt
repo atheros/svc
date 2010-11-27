@@ -20,7 +20,7 @@ OPTION(BUILD_ENET_SVC	"Build SVC ENet client/server" OFF)
 OPTION(BUILD_TESTS	"Build libsvc tests" OFF)
 OPTION(BUILD_P2P	"Build libsvc P2P simple client" ON)
 
-OPTION(BUILD_SVC	"Build all SVC applications" ON)
+OPTION(BUILD_SVC	"Build all SVC applications" OFF)
 OPTION(BUILD_SVCD	"Build SVC daemon" ${BUILD_SVC})
 OPTION(BUILD_SVCDC	"Build SVC daemon cli controller" ${BUILD_SVC})
 OPTION(BUILD_SVCC	"Build SVC client" ${BUILD_SVC})
