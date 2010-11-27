@@ -8,11 +8,13 @@
 #ifndef CHANNELS_H_
 #define CHANNELS_H_
 
+#include "dstr.h"
 
+#define CHANNEL_NULL 0xffff
 
 typedef struct {
 	unsigned int	parent_channel;
-	unsigned int	next_channel;
+	unsigned int	next_channel, prev_channel;
 
 	/**
 	 * if non 0, when automaticly moving clients up, this node will be ommited,
@@ -21,6 +23,7 @@ typedef struct {
 	int				to_be_deleted;
 
 	unsigned int	id;
+	int				used;
 	dstring			*name;
 
 	unsigned int	peers_count;

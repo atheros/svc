@@ -152,6 +152,7 @@ IF(BUILD_SVCD)
 	ADD_EXECUTABLE(svcd
 		src/network/svc/server/main.c
 		src/network/svc/server/peer.c
+		src/network/svc/server/channels.c
 		src/common/dstr.c
 		src/common/dstrutils.c
 	)

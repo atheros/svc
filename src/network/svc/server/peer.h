@@ -1,15 +1,14 @@
 #ifndef __SVC_SERVER_PEER_H
 #define __SVC_SERVER_PEER_H
 
+#include <enet/enet.h>
 #include "dstr.h"
-#include "enet.h"
 
 typedef struct {
 	int			peer_id;
 	dstring		*nick;
 	dstring		*key;
 	char		auth_key[32];
-	peer_t		*peer;
 	ENetPeer*	*enet;
 } PeerInfo;
 

@@ -36,9 +36,9 @@ void help(const char* app) {
 
 
 
-int server() {
+int server_main() {
 	ENetHost* host;
-	ENetPeer* server;
+	ENetPeer* server_peer;
 
 	/* init channels */
 
@@ -87,8 +87,8 @@ int main(int argc, char* argv[]) {
 			if (max_peers < 2) {
 				fprintf(stderr, "Peers limit must be atleast 2.\n");
 				return 1;
-			} else if (max_peers > 255) {
-				fprintf(stderr, "Peers hard limit is 255.\n");
+			} else if (max_peers > 65535) {
+				fprintf(stderr, "Peers hard limit is 65535.\n");
 				return 1;
 			}
 			break;
@@ -104,5 +104,5 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	return server();
+	return server_main();
 }
