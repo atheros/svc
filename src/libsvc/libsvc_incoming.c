@@ -41,9 +41,9 @@ void request_incoming_audio(audio_data_t* output_audio_data){
 peer_t* svc_peer_join(){
 	peer_t* new_peer = malloc(sizeof(peer_t));
 	new_peer->cage = packet_cage_create(5);
-	new_peer->decoder = decoder_create(svc_options->sample_rate, 
-	                                   svc_options->frame_size, 
-	                                   svc_options->byte_per_packet);
+	new_peer->decoder = svc_decoder_create(svc_options->sample_rate, 
+	                                       svc_options->frame_size, 
+	                                       svc_options->byte_per_packet);
 
 	new_peer->next = peer_list;
 	new_peer->prev = NULL;
@@ -65,13 +65,13 @@ void svc_peer_leave(peer_t* peer){
 	if (peer->prev!=NULL) peer->prev->next = peer->next;
 	if (peer->next!=NULL) peer->next->prev = peer->prev;
 	mutex_unlock(&peer_list_mutex);
-	decoder_destroy(peer->decoder);
+	svc_decoder_destroy(peer->decoder);
 	packet_cage_destroy(peer->cage);
 }
 
 void svc_packet_recieve(network_packet_t* packet, peer_t* peer){
 	audio_data_t* audio_data = audio_data_create(svc_options->frame_size);
-	decoder_decode(peer->decoder, packet->data, packet->data_len, audio_data->data);
+	svc_decoder_decode(peer->decoder, packet->data, packet->data_len, audio_data->data);
 	packet_cage_put_data(peer->cage, audio_data, packet->time);	
 }
 

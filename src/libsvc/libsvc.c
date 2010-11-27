@@ -31,7 +31,7 @@ static network_packet_t* create_network_packet_from_audio(audio_data_t* audio_da
 	network_packet_t* network_packet = malloc(sizeof(network_packet_t));
 	network_packet->data = malloc(sizeof(unsigned char)*svc_options->byte_per_packet);
 	network_packet->data_len = svc_options->byte_per_packet;
-	encoder_encode(svc_encoder, audio_data->data, network_packet->data);
+	svc_encoder_encode(svc_encoder, audio_data->data, network_packet->data);
 	svc_time = time_inc(svc_time);
 	network_packet->time = svc_time;
 	return network_packet;
@@ -57,7 +57,7 @@ void svc_init(svc_send_callback_t send_callback){
 	svc_options->sample_rate = 44100;
 	svc_options->byte_per_packet = 256;
 	
-	svc_encoder = encoder_create(svc_options->sample_rate, svc_options->frame_size, svc_options->byte_per_packet);
+	svc_encoder = svc_encoder_create(svc_options->sample_rate, svc_options->frame_size, svc_options->byte_per_packet);
 	packet_queue = packet_queue_create(100, svc_options->frame_size);
 	
 	incoming_init(svc_options);
@@ -76,7 +76,7 @@ void svc_close(){
 	svc_running = 0;
 	thread_detach(svc_send_thread);
 	close_audio();
-	encoder_destroy(svc_encoder);
+	svc_encoder_destroy(svc_encoder);
 	packet_queue_destroy(packet_queue);
 	incoming_close();
 	free(svc_options);

@@ -16,19 +16,19 @@ typedef struct _encoder_t {
 } encoder_t;
 
 /* Creates a new decoder. Must have a unique decoder for every channel. */
-decoder_t* decoder_create(int Fs, int frame_size, int byte_per_packet);
+decoder_t* svc_decoder_create(int Fs, int frame_size, int byte_per_packet);
 
 /* Destroys the decoder. */
-void decoder_destroy(decoder_t* decoder);
+void svc_decoder_destroy(decoder_t* decoder);
 
 /* Creates a new encoder. Must have a unique encoder for every channel. */
-encoder_t* encoder_create(int Fs, int frame_size, int byte_per_packet);
+encoder_t* svc_encoder_create(int Fs, int frame_size, int byte_per_packet);
 
 /* Destroys the encoder. */
-void encoder_destroy(encoder_t* encoder);
+void svc_encoder_destroy(encoder_t* encoder);
 
-int encoder_encode(encoder_t* encoder, const float* pcm, unsigned char* compressed);
+int svc_encoder_encode(encoder_t* encoder, const float* pcm, unsigned char* compressed);
 
-int decoder_decode(decoder_t* decoder, unsigned char* data, int len, float* pcm);
+int svc_decoder_decode(decoder_t* decoder, unsigned char* data, int len, float* pcm);
 
 #endif
