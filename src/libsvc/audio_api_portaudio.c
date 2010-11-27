@@ -9,8 +9,7 @@
 static PaError err;
 static PaStream *stream;
 
-static capture_audio_callback_t pa_interface_capture_callback;
-static playback_audio_callback_t pa_interface_playback_callback;
+static audio_callback_t pa_interface_callback;
 
 static audio_data_t* input_audio_data;
 static audio_data_t* output_audio_data;
@@ -30,8 +29,7 @@ static int pa_callback( const void *inputBuffer, void *outputBuffer,
 	input_audio_data->data = (float*)inputBuffer;
 	output_audio_data->data = (float*)outputBuffer;
 	
-	pa_interface_capture_callback(input_audio_data);
-	pa_interface_playback_callback(output_audio_data);
+	pa_interface_callback(input_audio_data, output_audio_data);
 	return 0;
 	
 }
@@ -43,8 +41,11 @@ int init_audio (unsigned int rate, unsigned int frame_size) {
 	err = Pa_Initialize();
 	DO_PA_ERROR;
 	
-	input_audio_data = audio_fake_data_create(frame_size);
-	output_audio_data = audio_fake_data_create(frame_size);
+	input_audio_data  = malloc(sizeof(audio_data_t));
+	output_audio_data = malloc(sizeof(audio_data_t));
+	
+	input_audio_data->size = frame_size;
+	output_audio_data->size = frame_size;
 	
 	err = Pa_OpenDefaultStream( &stream,
 			1,          /* input */
@@ -70,15 +71,11 @@ int close_audio () {
 	DO_PA_ERROR;
 	err = Pa_Terminate();
 	DO_PA_ERROR;
-	audio_fake_data_destroy(input_audio_data);
-	audio_fake_data_destroy(output_audio_data);
 	printf(" done.\n");
 	return 0;
 }
 
-int set_audio_callbacks(capture_audio_callback_t capture_callback, 
-                        playback_audio_callback_t playback_callback){
-	pa_interface_capture_callback = capture_callback;
-	pa_interface_playback_callback = playback_callback;
+int set_audio_callback(audio_callback_t audio_callback) {
+	pa_interface_callback = audio_callback;
 	return 0;
 }

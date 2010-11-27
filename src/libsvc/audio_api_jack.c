@@ -10,8 +10,7 @@ static jack_client_t *client;
 static jack_port_t *input_port;
 static jack_port_t *output_port;
 
-static capture_audio_callback_t jack_capture_callback;
-static playback_audio_callback_t jack_playback_callback;
+static audio_callback_t interface_callback;
 
 static audio_data_t* input_audio_data;
 static audio_data_t* output_audio_data;
@@ -21,8 +20,7 @@ static int process (jack_nframes_t nframes, void *arg)
 	output_audio_data->data = (float *) jack_port_get_buffer (output_port, nframes);
 	input_audio_data->data = (float *) jack_port_get_buffer (input_port, nframes);
 
-	jack_capture_callback(input_audio_data);
-	jack_playback_callback(output_audio_data);
+	interface_callback(input_audio_data, output_audio_data);
 	return 0;      
 }
 
@@ -57,9 +55,12 @@ static const char **getenv_array(const char *env) {
 }
 
 int init_audio (unsigned int rate, unsigned int frame_size)
-{	
-	input_audio_data = audio_fake_data_create(frame_size);
-	output_audio_data = audio_fake_data_create(frame_size);
+{
+	input_audio_data  = malloc(sizeof(audio_data_t));
+	output_audio_data = malloc(sizeof(audio_data_t));
+	
+	input_audio_data->size = frame_size;
+	output_audio_data->size = frame_size;
 
 	char client_name[10];
 	sprintf(client_name, "SVC-%d", getpid());
@@ -126,15 +127,11 @@ int init_audio (unsigned int rate, unsigned int frame_size)
 
 int close_audio () {
 	jack_client_close (client);
-	audio_fake_data_destroy(input_audio_data);
-	audio_fake_data_destroy(output_audio_data);
-
 	return 0;
 }
 
-int set_audio_callbacks(capture_audio_callback_t capture_callback, 
-                        playback_audio_callback_t playback_callback){
-	jack_capture_callback = capture_callback;
-	jack_playback_callback = playback_callback;
+int set_audio_callback(audio_callback_t audio_callback) {
+	interface_callback = audio_callback;
 	return 0;
 }
+
