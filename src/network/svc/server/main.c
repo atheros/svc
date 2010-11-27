@@ -3,8 +3,8 @@
 #include <getopt.h>
 #include <string.h>
 
-#include "peer.h"
 #include "dstrutils.h"
+#include "server.h"
 
 
 static struct option options[] = {
@@ -21,7 +21,7 @@ static unsigned int port;
 static char bindto[100];
 
 
-static PeerList* peers;
+static Server server;
 
 
 
@@ -37,8 +37,17 @@ void help(const char* app) {
 
 
 int server() {
-	/* init peers */
-	peers = peers_alloc(max_peers);
+	ENetHost* host;
+	ENetPeer* server;
+
+	/* init channels */
+
+
+	/* init server */
+	server.peers = peers_alloc(max_peers);
+	server.channels = channels_alloc("ROOT");
+
+	/* load channels */
 
 	/* init server socket */
 
@@ -47,8 +56,10 @@ int server() {
 	/* close sockets */
 	/* close server socket */
 
-	/* free peers */
-	peers_free(peers);
+	/* free server */
+	peers_free(server.peers);
+	channels_free(server.channels);
+
 	return 0;
 }
 
