@@ -13,7 +13,7 @@ typedef struct _peer_t {
 	struct _peer_t* prev;
 } peer_t;	
 
-void request_incoming_audio(audio_data_t* output_audio_data);
+void svc_request_incoming_audio(audio_data_t* output_audio_data);
 
 /* Call this function when you want to listen to one more peer*/
 peer_t* svc_peer_join();
@@ -23,8 +23,8 @@ void svc_peer_leave(peer_t* peer);
 
 void svc_packet_recieve(network_packet_t* packet, peer_t* peer);
 
-void incoming_init(svc_options_t* options);
+void svc_incoming_init(svc_options_t* options);
 
-void incoming_close();
+void svc_incoming_close();
 
 #endif /* __LIBSVC_INCOMING_H_ */

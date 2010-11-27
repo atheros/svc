@@ -3,11 +3,11 @@
 
 #define MAX_PEERS 1000
 
-peer_t* peer_list;
-mutex_t peer_list_mutex;
-unsigned int peer_count;
+static peer_t* peer_list;
+static mutex_t peer_list_mutex;
+static unsigned int peer_count;
 
-peer_t* if_peer_NULL_unlock(peer_t* peer){
+static peer_t* if_peer_NULL_unlock(peer_t* peer){
 	if(peer==NULL) mutex_unlock(&peer_list_mutex);
 	return peer;
 }
@@ -16,13 +16,13 @@ peer_t* if_peer_NULL_unlock(peer_t* peer){
 	    if_peer_NULL_unlock(peer)!=NULL; \
 	    peer = peer->next)
 
-audio_data_t** mixer_buffer;
+static audio_data_t** mixer_buffer;
 
-audio_data_t* silent_sound;
+static audio_data_t* silent_sound;
 
-svc_options_t* svc_options;
+static svc_options_t* svc_options;
 
-void request_incoming_audio(audio_data_t* output_audio_data){
+void svc_request_incoming_audio(audio_data_t* output_audio_data){
 	peer_t* peer;
 	int peers_to_mix = 0;
 	FORALL_PEERS(peer){
@@ -75,7 +75,7 @@ void svc_packet_recieve(network_packet_t* packet, peer_t* peer){
 	packet_cage_put_data(peer->cage, audio_data, packet->time);	
 }
 
-void incoming_init(svc_options_t* options){
+void svc_incoming_init(svc_options_t* options){
 	svc_options = options;
 	
 	mixer_buffer = malloc(sizeof(audio_data_t*)*MAX_PEERS);
@@ -89,7 +89,7 @@ void incoming_init(svc_options_t* options){
 	peer_list = NULL;
 }
 
-void incoming_close(){
+void svc_incoming_close(){
 	while(peer_list!=NULL){
 		svc_peer_leave(peer_list);
 	}

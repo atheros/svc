@@ -24,7 +24,7 @@ static int svc_running;
 
 static void audio_api_callback(audio_data_t* input_audio_data, audio_data_t* output_audio_data){
 	packet_queue_push_data(packet_queue, input_audio_data);
-	request_incoming_audio(output_audio_data);
+	svc_request_incoming_audio(output_audio_data);
 }
 
 static network_packet_t* create_network_packet_from_audio(audio_data_t* audio_data){
@@ -60,7 +60,7 @@ void svc_init(svc_send_callback_t send_callback){
 	svc_encoder = svc_encoder_create(svc_options->sample_rate, svc_options->frame_size, svc_options->byte_per_packet);
 	packet_queue = packet_queue_create(100, svc_options->frame_size);
 	
-	incoming_init(svc_options);
+	svc_incoming_init(svc_options);
 	
 	svc_send_callback = send_callback;		
 	
@@ -78,6 +78,6 @@ void svc_close(){
 	close_audio();
 	svc_encoder_destroy(svc_encoder);
 	packet_queue_destroy(packet_queue);
-	incoming_close();
+	svc_incoming_close();
 	free(svc_options);
 }
