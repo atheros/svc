@@ -4,13 +4,13 @@
 #include "audio_api.h"
 #include "thread.h"
 
-audio_callback_t process_callback;
+static audio_callback_t process_callback;
 
-audio_data_t* input_audio_data;
-audio_data_t* output_audio_data;
+static audio_data_t* input_audio_data;
+static audio_data_t* output_audio_data;
 
-int running;
-thread_t rt;
+static int running;
+static thread_t rt;
 
 static void *loop(void *arg) {
 	while (running) {
@@ -20,7 +20,7 @@ static void *loop(void *arg) {
 	return NULL;
 }
 
-int init_audio(uint_fast16_t rate, uint_fast32_t frame_size) {
+int init_audio(unsigned int rate, unsigned int frame_size) {
 	input_audio_data = malloc(sizeof(audio_data_t));
 	input_audio_data->data = malloc(sizeof(float) * frame_size);
 	memset(input_audio_data->data, 0, frame_size * sizeof(float));
