@@ -5,35 +5,35 @@
 #include <string.h>
 #include <stdint.h>
 
-typedef float sample_t;
+typedef float svc_sample_t;
 
-typedef struct _audio_data_t {
+typedef struct _svc_audio_data_t {
 	unsigned int size;
-	sample_t *data;
-} audio_data_t;
+	svc_sample_t *data;
+} svc_audio_data_t;
 
-audio_data_t* audio_data_create(unsigned int size);
+svc_audio_data_t* svc_audio_data_create(unsigned int size);
 
 /* Same thing as create but does not allocate memory for the actual data. */
-audio_data_t* audio_fake_data_create(unsigned int size);
+svc_audio_data_t* svc_audio_fake_data_create(unsigned int size);
 
 /* Cleans up audio data making it silent */
-void clear_audio_data(audio_data_t* audio_data);
+void svc_clear_audio_data(svc_audio_data_t* audio_data);
 
-void audio_data_destroy(audio_data_t* audio_data);
+void svc_audio_data_destroy(svc_audio_data_t* audio_data);
 
 /* Same thing as destroy but does not free the memory for actual data. */
-void audio_fake_data_destroy(audio_data_t* audio_data);
+void svc_audio_fake_data_destroy(svc_audio_data_t* audio_data);
 
 /* Make sure the destination is initiated before calling this.
  * Returns 0 on success. */
-int audio_data_copy(audio_data_t* dest_data, audio_data_t* source_data);
+int svc_audio_data_copy(svc_audio_data_t* dest_data, svc_audio_data_t* source_data);
 
 /* mixes audio streams.
  * count         - number of streams to mix
  * input_streams - an array of pointer to audio streams
  * result_stream - a pointer to place the result
  * return value  - 0 on success */
-int mix_audio_streams(unsigned int count, audio_data_t** input_streams, audio_data_t* result_stream);
+int svc_mix_audio_streams(unsigned int count, svc_audio_data_t** input_streams, svc_audio_data_t* result_stream);
 
 #endif

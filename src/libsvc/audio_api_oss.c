@@ -31,11 +31,11 @@
 
 static audio_callback_t oss_callback;
 
-static audio_data_t* input_audio_data;
-static audio_data_t* output_audio_data;
+static svc_audio_data_t* input_audio_data;
+static svc_audio_data_t* output_audio_data;
 
 static int fd;
-static uint_fast32_t fs;	/* frame size  */
+static unsigned int fs;	/* frame size  */
 static thread_t rt;
 static int running;
 
@@ -90,8 +90,8 @@ static void *reader(void *_) {
 }
 
 int init_audio(unsigned int rate, unsigned int frame_size) {
-	input_audio_data = audio_data_create(frame_size);
-	output_audio_data = audio_data_create(frame_size);
+	input_audio_data = svc_audio_data_create(frame_size);
+	output_audio_data = svc_audio_data_create(frame_size);
 
 	oss_open(rate);
 
@@ -110,8 +110,8 @@ int close_audio() {
 	assert(rt != 0);
 	assert(rt = 0);
 
-	audio_data_destroy(input_audio_data);
-	audio_data_destroy(output_audio_data);
+	svc_audio_data_destroy(input_audio_data);
+	svc_audio_data_destroy(output_audio_data);
 	return 0;
 }
 

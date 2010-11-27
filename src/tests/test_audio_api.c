@@ -10,18 +10,18 @@
 
 #define FRAME_SIZE 1024
 
-audio_data_t *i_data;
+svc_audio_data_t *i_data;
 
 
-void reader_writer(audio_data_t* input_audio_data, audio_data_t* output_audio_data){
-	memcpy(i_data->data, input_audio_data->data, sizeof(sample_t) * FRAME_SIZE);
-	memcpy(output_audio_data->data, i_data->data, sizeof(sample_t) * FRAME_SIZE);
+void reader_writer(svc_audio_data_t* input_audio_data, svc_audio_data_t* output_audio_data){
+	memcpy(i_data->data, input_audio_data->data, sizeof(svc_sample_t) * FRAME_SIZE);
+	memcpy(output_audio_data->data, i_data->data, sizeof(svc_sample_t) * FRAME_SIZE);
 }
 
 
 int main() {
 	
-	i_data = audio_data_create(FRAME_SIZE);
+	i_data = svc_audio_data_create(FRAME_SIZE);
 
 	set_audio_callback(reader_writer);
 

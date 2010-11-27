@@ -11,7 +11,7 @@ typedef struct _packet_queue_t {
 	unsigned int head;
 	unsigned int tail;
 	unsigned int size;
-	audio_data_t** audio_queue;
+	svc_audio_data_t** audio_queue;
 	mutex_t queue_mutex;
 	mutex_t queue_empty_mutex;
 } packet_queue_t;
@@ -26,12 +26,12 @@ void packet_queue_destroy(packet_queue_t* packet_queue);
  * This function doesn't allocate any memory when called.
  * The audio_data gets copied so you need to free the input it up when not needed. 
  * Returns 0 on success. */
-int packet_queue_push_data(packet_queue_t* packet_queue, audio_data_t* audio_data);
+int packet_queue_push_data(packet_queue_t* packet_queue, svc_audio_data_t* audio_data);
 
 
 /* Copies a packet stored in the head of a packet queue.
  * Please notice that you MUST NOT free the pointer recieved.
  * Calling this function with an empty queue results in pausing the caller thread. */
-void packet_queue_pop_data(packet_queue_t* packet_queue, audio_data_t* audio_data);
+void packet_queue_pop_data(packet_queue_t* packet_queue, svc_audio_data_t* audio_data);
 
 #endif /* __PACKET_QUEUE_H */

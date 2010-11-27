@@ -36,7 +36,7 @@ packet_cage_t* packet_cage_create(unsigned int queue_size){
 	res_packet_cage->new_cage = 1;
 	res_packet_cage->elements_count = 0;
 	
-	res_packet_cage->audio_queue = malloc(queue_size*sizeof(audio_data_t*));
+	res_packet_cage->audio_queue = malloc(queue_size*sizeof(svc_audio_data_t*));
 	unsigned int i;
 	for(i=0; i<queue_size; i++) 
 		res_packet_cage->audio_queue[i] = NULL;
@@ -84,7 +84,7 @@ int packet_cage_is_empty(packet_cage_t* packet_cage){
 
 void packet_cage_pop(packet_cage_t* packet_cage){
 	if (packet_cage->audio_queue[packet_cage->head] != NULL) {
-		audio_data_destroy(packet_cage->audio_queue[packet_cage->head]);
+		svc_audio_data_destroy(packet_cage->audio_queue[packet_cage->head]);
 		packet_cage->elements_count--;
 	}
 	
@@ -99,7 +99,7 @@ void packet_cage_pop(packet_cage_t* packet_cage){
 	}
 }
 
-int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, packet_time_t time){
+int packet_cage_put_data(packet_cage_t* packet_cage, svc_audio_data_t* audio_data, packet_time_t time){
 	mutex_lock(&packet_cage->cage_mutex);
 	
 	/* We only place the packet when it is newer then the one expected or we have no packets in the queue. */
@@ -129,9 +129,9 @@ int packet_cage_put_data(packet_cage_t* packet_cage, audio_data_t* audio_data, p
 	return 0;
 }
 
-audio_data_t* packet_cage_get_data(packet_cage_t* packet_cage){
+svc_audio_data_t* packet_cage_get_data(packet_cage_t* packet_cage){
 	mutex_lock(&packet_cage->cage_mutex);
-	audio_data_t* res_audio_data;
+	svc_audio_data_t* res_audio_data;
 	if(!packet_cage->cage_starvation){
 		res_audio_data = packet_cage->audio_queue[packet_cage->head];
 		if(res_audio_data!=NULL){

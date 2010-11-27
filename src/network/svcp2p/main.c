@@ -28,7 +28,7 @@ static int down_packets = 0;
 
 
 typedef struct _Peer {
-	peer_t* peer;
+	svc_peer_t* peer;
 	struct sockaddr_in address;
 } Peer;
 

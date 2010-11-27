@@ -22,12 +22,12 @@ static thread_t svc_send_thread;
 
 static int svc_running;
 
-static void audio_api_callback(audio_data_t* input_audio_data, audio_data_t* output_audio_data){
+static void audio_api_callback(svc_audio_data_t* input_audio_data, svc_audio_data_t* output_audio_data){
 	packet_queue_push_data(packet_queue, input_audio_data);
 	svc_request_incoming_audio(output_audio_data);
 }
 
-static network_packet_t* create_network_packet_from_audio(audio_data_t* audio_data){
+static network_packet_t* create_network_packet_from_audio(svc_audio_data_t* audio_data){
 	network_packet_t* network_packet = malloc(sizeof(network_packet_t));
 	network_packet->data = malloc(sizeof(unsigned char)*svc_options->byte_per_packet);
 	network_packet->data_len = svc_options->byte_per_packet;
@@ -38,7 +38,7 @@ static network_packet_t* create_network_packet_from_audio(audio_data_t* audio_da
 }
 
 static void *send_network_thread_function( void *ptr ){
-	audio_data_t* audio_data = audio_data_create(svc_options->frame_size);
+	svc_audio_data_t* audio_data = svc_audio_data_create(svc_options->frame_size);
 	while(svc_running){
 		packet_queue_pop_data(packet_queue, audio_data);
 		network_packet_t* network_packet = create_network_packet_from_audio(audio_data);

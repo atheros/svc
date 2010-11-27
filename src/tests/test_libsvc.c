@@ -2,7 +2,7 @@
 #include "network_packet.h"
 #include <stdio.h>
 
-peer_t* peer_self;
+svc_peer_t* peer_self;
 
 void tst_callback(network_packet_t* packet){
 	if(peer_self!=NULL){
