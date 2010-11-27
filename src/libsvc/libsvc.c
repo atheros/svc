@@ -22,12 +22,9 @@ static thread_t svc_send_thread;
 
 static int svc_running;
 
-static void capture_audio_api_callback(audio_data_t* audio_data){
-	packet_queue_push_data(packet_queue, audio_data);
-}
-
-static void playback_audio_api_callback(audio_data_t* audio_data){
-	request_incoming_audio(audio_data);		
+static void audio_api_callback(audio_data_t* input_audio_data, audio_data_t* output_audio_data){
+	packet_queue_push_data(packet_queue, input_audio_data);
+	request_incoming_audio(output_audio_data);
 }
 
 static network_packet_t* create_network_packet_from_audio(audio_data_t* audio_data){
@@ -69,7 +66,7 @@ void svc_init(svc_send_callback_t send_callback){
 	
 	thread_create(&svc_send_thread, send_network_thread_function, NULL);
 	
-	set_audio_callbacks(capture_audio_api_callback, playback_audio_api_callback);
+	set_audio_callback(audio_api_callback);
 	
 	init_audio(svc_options->sample_rate, svc_options->frame_size);
 	

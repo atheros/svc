@@ -29,8 +29,7 @@
 #include "audio_api.h"
 #include "thread.h"
 
-static capture_audio_callback_t oss_capture_callback;
-static playback_audio_callback_t oss_playback_callback;
+static audio_callback_t oss_callback;
 
 static audio_data_t* input_audio_data;
 static audio_data_t* output_audio_data;
@@ -76,9 +75,7 @@ static void *reader(void *_) {
 		for (i = 0; i < fs; i++)
 			input_audio_data->data[i] = buf[i];
 
-		oss_capture_callback(input_audio_data);
-	
-		oss_playback_callback(output_audio_data);
+		oss_callback(input_audio_data, output_audio_data);
 
 		for (i = 0; i < fs; i++)
 			buf[i] = output_audio_data->data[i];
@@ -118,10 +115,8 @@ int close_audio() {
 	return 0;
 }
 
-int set_audio_callbacks(capture_audio_callback_t capture_callback, 
-                        playback_audio_callback_t playback_callback){
-	oss_capture_callback = capture_callback;
-	oss_playback_callback = playback_callback;
+int set_audio_callback(audio_callback_t callback){
+	oss_callback = callback;
 	return 0;
 }
 

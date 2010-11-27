@@ -1,11 +1,7 @@
 [ ] Milestone X:
 [ ] - waterlaz: Cleanup the namespace in libsvc (svc_ prefix for all non static members) 
 [ ] - waterlaz: Check each non-static in libsvc to make sure it should be non-static
-[ ] - waterlaz: Split process_callback into 2 separate calls
-[ ] - waterlaz: Make 1 audio backend work with new layout (portaudio probably)
-[ ] - L29Ah: fix OSS to support new API
-[ ] - naryl: fix ALSA to support new API
-[ ] - naryl: fix Jack to support new API
+[ ] - waterlaz: Have 1 callback for both audio input and output
 [?] - atheros: fix svcp2p to support new API
 [?] - atheros: fix svce* to support new API
 [ ] - ?: fix tests

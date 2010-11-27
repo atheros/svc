@@ -13,19 +13,17 @@
 audio_data_t *i_data;
 
 
-void reader(audio_data_t *packet) {
-	memcpy(i_data->data, packet->data, sizeof(sample_t) * FRAME_SIZE);
+void reader_writer(audio_data_t* input_audio_data, audio_data_t* output_audio_data){
+	memcpy(i_data->data, input_audio_data->data, sizeof(sample_t) * FRAME_SIZE);
+	memcpy(output_audio_data->data, i_data->data, sizeof(sample_t) * FRAME_SIZE);
 }
 
-void writer(audio_data_t *packet) {
-	memcpy(packet->data, i_data->data, sizeof(sample_t) * FRAME_SIZE);
-}
 
 int main() {
 	
 	i_data = audio_data_create(FRAME_SIZE);
 
-	set_audio_callbacks(reader, writer);
+	set_audio_callback(reader_writer);
 
 	init_audio(48000, FRAME_SIZE);
 
