@@ -10,10 +10,10 @@ static jack_client_t *client;
 static jack_port_t *input_port;
 static jack_port_t *output_port;
 
-static audio_callback_t interface_callback;
+static svc_audio_callback_t interface_callback;
 
-static audio_data_t* input_audio_data;
-static audio_data_t* output_audio_data;
+static svc_audio_data_t* input_audio_data;
+static svc_audio_data_t* output_audio_data;
 
 static int process (jack_nframes_t nframes, void *arg)
 {
@@ -54,10 +54,10 @@ static const char **getenv_array(const char *env) {
 	return tokens;
 }
 
-int init_audio (unsigned int rate, unsigned int frame_size)
+int svc_init_audio (unsigned int rate, unsigned int frame_size)
 {
-	input_audio_data  = malloc(sizeof(audio_data_t));
-	output_audio_data = malloc(sizeof(audio_data_t));
+	input_audio_data  = malloc(sizeof(svc_audio_data_t));
+	output_audio_data = malloc(sizeof(svc_audio_data_t));
 	
 	input_audio_data->size = frame_size;
 	output_audio_data->size = frame_size;
@@ -125,12 +125,12 @@ int init_audio (unsigned int rate, unsigned int frame_size)
 	return 0;
 }
 
-int close_audio () {
+int svc_close_audio () {
 	jack_client_close (client);
 	return 0;
 }
 
-int set_audio_callback(audio_callback_t audio_callback) {
+int svc_set_audio_callback(svc_audio_callback_t audio_callback) {
 	interface_callback = audio_callback;
 	return 0;
 }

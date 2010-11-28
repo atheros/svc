@@ -18,7 +18,7 @@ int main(){
 	printf("joining peer...\n");
 	peer_self = svc_peer_join();
 	printf("running...\n");
-	printf("You should be able to here yourslef in the speakers\n");
+	printf("You should be able to hear yourslef in the speakers\n");
 	scanf("%d", &xxx);
 	svc_close();
 	return 0;
