@@ -66,16 +66,16 @@ void svc_init(svc_send_callback_t send_callback){
 	
 	thread_create(&svc_send_thread, send_network_thread_function, NULL);
 	
-	set_audio_callback(audio_api_callback);
+	svc_set_audio_callback(audio_api_callback);
 	
-	init_audio(svc_options->sample_rate, svc_options->frame_size);
+	svc_init_audio(svc_options->sample_rate, svc_options->frame_size);
 	
 }
 
 void svc_close(){
 	svc_running = 0;
 	thread_detach(svc_send_thread);
-	close_audio();
+	svc_close_audio();
 	svc_encoder_destroy(svc_encoder);
 	packet_queue_destroy(packet_queue);
 	svc_incoming_close();

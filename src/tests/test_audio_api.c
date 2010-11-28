@@ -23,14 +23,14 @@ int main() {
 	
 	i_data = svc_audio_data_create(FRAME_SIZE);
 
-	set_audio_callback(reader_writer);
+	svc_set_audio_callback(reader_writer);
 
-	init_audio(48000, FRAME_SIZE);
+	svc_init_audio(48000, FRAME_SIZE);
 
 	puts("Your mic input should be loopback to your speakers.\nEnter some text when done with test.");
 
 	getchar();
-	close_audio();
+	svc_close_audio();
 	return 0;
 }
 

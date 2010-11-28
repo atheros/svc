@@ -29,7 +29,7 @@
 #include "audio_api.h"
 #include "thread.h"
 
-static audio_callback_t oss_callback;
+static svc_audio_callback_t oss_callback;
 
 static svc_audio_data_t* input_audio_data;
 static svc_audio_data_t* output_audio_data;
@@ -89,7 +89,7 @@ static void *reader(void *_) {
 	return NULL;
 }
 
-int init_audio(unsigned int rate, unsigned int frame_size) {
+int svc_init_audio(unsigned int rate, unsigned int frame_size) {
 	input_audio_data = svc_audio_data_create(frame_size);
 	output_audio_data = svc_audio_data_create(frame_size);
 
@@ -104,7 +104,7 @@ int init_audio(unsigned int rate, unsigned int frame_size) {
 	return 0;
 }
 
-int close_audio() {
+int svc_close_audio() {
 	running = 0;
 	thread_join(rt);
 	assert(rt != 0);
@@ -115,7 +115,7 @@ int close_audio() {
 	return 0;
 }
 
-int set_audio_callback(audio_callback_t callback){
+int svc_set_audio_callback(svc_audio_callback_t callback){
 	oss_callback = callback;
 	return 0;
 }
