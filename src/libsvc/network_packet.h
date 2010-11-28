@@ -3,13 +3,13 @@
 #include <stddef.h>
 #include "packet_cage.h"
 
-typedef struct _network_packet_t {
+typedef struct _svc_network_packet_t {
 	unsigned char* data;
 	size_t data_len;
 	packet_time_t time;
-} network_packet_t;
+} svc_network_packet_t;
 
-void network_packet_destroy(network_packet_t* packet);
+void svc_network_packet_destroy(svc_network_packet_t* packet);
 
 /* size_t network_packet_size(network_packet_t* network_packet); */
 

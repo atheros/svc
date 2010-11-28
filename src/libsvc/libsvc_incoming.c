@@ -69,7 +69,7 @@ void svc_peer_leave(svc_peer_t* peer){
 	packet_cage_destroy(peer->cage);
 }
 
-void svc_packet_recieve(network_packet_t* packet, svc_peer_t* peer){
+void svc_packet_recieve(svc_network_packet_t* packet, svc_peer_t* peer){
 	svc_audio_data_t* audio_data = svc_audio_data_create(svc_options->frame_size);
 	svc_decoder_decode(peer->decoder, packet->data, packet->data_len, audio_data->data);
 	packet_cage_put_data(peer->cage, audio_data, packet->time);	

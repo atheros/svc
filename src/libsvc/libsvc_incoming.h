@@ -21,7 +21,7 @@ svc_peer_t* svc_peer_join();
 /* Call this function when you don't have to listen to the peer anymore */
 void svc_peer_leave(svc_peer_t* peer);
 
-void svc_packet_recieve(network_packet_t* packet, svc_peer_t* peer);
+void svc_packet_recieve(svc_network_packet_t* packet, svc_peer_t* peer);
 
 void svc_incoming_init(svc_options_t* options);
 

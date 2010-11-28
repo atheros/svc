@@ -27,8 +27,8 @@ static void audio_api_callback(svc_audio_data_t* input_audio_data, svc_audio_dat
 	svc_request_incoming_audio(output_audio_data);
 }
 
-static network_packet_t* create_network_packet_from_audio(svc_audio_data_t* audio_data){
-	network_packet_t* network_packet = malloc(sizeof(network_packet_t));
+static svc_network_packet_t* create_network_packet_from_audio(svc_audio_data_t* audio_data){
+	svc_network_packet_t* network_packet = malloc(sizeof(svc_network_packet_t));
 	network_packet->data = malloc(sizeof(unsigned char)*svc_options->byte_per_packet);
 	network_packet->data_len = svc_options->byte_per_packet;
 	svc_encoder_encode(svc_encoder, audio_data->data, network_packet->data);
@@ -41,9 +41,9 @@ static void *send_network_thread_function( void *ptr ){
 	svc_audio_data_t* audio_data = svc_audio_data_create(svc_options->frame_size);
 	while(svc_running){
 		packet_queue_pop_data(packet_queue, audio_data);
-		network_packet_t* network_packet = create_network_packet_from_audio(audio_data);
+		svc_network_packet_t* network_packet = create_network_packet_from_audio(audio_data);
 		svc_send_callback(network_packet);
-		network_packet_destroy(network_packet);
+		svc_network_packet_destroy(network_packet);
 	}
 	return NULL;
 }

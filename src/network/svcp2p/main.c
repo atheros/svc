@@ -96,7 +96,7 @@ static void* global_stats_runner(void* dummy) {
 	}
 }
 
-void send_callback(network_packet_t* packet){
+void send_callback(svc_network_packet_t* packet){
 	int i;
 	unsigned char* data;
 	if (!initialized) return;
@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
 	int i, port, r;
 	unsigned char buffer[65535];
 	struct sockaddr_in remote;
-	network_packet_t np;
+	svc_network_packet_t np;
 	socklen_t remote_len;
 	
 	if (argc < 3) {

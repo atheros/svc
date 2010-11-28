@@ -4,7 +4,7 @@
 
 svc_peer_t* peer_self;
 
-void tst_callback(network_packet_t* packet){
+void tst_callback(svc_network_packet_t* packet){
 	if(peer_self!=NULL){
 		svc_packet_recieve(packet, peer_self);
 	}
