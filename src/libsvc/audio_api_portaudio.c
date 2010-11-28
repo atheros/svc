@@ -9,10 +9,10 @@
 static PaError err;
 static PaStream *stream;
 
-static audio_callback_t pa_interface_callback;
+static svc_audio_callback_t pa_interface_callback;
 
-static audio_data_t* input_audio_data;
-static audio_data_t* output_audio_data;
+static svc_audio_data_t* input_audio_data;
+static svc_audio_data_t* output_audio_data;
 
 #define DO_PA_ERROR if (err != paNoError) { \
 		printf(  "PortAudio error: %s\n", Pa_GetErrorText( err ) ); \
@@ -35,14 +35,14 @@ static int pa_callback( const void *inputBuffer, void *outputBuffer,
 }
 
 
-int init_audio (unsigned int rate, unsigned int frame_size) {
+int svc_init_audio(unsigned int rate, unsigned int frame_size) {
 	
 	printf("Initializing portaudio...");
 	err = Pa_Initialize();
 	DO_PA_ERROR;
 	
-	input_audio_data  = malloc(sizeof(audio_data_t));
-	output_audio_data = malloc(sizeof(audio_data_t));
+	input_audio_data  = malloc(sizeof(svc_audio_data_t));
+	output_audio_data = malloc(sizeof(svc_audio_data_t));
 	
 	input_audio_data->size = frame_size;
 	output_audio_data->size = frame_size;
@@ -63,7 +63,7 @@ int init_audio (unsigned int rate, unsigned int frame_size) {
 	return 0;
 }
 
-int close_audio () {
+int svc_close_audio () {
 	printf("Closing portaudio...");
 	err = Pa_StopStream(stream);
 	DO_PA_ERROR;
@@ -75,7 +75,7 @@ int close_audio () {
 	return 0;
 }
 
-int set_audio_callback(audio_callback_t audio_callback) {
+int svc_set_audio_callback(svc_audio_callback_t audio_callback) {
 	pa_interface_callback = audio_callback;
 	return 0;
 }
