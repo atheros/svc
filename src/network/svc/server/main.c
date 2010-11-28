@@ -40,9 +40,6 @@ int server_main() {
 	ENetHost* host;
 	ENetPeer* server_peer;
 
-	/* init channels */
-
-
 	/* init server */
 	server.peers = peers_alloc(max_peers);
 	server.channels = channels_alloc("ROOT");
