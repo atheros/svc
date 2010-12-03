@@ -13,6 +13,9 @@
 
 
 typedef struct {
+	ENetHost* host;
+	ENetPeer* server_peer;
+
 	Channels* channels;
 	PeerList* peers;
 } Server;

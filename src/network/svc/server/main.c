@@ -35,23 +35,66 @@ void help(const char* app) {
 }
 
 
+static int server_enet_init(ENetHost** host, ENetPeer** server_peer) {
+	ENetAddress address;
+
+	/* init enet */
+	if (enet_initialize () != 0) {
+		fprintf (stderr, "An error occurred while initializing ENet.\n");
+		return 1;
+	}
+
+	/* set address to connect to */
+	if (enet_address_set_host(&address, bindto)) {
+		fprintf(stderr, "Failed to resolve %s\n", bindto);
+		return 1;
+	}
+	address.port = port;
+
+	/* create host */
+	*host = enet_host_create(&address, max_peers+1, 10, 0, 0);
+	if (*host == NULL) {
+		fprintf(stderr, "An error occurred while trying to create an ENet server host on %s:%i.\n",
+					bindto, address.port);
+		return 1;
+	}
+
+
+	return 0;
+}
+
+static void server_enet_quit(ENetHost** host, ENetPeer** server_peer) {
+	enet_peer_reset(*server_peer);
+	enet_host_destroy(*host);
+	enet_deinitialize();
+}
+
+static int server_enet_loop(Server* server, int timeout) {
+	return 0;
+}
 
 int server_main() {
-	ENetHost* host;
-	ENetPeer* server_peer;
-
 	/* init server */
 	server.peers = peers_alloc(max_peers);
 	server.channels = channels_alloc("ROOT");
 
 	/* load channels */
 
-	/* init server socket */
+	/* init server side enet stuff */
+	if (server_enet_init(&(server.host), &(server.server_peer))) {
+		return 1;
+	}
 
-	/* server loop */
+	/* server loop (100 ms wait) */
+	if (server_enet_loop(&server, 100)) {
+		return 1;
+	}
+
 	/* send close to peers */
 	/* close sockets */
+
 	/* close server socket */
+	server_enet_quit(&(server.host), &(server.server_peer));
 
 	/* free server */
 	peers_free(server.peers);
