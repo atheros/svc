@@ -74,6 +74,9 @@ static int server_enet_loop(Server* server, int timeout) {
 }
 
 int server_main() {
+	int result = 0;
+	int done = 0;
+
 	/* init server */
 	server.peers = peers_alloc(max_peers);
 	server.channels = channels_alloc("ROOT");
@@ -85,12 +88,17 @@ int server_main() {
 		return 1;
 	}
 
-	/* server loop (100 ms wait) */
-	if (server_enet_loop(&server, 100)) {
-		return 1;
+	/* main loop */
+	while(!done) {
+		/* server loop (100 ms wait) */
+		if (server_enet_loop(&server, 100)) {
+			result = 1;
+			done = 1;
+		}
 	}
 
 	/* send close to peers */
+	/* wait 1 sec */
 	/* close sockets */
 
 	/* close server socket */
@@ -100,7 +108,7 @@ int server_main() {
 	peers_free(server.peers);
 	channels_free(server.channels);
 
-	return 0;
+	return result;
 }
 
 int main(int argc, char* argv[]) {
