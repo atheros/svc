@@ -13,7 +13,7 @@ typedef struct {
 	int id; /* index, stored in peer->data */
 	char nick[32]; /* nickname */
 	int used;
-	peer_t* peer;
+	svc_peer_t* peer;
 } Peer;
 
 static Peer* peers = NULL;
@@ -94,7 +94,7 @@ static void handle_peer_left(unsigned char* p, unsigned int length) {
 
 
 static void handle_audio(void* data, unsigned int len) {
-	network_packet_t np;
+	svc_network_packet_t np;
 	int peer_id = ((unsigned char*)data)[0];
 	
 	if (peers[peer_id].used) {
@@ -187,7 +187,7 @@ static int handle_receive(ENetEvent* event) {
 }
 
 
-void send_callback(network_packet_t* packet){
+void send_callback(svc_network_packet_t* packet){
 	ENetPacket* p;
 	
 	if (got_auth) {
