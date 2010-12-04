@@ -11,6 +11,13 @@
 #include "server.h"
 
 /**
+ * ENet channels names.
+ */
+enum {
+	CHANNEL_RAW_ERROR = 0
+};
+
+/**
  * Send a raw error to a peer.
  *
  * This kind of error means the client should drop the connection.

@@ -13,5 +13,5 @@ void protocol_raw_error(Server* server, ENetPeer* peer, const char* error) {
 
 	s = dfromcs(error);
 	p = enet_packet_create(s->data, s->len, ENET_PACKET_FLAG_RELIABLE);
-	enet_peer_send(peer, 0, p);
+	enet_peer_send(peer, CHANNEL_RAW_ERROR, p);
 }
