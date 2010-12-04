@@ -6,6 +6,8 @@
 #include "dstrutils.h"
 #include "server.h"
 
+#include <enet/time.h>
+
 
 static struct option options[] = {
 		{"bind",		required_argument,	NULL, 'b'},
@@ -69,7 +71,48 @@ static void server_enet_quit(ENetHost** host, ENetPeer** server_peer) {
 	enet_deinitialize();
 }
 
-static int server_enet_loop(Server* server, int timeout) {
+static void server_event_connect(Server* server, ENetEvent* event) {
+
+}
+
+static void server_event_disconnect(Server* server, ENetEvent* event) {
+
+}
+
+static void server_event_receive(Server* server, ENetEvent* event) {
+
+}
+
+static int server_event_loop(Server* server, int timeout) {
+	ENetEvent event;
+	enet_uint32 start;
+	int rest;
+
+	start = enet_time_get();
+	rest = timeout;
+	/* event loop */
+	while (enet_host_service(server->host, &event, rest) > 0) {
+		/* check event type */
+		switch(event.type) {
+		case ENET_EVENT_TYPE_CONNECT:
+			server_event_connect(server, &event);
+			break;
+		case ENET_EVENT_TYPE_DISCONNECT:
+			server_event_disconnect(server, &event);
+			break;
+		case ENET_EVENT_TYPE_RECEIVE:
+			server_event_receive(server, &event);
+			break;
+		case ENET_EVENT_TYPE_NONE:
+		default:
+			break;
+		}
+
+		/* calculate how much longer can we wait for new events */
+		rest = (int)timeout - ENET_TIME_DIFFERENCE(start, enet_time_get());
+		if (rest <= 0) break;
+	}
+
 	return 0;
 }
 
@@ -91,7 +134,7 @@ int server_main() {
 	/* main loop */
 	while(!done) {
 		/* server loop (100 ms wait) */
-		if (server_enet_loop(&server, 100)) {
+		if (server_event_loop(&server, 100)) {
 			result = 1;
 			done = 1;
 		}
