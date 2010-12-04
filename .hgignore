@@ -6,10 +6,13 @@ tags
 **.orig
 
 libsvc.*
-svcclient
-svcserver
+svceclient
+svceserver
 svcp2p
 svcd
+
+.project
+.cproject
 
 CMakeCache.txt
 CMakeFiles
