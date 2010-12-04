@@ -5,6 +5,7 @@
 
 #include "dstrutils.h"
 #include "server.h"
+#include "protocol.h"
 
 #include <enet/time.h>
 
@@ -72,11 +73,41 @@ static void server_enet_quit(ENetHost** host, ENetPeer** server_peer) {
 }
 
 static void server_event_connect(Server* server, ENetEvent* event) {
+	char host[128];
 
+	/* set event data to NULL before we initialize the peer */
+	event->peer->eventData = PEER_NULL;
+
+	/* get host */
+	enet_address_get_host_ip(&(event->peer->address), host, 128);
+
+	/* if server full */
+	if (server->peers->size == server->peers->count) {
+		fprintf(stdout, "Dropped connection from %s:%i - server full\n", host,
+				event->peer->address.port);
+		protocol_raw_error(server, event->peer, "Server full!");
+		enet_peer_disconnect(event->peer, 0);
+		return;
+	}
+
+	/* create that peer */
+	event->peer->eventData = peers_add(server->peers);
+
+	/* now wait for the peer to tell us who he is */
+	fprintf(stdout, "Connection from peer #%i accepted from %s:%i - waiting for peer auth\n",
+			event->peer->eventData, host, (int)event->peer->address.port);
 }
 
 static void server_event_disconnect(Server* server, ENetEvent* event) {
-
+	char host[128];
+	if (event->data == PEER_NULL) {
+		fprintf(stdout, "Connection dropped\n");
+	} else {
+		enet_address_get_host_ip(&(event->peer->address), host, 128);
+		fprintf(stdout, "Peer #%i (%s:%i) disconnected\n", event->data, host,
+				event->peer->address.port);
+		peers_remove(server->peers, event->data);
+	}
 }
 
 static void server_event_receive(Server* server, ENetEvent* event) {

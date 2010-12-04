@@ -153,6 +153,7 @@ IF(BUILD_SVCD)
 		src/network/svc/server/main.c
 		src/network/svc/server/peer.c
 		src/network/svc/server/channels.c
+		src/network/svc/server/protocol.c
 		src/common/dstr.c
 		src/common/dstrutils.c
 	)
