@@ -3,16 +3,16 @@
 [ ] - waterlaz: Check each non-static in libsvc to make sure it should be non-static
 [x] - waterlaz: Have 1 callback for both audio input and output
 [ ] - naryl: fix ALSA, jack, portaudio to support new API and svc_ prefixing
-[?] - atheros: fix svcp2p to support new API
-[?] - atheros: fix svce* to support new API
+[x] - atheros: fix svcp2p to support new API
+[x] - atheros: fix svce* to support new API
 [ ] - ?: fix tests
 
 [ ] Milestone XI:
 [ ] - waterlaz: rebuffering/resampling of incoming packets
-[ ] - atheros: Write a socket library for IPv4 and Unix sockets
-[ ] - atheros: svcd - only channel and peer management
+[x] - atheros: svcd - only channel and peer management
 [ ] - naryl: svcdc - svcd cli manager
-[ ] - atheros: svcc - connect to server and do nothing
+[x] - atheros: svcd - handle client connection
+[ ] - atheros: svccd - connect to server and do nothing
 
 [ ] Milestone XII:
 [ ] - waterlaz: audio filter api (noice and echo suppression)
@@ -20,14 +20,12 @@
 [ ] - ???: svc/svcd signal: peer join/leave, moving of peers betwwen channels, local muting
 
 [ ] Milestone XIII:
-[ ] - atheros: svcc/svcd P2P handshake
 [ ] - atheros: Fix cmake to compile on windows with dummy backend
 [ ] - atheros: Add windows named pipes to socket library and WinSock2
 [ ] - naryl: WMME or DirectSound backend
 [ ] - naryl: bitch Div to integrate process management into DP (fork, pipes & stuff)
 
 [ ] Milestone XIV:
-[ ] - atheros: p2p audio transmission
 [ ] - ???: big tests
 
 [ ] Milestone XV:

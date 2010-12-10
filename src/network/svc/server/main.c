@@ -32,7 +32,7 @@ static Server server;
 void help(const char* app) {
 	printf("usage: %s [options]\n", app);
 	printf("Options:\n");
-	printf("  -p,--port=PORT                    Specify server port number (default 49001).\n");
+	printf("  -p,--port=PORT                    Specify server port number (default 49010).\n");
 	printf("  -m,--max-peers=MAX                Specify maximum peers count (default 16).\n");
 	printf("  -b,--bind=ADDR                    Bind to specified address (default 0.0.0.0).\n");
 }
@@ -190,7 +190,7 @@ int main(int argc, char* argv[]) {
 
 	/* default values */
 	max_peers = 16;
-	port = 49001;
+	port = 49010;
 	strcpy(bindto, "0.0.0.0");
 
 	while ((i = getopt_long(argc, argv, "b:hm:p:", options, &ptr)) >= 0) {

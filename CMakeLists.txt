@@ -123,6 +123,8 @@ INCLUDE_DIRECTORIES(
 	${OSS_INCLUDES}
 )
 
+
+
 # select build type
 IF(BUILD_SHARED)
 	MESSAGE(STATUS "Building shared libsvc")
@@ -131,6 +133,8 @@ ELSE(BUILD_SHARED)
 	MESSAGE(STATUS "Building static libsvc")
 	SET(LIBSVC_TYPE STATIC)
 ENDIF(BUILD_SHARED)
+
+
 
 # build libsvc
 ADD_LIBRARY(svc ${LIBSVC_TYPE}
@@ -146,6 +150,7 @@ ADD_LIBRARY(svc ${LIBSVC_TYPE}
 )
 
 
+
 # Build SVC main daemon
 IF(BUILD_SVCD)
 	MESSAGE(STATUS "Main SVC daemon build enabled.")
@@ -159,7 +164,6 @@ IF(BUILD_SVCD)
 	)
 	
 	TARGET_LINK_LIBRARIES(svcd
-		svc
 		${ENET_LIBRARIES}
 	)
 ELSE(BUILD_SVCD)
@@ -167,6 +171,22 @@ ELSE(BUILD_SVCD)
 ENDIF(BUILD_SVCD)
 
 
+# Build SVC main client daemon
+IF(BUILD_SVCC)
+	MESSAGE(STATUS "Main SVC client build enabled.")
+	ADD_EXECUTABLE(svcc
+		src/network/svc/client/main.c
+		src/common/dstr.c
+		src/common/dstrutils.c
+	)
+	
+	TARGET_LINK_LIBRARIES(svcc
+		svc
+		${ENET_LIBRARIES}
+	)
+ELSE(BUILD_SVCC)
+	MESSAGE(STATUS "Main SVC client build disabled.")
+ENDIF(BUILD_SVCC)
 
 
 
@@ -186,6 +206,7 @@ IF(BUILD_P2P)
 ELSE(BUILD_P2P)
 	MESSAGE(STATUS "Simple P2P client disabled.")
 ENDIF(BUILD_P2P)
+
 
 
 # Build SVC ENet client and server
