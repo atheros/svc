@@ -2,10 +2,10 @@
 [ ] - waterlaz: Cleanup the namespace in libsvc (svc_ prefix for all non static members) 
 [ ] - waterlaz: Check each non-static in libsvc to make sure it should be non-static
 [x] - waterlaz: Have 1 callback for both audio input and output
-[ ] - naryl: fix ALSA, jack, portaudio to support new API and svc_ prefixing
+[x] - naryl: fix ALSA, jack, portaudio to support new API and svc_ prefixing
 [x] - atheros: fix svcp2p to support new API
 [x] - atheros: fix svce* to support new API
-[ ] - ?: fix tests
+[x] - naryl: fix tests
 
 [ ] Milestone XI:
 [ ] - waterlaz: rebuffering/resampling of incoming packets
