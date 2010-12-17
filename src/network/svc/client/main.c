@@ -31,11 +31,12 @@ static void help(const char* app) {
 
 int client_main() {
 	int done = 0;
-	// init structures
-	// main loop
+	/* init structures */
+	/* main loop */
 	while (!done) {
-		// handle server comm
-		// handle CLI
+		/* handle server comm */
+		/* handle CLI */
+
 	}
 
 	return 0;

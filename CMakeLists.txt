@@ -171,6 +171,7 @@ ELSE(BUILD_SVCD)
 ENDIF(BUILD_SVCD)
 
 
+
 # Build SVC main client daemon
 IF(BUILD_SVCC)
 	MESSAGE(STATUS "Main SVC client build enabled.")

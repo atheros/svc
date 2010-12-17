@@ -10,6 +10,7 @@ svceclient
 svceserver
 svcp2p
 svcd
+svcc
 
 .project
 .cproject
