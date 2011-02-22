@@ -89,6 +89,13 @@ void dfree(dstring* str) {
 	free(str);
 }
 
+dstring* dclear(dstring* str) {
+	str->data[0] = 0;
+	str->len = 0;
+	put_z(str);
+	return str;
+}
+
 dstring* dfromc(int chr) {
 	dstring* s = dnew();
 	s->data[0] = chr;

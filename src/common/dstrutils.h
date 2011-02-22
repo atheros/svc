@@ -30,7 +30,7 @@
 /**
  * Dynamic strings utility library.
  *
- * @version 0.1
+ * @version 0.2
  */
 
 #ifndef __DSTRUTILS_H
@@ -52,6 +52,12 @@ typedef struct _dstrlist {
 	dstrnode *front, *back;
 	size_t size;
 } dstrlist;
+
+
+
+#define DSTRLEX_OK		0
+#define DSTRLEX_ESCAPE	1
+#define DSTRLEX_STRING	2
 
 
 /** allocate a new string list */
@@ -99,7 +105,19 @@ dstring* dlist_joincs(const dstrlist* list, const char* glue);
 /** returns 1 if both list are equal in size and in contents */
 int dlist_equals(const dstrlist* l1, const dstrlist* l2);
 
+/** convert list to a vector (terminated by NULL element) */
+dstring** dlist_tovector(const dstrlist* list);
 
+
+
+/** allocate a vector of given size with empty strings */
+dstring** dvec_new(size_t size);
+
+/** free dstring vector (NULL terminated) */
+void dvec_free(dstring** vector);
+
+/** returns the size of the vector (last valid index, pointing to NULL string) */
+size_t dvec_size(dstring** vector);
 
 
 /** splits on on and returns a list */
@@ -114,6 +132,42 @@ dstrlist* dsplitcs(const char* text, const dstring* on, size_t max);
 /** splits on on find and returns a list */
 dstrlist* dsplitcs_on_cs(const char* text, const char* on, size_t max);
 
+
+/**
+ * Minimalistic lexer implementation.
+ * 
+ * Tokens are separated by whitespaces (space, tab, \r and \n).
+ * 
+ * If a literal token ends with an opening quote, it starts a new token
+ * (so foo"bar"foo will generate 3 tokens, foo, bar and foo).
+ * 
+ * Valid escapes:
+ * 		\n
+ * 		\r
+ * 		\0
+ * 		\"
+ *      \t
+ * 		\\
+ *
+ * If an escape is invalid, the escaped character (without \) will be
+ * written to output.
+ *
+ * If you need whitespaces in a token, you need to quote it with ".
+ * 
+ * Returns tokens found in string.
+ * On error NULL is return and errorcode will contain a numeric code of
+ * what went wrong (if errorcode != NULL).
+ * 
+ * DSTRLEX_OK		- no error
+ * DSTRLEX_ESCAPE	- unterminated escape
+ * DSTRLEX_STRING	- unterminated string
+ */
+dstrlist* dstrlex_parse(const dstring* text, int* errorcode);
+
+/**
+ * Escape a string to be valid when using dstrlex_parse() function.
+ */
+dstring* dstrlex_escape(const dstring* text);
 
 #ifdef __cplusplus
 }

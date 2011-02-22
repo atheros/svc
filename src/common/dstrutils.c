@@ -282,6 +282,50 @@ int dlist_equals(const dstrlist* l1, const dstrlist* l2) {
 	return 1;
 }
 
+dstring** dlist_tovector(const dstrlist* list) {
+	dstring** vec;
+	dstrnode* node;
+	int i = 0;
+	vec = (dstring**)malloc(sizeof(dstrlist*) * (list->size + 1));
+	vec[list->size] = NULL;
+	node = list->front;
+	while(node) {
+		vec[i++] = dnewcopy(node->string);
+		node = node->next;
+	}
+
+	return vec;
+}
+
+
+
+dstring** dvec_new(size_t size) {
+	dstring** vec;
+	int i;
+	vec = (dstring**)malloc(sizeof(dstring*) * (size + 1));
+	for(i = 0; i < size; i++) {
+		vec[i] = dnew();
+	}
+
+	vec[size] = NULL;
+
+	return vec;
+}
+
+void dvec_free(dstring** vector) {
+	int i;
+	for(i = 0; vector[i] != NULL; i++) {
+		dfree(vector[i]);
+	}
+
+	free(vector);
+}
+
+size_t dvec_size(dstring** vector) {
+	size_t i = 0;
+	while(vector[i] != NULL) i++;
+	return i;
+}
 
 
 dstrlist* dsplit(const dstring* text, const dstring* on, size_t max) {
@@ -365,3 +409,128 @@ dstrlist* dsplitcs_on_cs(const char* text, const char* on, size_t max) {
 	return l;
 }
 
+
+dstrlist* dstrlex_parse(const dstring* text, int* errorcode) {
+	int in_escape = 0;
+	int in_string = 0;
+	dstring* buffer = dnew();
+	dstrlist* tokens = dlist_new();
+	dstrlen_t i, len;
+	int ch;
+	
+	if (errorcode) {
+		*errorcode = DSTRLEX_OK;
+	}
+	
+	len = text->len;
+	for(i = 0; i < len; i++) {
+		ch = text->data[i];
+		
+		if (in_escape) {
+			switch (ch) {
+			case 'n':
+				dcatc(buffer, '\n');
+				break;
+			case 'r':
+				dcatc(buffer, '\r');
+				break;
+			case '0':
+				dcatc(buffer, '\0');
+				break;
+			case '"':
+				dcatc(buffer, '"');
+				break;
+			case 't':
+				dcatc(buffer, '\t');
+				break;
+			case '\\':
+				dcatc(buffer, '\\');
+				break;
+			default:
+				dcatc(buffer, ch);
+				break;
+			}
+			in_escape = 0;
+		} else if (in_string) {
+			if (ch == '"') {
+				dlist_add(tokens, buffer);
+				dclear(buffer);
+				in_string = 0;
+			} else if (ch == '\\') {
+				in_escape = 1;
+			} else {
+				dcatc(buffer, ch);
+			}
+		} else {
+			if (ch == '"') {
+				if (buffer->len) {
+					dlist_add(tokens, buffer);
+					dclear(buffer);
+				}
+				
+				in_string = 1;
+			} else if (ch == '\\') {
+				in_escape = 1;
+			} else if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
+				if (buffer->len) {
+					dlist_add(tokens, buffer);
+					dclear(buffer);
+				}
+			} else {
+				dcatc(buffer, ch);
+			}
+		}
+	}
+
+	if (in_escape) {
+		if (errorcode) *errorcode = DSTRLEX_ESCAPE;
+		dfree(buffer);
+		dlist_free(tokens);
+		return NULL;
+	} else if (in_string) {
+		if (errorcode) *errorcode = DSTRLEX_STRING;
+		dfree(buffer);
+		dlist_free(tokens);
+		return NULL;
+	} else if (buffer->len) {
+		dlist_add(tokens, buffer);
+	}
+	
+	dfree(buffer);
+	return tokens;
+}
+
+dstring* dstrlex_escape(const dstring* text) {
+	dstrlen_t i;
+	int c;
+	dstring* o = dnew();
+	
+	for(i = 0; i < text->len; i++) {
+		c = text->data[i];
+		switch (c) {
+		case '\n':
+			dcatcs(o, "\\n");
+			break;
+		case '\r':
+			dcatcs(o, "\\r");
+			break;
+		case 0:
+			dcatcs(o, "\\0");
+			break;
+		case '\"':
+			dcatcs(o, "\\\"");
+			break;
+		case '\t':
+			dcatcs(o, "\\t");
+			break;
+		case '\\':
+			dcatcs(o, "\\\\");
+			break;
+		default:
+			dcatc(o, c);
+			break;
+		}
+	}
+	
+	return o;
+}
