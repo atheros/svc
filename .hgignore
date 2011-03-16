@@ -20,5 +20,13 @@ CMakeFiles
 cmake_install.cmake
 Makefile
 
-syntax: regexp
+
 test_[^.]*$
+
+
+syntax: regexp
+
+^jimtcl$
+^libjim\.a$
+
+

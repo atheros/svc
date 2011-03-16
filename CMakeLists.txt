@@ -115,6 +115,7 @@ ENDIF("${AUDIO_API}" STREQUAL "portaudio")
 INCLUDE_DIRECTORIES(
 	src/common
 	src/libsvc
+	jimtcl
 # FIXME: this is only for SVC[D/DC/C/CC] targets!
 #	src/network/svc/common
 #	${ENET_INCLUDE_DIR}
@@ -210,13 +211,36 @@ ENDIF(BUILD_P2P)
 
 
 
+
+
+
+
+
+ADD_CUSTOM_COMMAND(OUTPUT libjim.a COMMAND sh compile_jim.sh)
+ADD_CUSTOM_TARGET(jim_lib DEPENDS libjim.a)
+SET(JIM_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/libjim.a" "dl")
+
+LINK_DIRECTORIES(
+	${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 # Build SVC ENet client and server
 IF(BUILD_ENET_SVC)
+
+	
+	MESSAGE(STATUS ${CELT_LIBRARIES})
+
 	ADD_EXECUTABLE(svceclient
 		src/network/svcenet/client/main.c
 	)
+	
+	ADD_DEPENDENCIES(svceclient 
+		jim_lib
+	)
+	
 	TARGET_LINK_LIBRARIES(svceclient
 		svc
+		${JIM_LIBRARIES}
 		${ENET_LIBRARIES}
 		${AUDIOAPI_LIBRARIES}
 		${CELT_LIBRARIES}
@@ -228,6 +252,7 @@ IF(BUILD_ENET_SVC)
 		src/common/dstr.c
 	)
 	TARGET_LINK_LIBRARIES(svceserver
+		${JIM_LIBRARIES}
 		${ENET_LIBRARIES}
 		${PTHREAD_LIB}
 	)

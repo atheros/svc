@@ -30,7 +30,7 @@
 /**
  * Dynamic strings utility library.
  *
- * @version 0.2
+ * @version 0.3
  */
 
 #ifndef __DSTRUTILS_H
@@ -52,6 +52,17 @@ typedef struct _dstrlist {
 	dstrnode *front, *back;
 	size_t size;
 } dstrlist;
+
+
+typedef struct _dsdict_node {
+	struct _dsdict_node *prev, *next;
+	dstring *key, *value;
+} dsdict_node;
+
+typedef struct {
+	dsdict_node *front, *back;
+	size_t size;
+} dsdict;
 
 
 
@@ -120,6 +131,7 @@ void dvec_free(dstring** vector);
 size_t dvec_size(dstring** vector);
 
 
+
 /** splits on on and returns a list */
 dstrlist* dsplit(const dstring* text, const dstring* on, size_t max);
 
@@ -131,6 +143,7 @@ dstrlist* dsplitcs(const char* text, const dstring* on, size_t max);
 
 /** splits on on find and returns a list */
 dstrlist* dsplitcs_on_cs(const char* text, const char* on, size_t max);
+
 
 
 /**
@@ -168,6 +181,18 @@ dstrlist* dstrlex_parse(const dstring* text, int* errorcode);
  * Escape a string to be valid when using dstrlex_parse() function.
  */
 dstring* dstrlex_escape(const dstring* text);
+
+
+
+dsdict* dsdict_new();
+void dsdict_free(dsdict* dict);
+void dsdict_set(dsdict* dict, const char* key, const dstring* value);
+void dsdict_setcs(dsdict* dict, const char* key, const char* value);
+const dstring* dsdict_get(dsdict* dict, const char* key);
+void dsdict_remove(dsdict* dict, const char* key);
+dsdict_node* dsdict_find(dsdict* dict, dstring* value, dsdict_node* iterator);
+dsdict_node* dsdict_findcs(dsdict* dict, const char* value, dsdict_node* iterator);
+dsdict_node* dsdict_iter(dsdict* dict, const char* key);
 
 #ifdef __cplusplus
 }

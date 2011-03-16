@@ -562,3 +562,127 @@ dstring* dstrlex_escape(const dstring* text) {
 	
 	return o;
 }
+
+
+
+
+dsdict* dsdict_new() {
+	dsdict* dict = (dsdict*)malloc(sizeof(dsdict));
+	list_init(dict);
+	return dict;
+}
+
+void dsdict_free(dsdict* dict) {
+	dsdict_node* n = dict->front;
+	while (dict->front) {
+		n = dict->front;
+		dfree(n->key);
+		dfree(n->value);
+		dict->front = n->next;
+		free(n);
+	}
+
+	free(dict);
+}
+
+void dsdict_set(dsdict* dict, const char* key, const dstring* value) {
+	dsdict_node* node = dsdict_iter(dict, key);
+
+	if (node) {
+		dcpy(node->value, value);
+	} else {
+		node = (dsdict_node*)malloc(sizeof(dsdict_node));
+		node->key = dfromcs(key);
+		node->value = dnewcopy(value);
+		list_append(dict, node);
+	}
+}
+
+void dsdict_setcs(dsdict* dict, const char* key, const char* value) {
+	dsdict_node* node = dsdict_iter(dict, key);
+
+	if (node) {
+		dcpycs(node->value, value);
+	} else {
+		node = (dsdict_node*)malloc(sizeof(dsdict_node));
+		node->key = dfromcs(key);
+		node->value = dfromcs(value);
+		list_append(dict, node);
+	}
+}
+
+const dstring* dsdict_get(dsdict* dict, const char* key) {
+	dsdict_node* node = dsdict_iter(dict, key);
+
+	if (node) {
+		return node->value;
+	} else {
+		return NULL;
+	}
+}
+
+void dsdict_remove(dsdict* dict, const char* key) {
+	dsdict_node* node = dsdict_iter(dict, key);
+
+	if (node) {
+		dfree(node->key);
+		dfree(node->value);
+		list_erase(dict, node);
+		free(node);
+	}
+}
+
+dsdict_node* dsdict_find(dsdict* dict, dstring* value, dsdict_node* iterator) {
+	dsdict_node* node;
+
+	if (iterator) {
+		node = iterator->next;
+	} else {
+		node = dict->front;
+	}
+
+	while(node) {
+		if (dcmp(node->value, value) == 0) {
+			return node;
+		}
+		node = node->next;
+	}
+
+	return NULL;
+}
+
+dsdict_node* dsdict_findcs(dsdict* dict, const char* value, dsdict_node* iterator) {
+	dsdict_node* node;
+	size_t len = strlen(value);
+
+	if (iterator) {
+		node = iterator->next;
+	} else {
+		node = dict->front;
+	}
+
+	while(node) {
+		if (dcmpmem(node->value, value, len) == 0) {
+			return node;
+		}
+		node = node->next;
+	}
+
+	return NULL;
+}
+
+dsdict_node* dsdict_iter(dsdict* dict, const char* key) {
+	dsdict_node* node;
+	size_t len = strlen(key);
+
+	node = dict->front;
+
+	while(node) {
+		if (dcmpmem(node->key, key, len) == 0) {
+			return node;
+		}
+		node = node->next;
+	}
+
+	return NULL;
+}
