@@ -1,0 +1,13 @@
+SERVER -> CLIENT
+
+SSET key value
+YARE peer_id
+PADD peer_id
+PDEL peer_id
+PSET peer_id key value
+MESG level some text
+
+CLIENT -> SERVER
+CMD whatever
+
+

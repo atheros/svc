@@ -229,6 +229,8 @@ IF(BUILD_ENET_SVC)
 
 	ADD_EXECUTABLE(svceclient
 		src/network/svcenet/client/main.c
+		src/common/dstr.c
+		src/common/dstrutils.c
 	)
 	
 	ADD_DEPENDENCIES(svceclient 
@@ -247,6 +249,7 @@ IF(BUILD_ENET_SVC)
 	ADD_EXECUTABLE(svceserver
 		src/network/svcenet/server/main.c
 		src/common/dstr.c
+		src/common/dstrutils.c
 	)
 	TARGET_LINK_LIBRARIES(svceserver
 		${JIM_LIBRARIES}
