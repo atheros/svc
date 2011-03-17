@@ -213,9 +213,6 @@ ENDIF(BUILD_P2P)
 
 
 
-
-
-
 ADD_CUSTOM_COMMAND(OUTPUT libjim.a COMMAND sh compile_jim.sh)
 ADD_CUSTOM_TARGET(jim_lib DEPENDS libjim.a)
 SET(JIM_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/libjim.a" "dl")

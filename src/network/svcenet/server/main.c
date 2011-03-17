@@ -13,12 +13,15 @@
 #include "enetcheck.h"
 #include "config.h"
 #include "dstr.h"
+#include "dstrutils.h"
 
 typedef struct {
 	int				empty;
 	ENetPeer*		peer;
 	int				identified;
 	dstring*		name;
+	dsdict*			pub_data;
+	dsdict*			priv_data;
 } Peer;
 
 
