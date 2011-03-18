@@ -30,7 +30,7 @@
 /**
  * Dynamic strings utility library.
  *
- * @version 0.3
+ * @version 0.4
  */
 
 #ifndef __DSTRUTILS_H
@@ -182,7 +182,10 @@ dstrlist* dstrlex_parse(const dstring* text, int* errorcode);
  */
 dstring* dstrlex_escape(const dstring* text);
 
-
+/**
+ * Return a string representation of a lexer error code.
+ */
+const char* dstrlex_errstr(int code);
 
 dsdict* dsdict_new();
 void dsdict_free(dsdict* dict);

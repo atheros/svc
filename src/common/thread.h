@@ -24,6 +24,7 @@ typedef pthread_t thread_t;
 typedef pthread_mutex_t mutex_t;
 typedef pthread_cond_t cond_t;
 #else
+#error Windows threads support is still incomplete!
 typedef HANDLE thread_t;
 typedef HANDLE mutex_t;
 typedef HANDLE cond_t;

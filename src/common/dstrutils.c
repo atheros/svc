@@ -564,6 +564,16 @@ dstring* dstrlex_escape(const dstring* text) {
 }
 
 
+const char* dstrlex_errstr(int code) {
+	switch (code) {
+	case DSTRLEX_OK:		return "Ok";
+	case DSTRLEX_ESCAPE:	return "Invalid escape sequence";
+	case DSTRLEX_STRING:	return "Unterminated string";
+	default:				return "Unknown error";
+	}
+}
+
+
 
 
 dsdict* dsdict_new() {

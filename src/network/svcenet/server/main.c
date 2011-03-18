@@ -643,8 +643,8 @@ static int decode_audio_packet(unsigned int peer_id, ENetPacket* packet) {
 		return 1;
 	}
 
-	src = ENET_NET_TO_HOST_32(*(enet_uint32*)packet->data + 0);
-	len = ENET_NET_TO_HOST_32(*(enet_uint32*)packet->data + 4);
+	src = ENET_NET_TO_HOST_32(*(enet_uint32*)(packet->data + 0));
+	len = ENET_NET_TO_HOST_32(*(enet_uint32*)(packet->data + 4));
 	if (src != peer_id) {
 		fprintf(stderr, "Audio packet from #%i is said to be from #%i!\n", peer_id, src);
 		return 1;
