@@ -529,12 +529,22 @@ dstrlist* dstrlex_parse(const dstring* text, int* errorcode) {
 }
 
 dstring* dstrlex_escape(const dstring* text) {
-	dstrlen_t i;
-	int c;
-	dstring* o = dnew();
+	return dstrlex_escape_mem(text->data, text->len);
+}
 	
-	for(i = 0; i < text->len; i++) {
-		c = text->data[i];
+dstring* dstrlex_escape_cs(const char* text) {
+	return dstrlex_escape_mem(text, strlen(text));
+}
+
+dstring* dstrlex_escape_mem(const void* mem, dstrlen_t size) {
+	dstrlen_t i;
+	dstring* o;
+	int c;
+	
+	o = dnew();
+	
+	for(i = 0; i < size; i++) {
+		c = ((const char*)mem)[i];
 		switch (c) {
 		case '\n':
 			dcatcs(o, "\\n");
@@ -561,6 +571,7 @@ dstring* dstrlex_escape(const dstring* text) {
 	}
 	
 	return o;
+
 }
 
 

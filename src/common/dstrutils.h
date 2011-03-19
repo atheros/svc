@@ -182,6 +182,12 @@ dstrlist* dstrlex_parse(const dstring* text, int* errorcode);
  */
 dstring* dstrlex_escape(const dstring* text);
 
+/** Escape a string to be valid when using dstrlex_parse() function. */
+dstring* dstrlex_escape_cs(const char* text);
+
+/** Escape a string to be valid when using dstrlex_parse() function. */
+dstring* dstrlex_escape_mem(const void* mem, dstrlen_t size);
+
 /**
  * Return a string representation of a lexer error code.
  */
