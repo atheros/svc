@@ -1,3 +1,7 @@
+# This is a sample svceserver logic configuration file.
+#
+# This configuration should be use as basis for more advanced setups.
+#
 set COMMANDS [dict create]
 
 
