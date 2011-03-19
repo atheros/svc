@@ -16,15 +16,15 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89 -Wall ${CFLAGS} -D_XOPEN_SOURCE=
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 OPTION(BUILD_SHARED	"Build libsvc as a shared library" OFF)
-OPTION(BUILD_ENET_SVC	"Build SVC ENet client/server" OFF)
+OPTION(BUILD_ENET_SVC	"Build SVC ENet client/server (official SVC client/server)" ON)
 OPTION(BUILD_TESTS	"Build libsvc tests" OFF)
-OPTION(BUILD_P2P	"Build libsvc P2P simple client" ON)
+OPTION(BUILD_P2P	"Build libsvc P2P simple client" OFF)
 
-OPTION(BUILD_SVC	"Build all SVC applications" ON)
-OPTION(BUILD_SVCD	"Build SVC daemon" ${BUILD_SVC})
-OPTION(BUILD_SVCDC	"Build SVC daemon cli controller" ${BUILD_SVC})
-OPTION(BUILD_SVCC	"Build SVC client" ${BUILD_SVC})
-OPTION(BUILD_SVCCC	"Build SVC client cli controller" ${BUILD_SVC})
+OPTION(BUILD_SVC	"Build all SVC applications (unfinished)" OFF)
+OPTION(BUILD_SVCD	"Build SVC daemon (unfinished)" ${BUILD_SVC})
+OPTION(BUILD_SVCDC	"Build SVC daemon cli controller (unfinished)" ${BUILD_SVC})
+OPTION(BUILD_SVCC	"Build SVC client (unfinished)" ${BUILD_SVC})
+OPTION(BUILD_SVCCC	"Build SVC client cli controller (unfinished)" ${BUILD_SVC})
 
 
 FIND_PACKAGE(Celt REQUIRED)
