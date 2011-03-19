@@ -419,15 +419,15 @@ static int handle_input_command(const dstring* string) {
 		dlist_free(list);
 
 		/* select command to execute */
-		if (dcmpcs(argv[0], "connect") == 0) {
+		if (dcmpcs(argv[0], "/connect") == 0) {
 			error = cmd_connect(argc, argv);
-		} else if (dcmpcs(argv[0], "disconnect") == 0) {
+		} else if (dcmpcs(argv[0], "/disconnect") == 0) {
 			error = cmd_disconnect(argc, argv);
-		} else if (dcmpcs(argv[0], "quit") == 0) {
+		} else if (dcmpcs(argv[0], "/quit") == 0) {
 			error = cmd_quit(argc, argv);
-		} else if (dcmpcs(argv[0], "mute") == 0) {
+		} else if (dcmpcs(argv[0], "/mute") == 0) {
 			error = cmd_mute(argc, argv);
-		} else if (dcmpcs(argv[0], "deafen") == 0) {
+		} else if (dcmpcs(argv[0], "/deafen") == 0) {
 			error = cmd_deafen(argc, argv);
 		} else {
 			fprintf(stderr, "Unknown command '%s'\n", argv[0]->data);
@@ -504,17 +504,26 @@ static void scmd_padd(const dstring* cmd, int argc, dstring** argv) {
 
 	peer_id = decode_peer_id(argv[1]);
 
-	if (client.peers_size <= peer_id) {
+	if (client.peers_size == 0) {
+		client.peers_size = peer_id + 1;
+		client.peers = (ClientPeer*)malloc(sizeof(ClientPeer) * client.peers_size);
+		for(i = 0; i < client.peers_size; i++) {
+			client.peers[i].connected = 0;
+			client.peers[i].data = NULL;
+			client.peers[i].id = i;
+			client.peers[i].peer = NULL;
+		}
+	} else if (client.peers_size <= peer_id) {
 		/* enlarge peer vector */
 		peers = (ClientPeer*)malloc(sizeof(ClientPeer) * (peer_id + 1));
 		for (i = 0; i < client.peers_size; i++) {
 			peers[i] = client.peers[i];
 		}
 		for(i = client.peers_size; i < (peer_id + 1); i++) {
-			client.peers[i].connected = 0;
-			client.peers[i].data = NULL;
-			client.peers[i].id = i;
-			client.peers[i].peer = NULL;
+			peers[i].connected = 0;
+			peers[i].data = NULL;
+			peers[i].id = i;
+			peers[i].peer = NULL;
 		}
 		free(client.peers);
 		client.peers = peers;
@@ -523,7 +532,11 @@ static void scmd_padd(const dstring* cmd, int argc, dstring** argv) {
 
 	client.peers[peer_id].connected = 1;
 	client.peers[peer_id].data = dsdict_new();
-	client.peers[peer_id].peer = svc_peer_join();
+	if (peer_id == client.my_id) {
+		client.peers[peer_id].peer = NULL;
+	} else {
+		client.peers[peer_id].peer = svc_peer_join();
+	}
 	fprintf(stdout, "%s\n", cmd->data);
 }
 
@@ -542,7 +555,7 @@ static void scmd_pdel(const dstring* cmd, int argc, dstring** argv) {
 	}
 
 	client.peers[peer_id].connected = 0;
-	svc_peer_leave(client.peers[peer_id].peer);
+	if (client.peers[peer_id].peer) svc_peer_leave(client.peers[peer_id].peer);
 	dsdict_free(client.peers[peer_id].data);
 	fprintf(stdout, "%s\n", cmd->data);
 }
@@ -677,7 +690,7 @@ int main(int argc, char* argv[]) {
 	/* main loop */
 	input = dnew();
 	main_done = 0;
-	while(main_done) {
+	while(!main_done) {
 		/* enet event handler */
 		if (client.state == SVCECLIENT_STATE_CONNECTED) {
 			/* handle connection state */
@@ -777,6 +790,7 @@ int main(int argc, char* argv[]) {
 		mutex_unlock(&client.input_lock);
 
 	}
+	fprintf(stdout, ":STATE exiting\n");
 	dfree(input);
 
 	svc_close();

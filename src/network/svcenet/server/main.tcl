@@ -4,13 +4,14 @@ set COMMANDS [dict create]
 
 # handle a newly connected peer
 proc on_peer_connect {peer} {
+	global DEFAULT_CHANNEL
 	set nick "Unknown$peer"
-	peerset pub $peer NICK			$peer
-	peerset pub $peer CHANNEL		$DEFAULT_CHANNEL
-	peerset pub $peer MUTED			0
-	peerset pub $peer DEAFEN		0
-	peerset pub $peer SPEAKING		0
-	peerset pub $peer ADMIN			0
+	peerset pub $peer "NICK"			$nick
+	peerset pub $peer "CHANNEL"			$DEFAULT_CHANNEL
+	peerset pub $peer "MUTED"			0
+	peerset pub $peer "DEAFEN"			0
+	peerset pub $peer "SPEAKING"		0
+	peerset pub $peer "ADMIN"			0
 	
 	
 	puts "Peer #$peer $nick connected"
@@ -27,19 +28,21 @@ proc on_peer_disconnect {peer} {
 proc on_audio_packet {peer} {
 	global SPEAK_TIME
 	# don't send packet if source peer is muted
-	if {[peerget pub $peer MUTED]} { return }
+	if {[peerget pub $peer "MUTED"]} { return }
 	# get all peers from a channel
 	set peers [channel_peers [peerget pub $peer CHANNEL]]
 	# set speaking on peer and speak stop timeout
-	peerset priv $peer SPEAKING_TIMEOUT [expr [millitime] + $SPEAK_TIME]
-	peerset pub $peer SPEAKING 1
+	peerset priv $peer "SPEAKING_TIMEOUT" [expr [millitime] + $SPEAK_TIME]
+	if {![peerget pub $peer "SPEAKING"]} {
+		peerset pub $peer "SPEAKING" 1
+	}
 	
 	# for all the peers in the channel
-	for p $peers {
+	foreach p $peers {
 		# if this is the source peer, ignore it
 		if {$peer == $p} { continue }
 		# if target peer is deafen
-		if {[peerget pub $p DEAFEN]} { continue }
+		if {[peerget pub $p "DEAFEN"]} { continue }
 		
 		# send current audio packet to peer
 		send_audio_data $p
@@ -49,10 +52,12 @@ proc on_audio_packet {peer} {
 # called from time to time, delta contains milliseconds since the last call
 proc on_logic {delta} {
 	set peers [peers_list]
-	for p $peers {
+	foreach p $peers {
 		# mark peers as not speaking if timeout occurs
-		if {[peerget pub $p SPEAKING] && [millitime] > [peerget priv $p SPEAKING_TIMEOUT]} {
-			peerset pub $p SPEAKING 0
+		if {[peerget pub $p "SPEAKING"]} {
+			if {[millitime] > [peerget priv $p "SPEAKING_TIMEOUT"]} {
+			peerset pub $p "SPEAKING" 0
+			}
 		}
 	}
 }

@@ -9,8 +9,9 @@
 #include <string.h>
 #include <enet/enet.h>
 #include <sys/time.h>
-#include "jim.h"
+#include <signal.h>
 
+#include "jim.h"
 #include "enetcheck.h"
 #include "config.h"
 #include "dstr.h"
@@ -61,6 +62,7 @@ static unsigned long last_logic_time;
 static DataDict* dd_new() {
 	DataDict* dd = (DataDict*)malloc(sizeof(DataDict));
 	dd->front = NULL;
+	dd->back = NULL;
 	return dd;
 }
 
@@ -96,14 +98,17 @@ static void dd_set(DataDict* dd, const char* key, const char* value) {
 
 	/* new node */
 	if (dd->front == NULL) {
-		dd->front = dd->back = ddn = (DataDictNode*)malloc(sizeof(DataDictNode));
+		ddn = (DataDictNode*)malloc(sizeof(DataDictNode));
 		ddn->next = NULL;
 		ddn->prev = NULL;
+		dd->front = ddn;
+		dd->back = ddn;
 	} else {
 		ddn = (DataDictNode*)malloc(sizeof(DataDictNode));
 		ddn->prev = dd->back;
-		dd->back->next = ddn;
 		ddn->prev->next = ddn;
+		ddn->next = NULL;
+		dd->back = ddn;
 	}
 
 	ddn->dirty = 1;
@@ -149,6 +154,14 @@ static const char* dd_remove(DataDict* dd, const char* key) {
 	}
 }
 */
+
+
+static void sigint() {
+	printf("Caught SIGINT, terminating\n");
+	mainloop_done = 1;
+}
+
+
 
 static int jim_get_int(Jim_Interp* interp, const char* name, int default_value) {
 	Jim_Obj* obj;
@@ -332,7 +345,7 @@ static int cmd_peerget(Jim_Interp* interp, int argc, Jim_Obj *const *argv) {
 	int key_len, val_len;
 	int priv;
 
-	if (argc != 5) {
+	if (argc != 4) {
 		Jim_SetResultString(interp, "peerget requires 3 arguments", -1);
 		return JIM_ERR;
 	}
@@ -507,20 +520,23 @@ static int cmd_sendmsg(Jim_Interp* interp, int argc, Jim_Obj *const *argv) {
 
 void handle_peer_connect(Jim_Interp* interp, ENetHost* host, ENetEvent* event) {
 	dstring *packet_buff, *escape_buff;
-	unsigned int i, peer_id = get_new_peer();
+	unsigned int i, peer_id;
 	ENetPacket* packet;
 	DataDictNode* ddn;
 	long int val;
 	char buff[1024];
 
 
+	peer_id = get_new_peer();
 	peers[peer_id].peer = event->peer;
 	event->peer->data = &(peers[peer_id].id);
 
 	sprintf(buff, "on_peer_connect %i", peer_id);
 
 	if (Jim_Eval(interp, buff) == JIM_ERR) {
-		fprintf(stderr, "on_peer_connect failed: %s\n", Jim_GetString(interp->result, NULL));
+		fprintf(stderr, "on_peer_connect failed (%s:%i): %s\n",
+				interp->errorFileName, interp->errorLine,
+				Jim_GetString(interp->result, NULL));
 		enet_peer_disconnect(event->peer, 0);
 		free_peer(peer_id);
 		return;
@@ -620,7 +636,9 @@ static void handle_peer_disconnect(Jim_Interp* interp, ENetEvent* event) {
 
 	sprintf(buff, "on_peer_disconnect %i", peer_id);
 	if (Jim_Eval(interp, buff) == JIM_ERR) {
-		fprintf(stderr, "on_peer_disconnect failed: %s\n", Jim_GetString(interp->result, NULL));
+		fprintf(stderr, "on_peer_disconnect failed (%s:%i): %s\n",
+				interp->errorFileName, interp->errorLine,
+				Jim_GetString(interp->result, NULL));
 	}
 
 	enet_peer_disconnect(event->peer, 0);
@@ -675,7 +693,9 @@ static void handle_packet_input_audio(Jim_Interp* interp, ENetHost* host, ENetEv
 	/* run audio packet handler */
 	sprintf(buff, "on_audio_packet %i", peer_id);
 	if (Jim_Eval(interp, buff) == JIM_ERR) {
-		fprintf(stderr, "on_audio_packet failed: %s\n", Jim_GetString(interp->result, NULL));
+		fprintf(stderr, "on_audio_packet failed (%s:%i): %s\n",
+				interp->errorFileName, interp->errorLine,
+				Jim_GetString(interp->result, NULL));
 	}
 
 	enet_host_flush(host);
@@ -708,7 +728,9 @@ static void handle_packet_input_command(Jim_Interp* interp, ENetHost* host, ENet
 	dlist_free(dargs);
 
 	if (Jim_EvalObjVector(interp, 2, args) == JIM_ERR) {
-		fprintf(stderr, "Failed to execute commands from #%i\n", peer_id);
+		fprintf(stderr, "Failed to execute commands from #%i (%s:%i)\n",
+				peer_id,
+				interp->errorFileName, interp->errorLine);
 		return;
 	}
 
@@ -783,6 +805,8 @@ static void send_modified_data() {
 		packet = enet_packet_create(packet_buff->data, packet_buff->len, ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(peers[i].peer, 0, packet);
 	}
+
+	dfree(packet_buff);
 }
 
 int main(int argc, char* argv[]) {
@@ -799,6 +823,7 @@ int main(int argc, char* argv[]) {
 	peers = NULL;
 	peers_count = 0;
 	peers_size = 0;
+	server_data = dd_new();
 	audio_packet_data = NULL;
 
 
@@ -820,11 +845,15 @@ int main(int argc, char* argv[]) {
 	Jim_CreateCommand(jim, "sendaudio",		cmd_sendaudio, NULL, NULL);
 	Jim_CreateCommand(jim, "sendmsg", 		cmd_sendmsg, NULL, NULL);
 
+
 	/* run all scripts */
 	for(i = 1; i < argc; i++) {
-		printf("Executing jim script %s...", argv[i]);
+		printf("Executing jim script %s...\n", argv[i]);
 		if (Jim_EvalFile(jim, argv[i]) == JIM_ERR) {
-			fprintf(stderr, "Jim script %s raised an error: %s\n", argv[i], Jim_GetString(Jim_GetResult(jim), NULL));
+			fprintf(stderr, "Jim script %s raised an error (%s:%i): %s\n",
+					argv[i],
+					jim->errorFileName, jim->errorLine,
+					Jim_GetString(Jim_GetResult(jim), NULL));
 			Jim_FreeInterp(jim);
 			enet_deinitialize();
 			return 1;
@@ -848,6 +877,8 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	/* install SIGINT handler */
+	signal(SIGINT, sigint);
 
 	/* main loop */
 	mainloop_done = 0;
@@ -892,7 +923,9 @@ int main(int argc, char* argv[]) {
 		delta = milliseconds() - last_logic_time;
 		sprintf(buff, "on_logic %lu", delta);
 		if (Jim_Eval(jim, buff) == JIM_ERR) {
-			fprintf(stderr, "on_logic raised an error: %s\n", Jim_GetString(Jim_GetResult(jim), NULL));
+			fprintf(stderr, "on_logic raised an error (%s:%i): %s\n",
+					jim->errorFileName, jim->errorLine,
+					Jim_GetString(Jim_GetResult(jim), NULL));
 		}
 
 		/* send modified public data */
@@ -902,6 +935,7 @@ int main(int argc, char* argv[]) {
 
 	/* free peers */
 	free_peers();
+	dd_free(server_data);
 
 	/* close jim */
 	Jim_FreeInterp(jim);
