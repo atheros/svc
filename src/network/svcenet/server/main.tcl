@@ -35,6 +35,7 @@ proc on_audio_packet {peer} {
 	peerset priv $peer "SPEAKING_TIMEOUT" [expr [millitime] + $SPEAK_TIME]
 	if {![peerget pub $peer "SPEAKING"]} {
 		peerset pub $peer "SPEAKING" 1
+		# puts "$peer is speaking now"
 	}
 	
 	# for all the peers in the channel
@@ -54,10 +55,9 @@ proc on_logic {delta} {
 	set peers [peers_list]
 	foreach p $peers {
 		# mark peers as not speaking if timeout occurs
-		if {[peerget pub $p "SPEAKING"]} {
-			if {[millitime] > [peerget priv $p "SPEAKING_TIMEOUT"]} {
+		if {[peerget pub $p "SPEAKING"] && [millitime] > [peerget priv $p "SPEAKING_TIMEOUT"]} {
 			peerset pub $p "SPEAKING" 0
-			}
+			# puts "$peer is not speaking anymore"
 		}
 	}
 }

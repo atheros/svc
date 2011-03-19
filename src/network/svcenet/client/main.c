@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <enet/enet.h>
+#include <signal.h>
 
 #include "config.h"
 #include "dstr.h"
@@ -42,6 +43,8 @@ typedef struct {
 	ENetHost*		host;
 	ENetPeer*		client;
 
+	int				main_done;
+
 	thread_t		input_thread;
 	mutex_t			input_lock;
 	dstrlist*		input_queue;
@@ -72,6 +75,11 @@ static ClientState client;
 
 
 
+static void sigint() {
+	printf("Caught SIGINT, terminating\n");
+	client.main_done = 1;
+}
+
 
 
 
@@ -88,8 +96,9 @@ void send_callback(svc_network_packet_t* packet){
 	mutex_lock(&client.network_lock);
 	src = client.my_id;
 
-	/* this client didn't get it's ID yet (this also handles connection state as my_id==-1 if not connected */
-	if (src == -1) {
+	/* this client didn't get it's ID yet (this also handles connection state as my_id==-1 if not connected)
+	 * or is muted. */
+	if (src == -1 || client.muted) {
 		mutex_unlock(&client.network_lock);
 		return;
 	}
@@ -160,6 +169,20 @@ static void msg_state() {
 }
 
 /**
+ * Send muted state to UI.
+ */
+static void msg_muted() {
+	fprintf(stdout, ":MUTED %i\n", client.muted);
+}
+
+/**
+ * Send muted state to UI.
+ */
+static void msg_deafen() {
+	fprintf(stdout, ":DEAFEN %i\n", client.deafen);
+}
+
+/**
  * Free resources associated with server state.
  */
 static void free_server_info() {
@@ -170,9 +193,8 @@ static void free_server_info() {
 		client.server_info = NULL;
 	}
 
-	mutex_lock(&client.network_lock);
+	/* no mutex lock, lock outside of this function! */
 	client.my_id = -1;
-	mutex_unlock(&client.network_lock);
 
 	/* free peers if available */
 	if (client.peers) {
@@ -187,6 +209,7 @@ static void free_server_info() {
 		/* free the peers structure */
 		free(client.peers);
 		client.peers = NULL;
+		client.peers_size = 0;
 	}
 }
 
@@ -365,6 +388,7 @@ static int cmd_mute(int argc, dstring** argv) {
 	client.muted = atoi(argv[1]->data) ? 1 : 0;
 	mutex_unlock(&client.network_lock);
 
+	msg_muted();
 	return 0;
 }
 
@@ -384,6 +408,7 @@ static int cmd_deafen(int argc, dstring** argv) {
 	client.deafen = atoi(argv[1]->data) ? 1 : 0;
 	mutex_unlock(&client.network_lock);
 
+	msg_deafen();
 	return 0;
 }
 
@@ -645,7 +670,7 @@ static void handle_server_audio(ENetPacket* packet) {
 	svc_network_packet_t np;
 
 	/* ignore audio when locally muted */
-	if (client.muted) {
+	if (client.deafen) { /* FIXME: no lock, as deafen is only access from this thread (for now) */
 		return;
 	}
 
@@ -670,7 +695,6 @@ static void handle_server_audio(ENetPacket* packet) {
 int main(int argc, char* argv[]) {
 	dstring* input;
 	int input_done;
-	int main_done;
 	int code;
 	ENetEvent event;
 
@@ -689,8 +713,9 @@ int main(int argc, char* argv[]) {
 
 	/* main loop */
 	input = dnew();
-	main_done = 0;
-	while(!main_done) {
+	client.main_done = 0;
+	signal(SIGINT, sigint);
+	while(!client.main_done) {
 		/* enet event handler */
 		if (client.state == SVCECLIENT_STATE_CONNECTED) {
 			/* handle connection state */
@@ -760,36 +785,39 @@ int main(int argc, char* argv[]) {
 		}
 
 		/* play with the input queue */
-		input_done = 0;
-		while (!input_done) {
-			/* get next input command */
-			mutex_lock(&client.input_lock);
-			if (client.input_queue->size) {
-				dcpy(input, client.input_queue->front->string);
-				dlist_erase(client.input_queue, client.input_queue->front);
-			} else {
-				input_done = 1;
-			}
-			mutex_unlock(&client.input_lock);
+		if (!client.main_done) {
+			input_done = 0;
+			while (!input_done) {
+				/* get next input command */
+				mutex_lock(&client.input_lock);
+				if (client.input_queue->size) {
+					dcpy(input, client.input_queue->front->string);
+					dlist_erase(client.input_queue, client.input_queue->front);
+				} else {
+					input_done = 1;
+				}
+				mutex_unlock(&client.input_lock);
 
-			/* quit input loop if queue is empty */
-			if (input_done) {
-				break;
-			}
+				/* quit input loop if queue is empty */
+				if (input_done) {
+					break;
+				}
 
-			/* handle commands */
-			input_done = main_done = handle_input_command(input);
+				/* handle commands */
+				input_done = client.main_done = handle_input_command(input);
+			}
 		}
 
 		/* check if input died for some reasons */
 		mutex_lock(&client.input_lock);
 		if (client.input_error) {
 			/* if so, leave main loop */
-			main_done = 1;
+			client.main_done = 1;
 		}
 		mutex_unlock(&client.input_lock);
 
 	}
+
 	fprintf(stdout, ":STATE exiting\n");
 	dfree(input);
 
