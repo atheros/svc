@@ -605,7 +605,7 @@ void handle_peer_connect(Jim_Interp* interp, ENetHost* host, ENetEvent* event) {
 	for(i = 0; i < peers_size; i++) {
 		if (peers[i].empty) continue;
 		/* add the peer (PADD) */
-		sprintf(buff, "%i", peer_id);
+		sprintf(buff, "%i", i);
 		dcatcs(packet_buff, "PADD ");
 		dcatcs(packet_buff, buff);
 		dcatcs(packet_buff, "\n");
@@ -636,15 +636,17 @@ void handle_peer_connect(Jim_Interp* interp, ENetHost* host, ENetEvent* event) {
 	enet_peer_send(peers[peer_id].peer, 0, packet);
 	enet_host_flush(host);
 
+
 	/* say hello to other peers */
 	dcpycs(packet_buff, "PADD ");
 	sprintf(buff, "%i", peer_id);
+	dcatcs(packet_buff, buff);
 	dcatcs(packet_buff, "\n");
 
 	for(i = 0; i < peers_size; i++) {
 		if (peers[i].empty || peer_id == i) continue;
 		packet = enet_packet_create(packet_buff->data, packet_buff->len, ENET_PACKET_FLAG_RELIABLE);
-		enet_peer_send(peers[peer_id].peer, 0, packet);
+		enet_peer_send(peers[i].peer, 0, packet);
 	}
 
 	dfree(packet_buff);

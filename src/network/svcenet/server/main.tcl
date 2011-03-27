@@ -50,7 +50,7 @@ proc on_audio_packet {peer} {
 		if {[peerget pub $p "DEAFEN"]} { continue }
 		
 		# send current audio packet to peer
-		send_audio_data $p
+		sendaudio $p
 	}
 }
 

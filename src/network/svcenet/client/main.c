@@ -545,6 +545,7 @@ static void scmd_padd(const dstring* cmd, int argc, dstring** argv) {
 	ClientPeer* peers;
 	unsigned int peer_id, i;
 	if (argc != 2) {
+		fprintf(stderr, "[%s]\n", cmd->data);
 		fprintf(stderr, "Invalid server command: PADD with %i arguments.\n", argc-1);
 		return;
 	}
