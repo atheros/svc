@@ -7,8 +7,12 @@
 
 #include "app.hpp"
 
+IMPLEMENT_APP(SVCApp)
+
 bool SVCApp::OnInit() {
 	window = new SVCWindow();
 	window->Show(true);
 	return true;
 }
+
+

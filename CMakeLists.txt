@@ -66,9 +66,9 @@ ENDIF(BUILD_SVC)
 
 IF(BUILD_WXSVC)
 	MESSAGE(STATUS "wxsvc client enabled.")
-	IF(NOT BUILD_ENET_SVC)
+	IF(NOT BUILD_SVC)
 		MESSAGE(ERROR "Can't build wxsvc client without the cli client")
-	ENDIF(NOT BUILD_ENET_SVC)
+	ENDIF(NOT BUILD_SVC)
 	
 	FIND_PACKAGE(wxWidgets COMPONENTS aui core base REQUIRED)
 	INCLUDE(${wxWidgets_USE_FILE})
@@ -231,6 +231,7 @@ ENDIF(BUILD_SVC)
 IF(BUILD_WXSVC)
 	ADD_EXECUTABLE(wxsvc
 		src/network/svcenet/wx/app.cpp
+		src/network/svcenet/wx/svcwindow.cpp
 	)
 	
 	TARGET_LINK_LIBRARIES(wxsvc
@@ -298,7 +299,7 @@ IF(BUILD_TESTS)
 		src/tests/tests_utils.c
 	)
 	
-ELSE(BUILD_WXSVC)
+ELSE(BUILD_TESTS)
 	
 	MESSAGE(STATUS "Tests disabled.")
 	
