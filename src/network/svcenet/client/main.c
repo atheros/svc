@@ -721,6 +721,11 @@ int main(int argc, char* argv[]) {
 	int code;
 	ENetEvent event;
 
+	if (argc > 1) {
+		fprintf(stderr, "svcc doesn't accept any command line arguments, use stdin instead.\n");
+		return 1;
+	}
+
 	/* initialize enet */
 	if (enet_initialize()) {
 		fprintf(stderr, "Failed to initialize ENet\n");

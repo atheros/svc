@@ -1,12 +1,170 @@
-SERVER -> CLIENT commands
-SSET key value
-YARE peer_id
-PADD peer_id
-PDEL peer_id
-PSET peer_id key value
-MESG level some text
+===============================================================================
+                              SVC client/server 
+===============================================================================
 
-CLIENT -> SERVER commands
-CMD whatever
+1. Introduction
+
+   During short SVC history, there were 4 network clients/servers projects.
+Three of them actually worked, but only two remained.
+
+   SVC client/server (known before as svcenet and svcenet.new) is currently the
+main SVC application. It differs from it's predecessors by the simplicity, both
+in the client and server.
 
 
+2. Compiling
+
+   All you need to do is to add -DBUILD_SVC=On when invoking cmake, then
+execute usuale make command and you are ready to run, both the client and
+server.
+
+
+3. Running the server
+
+   SVC server requires at least one logic script to work. It comes with two
+logic files:
+   main.tcl - server logic
+   config.cfg - configuration file (yes, also a Jim script)
+
+After adjusting the config file, the server is ready to work with the following
+command:
+
+   ./svcd src/network/svcenet/server/config.cfg \
+      src/network/svcenet/server/main.tcl
+
+The line is long, but in a very generic voicechat application, this
+is acceptable (later an install target will create also a script to run it).
+
+
+4. Running the client
+
+4.1. Client commands
+
+   Below is a list of the commands accepted by the client CLI (case sensitive):
+   
+   /connect host port
+   /disconnect
+   /quit
+   /mute 0|1
+   /deafen 0|1
+
+As you can see, client commands starts with a slash. Every other input will be
+sent to the server as is (until the end of line).
+
+
+4.2. Usage example
+
+	#> ./svcc
+	/connect localhost 49001
+	/mute 1
+	/mute 0
+	/quit
+
+
+5. Architecture
+
+5.1. Server
+
+   Server architecture is pretty unusual, not only in voice chat applications.
+The server code itself provides a network layer (through ENet library),
+store for peer states and 2 channel network protocol. One of the channels is
+used only to transmit audio packets, the other is a full text protocol used
+to send events notifications and peers states.
+
+   The server by itself is unable to perform any tasks. It needs external
+logic scripts written in Jim (TCL reimplementation with compatible syntax).
+This is the most unusual aspect of SVC, however it allows every server admin
+and developers to modify the server to suit their needs without the need to
+modify and maintain a C codebase.
+
+
+5.2. Client
+
+   The client attempts to be as simple as the server, not implementing any
+unneeded features. It uses stdin/stdout/stderr to communicate with users,
+what makes it very simple to interface GUI frontends and other applications.
+
+	The client will output all server commands/events to stdout and
+additional local state changes:
+	:STATE (connecting|connected|disconnected)
+	:MUTED (0|1) 
+	:DEAFEN (0|1)
+
+
+5.3. State
+
+   Apart from some basic informations, server is unaware of any data
+associated with peers. It implements instead public and private dictionaries
+of data, completely abstract to the server (accessed by
+peerset and peerget commands from logic scripts).
+
+   Public data is shared between all peers. The default implementation uses
+it to specify the channel name where peer is talking or even peer nick name.
+   Private data is only used by the server and is never sent to any peer.
+You can place there things like passwords or some non important data that just
+doesn't need to be transmitted to all peers (like SPEAKING_TIMEOUT in current
+implementation).
+
+
+5.4. Protocol
+
+   The layer uses ENet network library. The decision to use it was made
+because of the features offered on top of UDP out of the box (packet
+aggregation and congestion, optional packet reliability and retransmission,
+optional in order packet delivery, connection tracking). Two ENet channels are
+used in communication.
+
+
+5.4.1. Channel 0
+
+Channel 0 commands should follow that syntax:
+      
+   COMMAND_NAME[ argument[ argument]\n
+      
+New line on the final command in a packet is optional. 
+Known commands:
+	
+	SERVER -> CLIENT commands
+		SSET key value
+		YARE peer_id
+		PADD peer_id
+		PDEL peer_id
+		PSET peer_id key value
+		MESG level some text
+	
+	CLIENT -> SERVER commands
+		CMD whatever
+
+
+6. License
+
+Copyright 2011 Przemysław Grzywacz. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are
+permitted provided that the following conditions are met:
+
+   1. Redistributions of source code must retain the above copyright notice, this list of
+      conditions and the following disclaimer.
+
+   2. Redistributions in binary form must reproduce the above copyright notice, this list
+      of conditions and the following disclaimer in the documentation and/or other materials
+      provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY Przemysław Grzywacz ``AS IS'' AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> OR
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+The views and conclusions contained in the software and documentation are those of the
+authors and should not be interpreted as representing official policies, either expressed
+or implied, of Przemysław Grzywacz.
+
+
+7. See also
+
+ENet network library - http://enet.bespin.org/

@@ -850,6 +850,11 @@ int main(int argc, char* argv[]) {
 	server_data = dd_new();
 	audio_packet_data = NULL;
 
+	if (argc >= 2 && strcmp(argv[1], "-h") == 0) {
+		fprintf(stdout, "usage: svcd logic_script[ logic_script[ ...]\n");
+		return 0;
+	}
+
 
 	/* initialize enet */
 	if (enet_initialize()) {

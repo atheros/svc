@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
-PROJECT(SVC C)
+PROJECT(SVC C CXX)
+
+# set default audio API
 IF("${AUDIO_API}" STREQUAL "")
 	SET(AUDIO_API "portaudio")
 ENDIF("${AUDIO_API}" STREQUAL "")
@@ -15,18 +17,15 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89 -Wall ${CFLAGS} -D_XOPEN_SOURCE=
 # tell where to look for additional cmake modules
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
-OPTION(BUILD_SHARED	"Build libsvc as a shared library" OFF)
-OPTION(BUILD_ENET_SVC	"Build SVC ENet client/server (official SVC client/server)" ON)
-OPTION(BUILD_TESTS	"Build libsvc tests" OFF)
-OPTION(BUILD_P2P	"Build libsvc P2P simple client" OFF)
-
-OPTION(BUILD_SVC	"Build all SVC applications (unfinished)" OFF)
-OPTION(BUILD_SVCD	"Build SVC daemon (unfinished)" ${BUILD_SVC})
-OPTION(BUILD_SVCDC	"Build SVC daemon cli controller (unfinished)" ${BUILD_SVC})
-OPTION(BUILD_SVCC	"Build SVC client (unfinished)" ${BUILD_SVC})
-OPTION(BUILD_SVCCC	"Build SVC client cli controller (unfinished)" ${BUILD_SVC})
+# Main options
+OPTION(BUILD_SHARED		"Build libsvc as a shared library" OFF)
+OPTION(BUILD_SVC		"Build SVC ENet client/server (official SVC client/server)" ON)
+OPTION(BUILD_WXSVC		"Build wxsvc client" OFF)
+OPTION(BUILD_TESTS		"Build libsvc tests" OFF)
+OPTION(BUILD_P2P		"Build libsvc P2P simple client" OFF)
 
 
+# Common required packages
 FIND_PACKAGE(Celt REQUIRED)
 FIND_PACKAGE(ENet REQUIRED)
 FIND_PACKAGE(PortAudio REQUIRED)
@@ -41,6 +40,7 @@ ENDIF(NOT CMAKE_HOST_WIN32)
 # correct pthread to use
 IF(CMAKE_HOST_WIN32)
 	find_library(PTHREAD_WIN32 pthreadGC2)
+	
 	IF(NOT PTHREAD_WIN32)
 		MESSAGE(FATAL_ERROR "Win32 SVC needs pthread-win32")
 	ENDIF(NOT PTHREAD_WIN32)
@@ -51,19 +51,31 @@ ELSE(CMAKE_HOST_WIN32)
 ENDIF(CMAKE_HOST_WIN32)
 
 
-# check if ENet SVC client and server should be built
-IF(BUILD_ENET_SVC)
-	
-	MESSAGE(STATUS "SVC ENet client/server enabled")
+# check if SVC client and server should be built
+IF(BUILD_SVC)
+	MESSAGE(STATUS "SVC client/server enabled")
 	IF(NOT ENET_LIBRARIES)
-		MESSAGE(FATAL_ERROR "Can't build  SVC ENet client/server without ENet")
+		MESSAGE(FATAL_ERROR "Can't build  SVC client/server without ENet")
 	ENDIF(NOT ENET_LIBRARIES)
 	
-ELSE(BUILD_ENET_SVC)
+ELSE(BUILD_SVC)
 	
-	MESSAGE(STATUS "SVC ENet client/server disabled.")
+	MESSAGE(STATUS "SVC client/server disabled.")
 	
-ENDIF(BUILD_ENET_SVC)
+ENDIF(BUILD_SVC)
+
+IF(BUILD_WXSVC)
+	MESSAGE(STATUS "wxsvc client enabled.")
+	IF(NOT BUILD_ENET_SVC)
+		MESSAGE(ERROR "Can't build wxsvc client without the cli client")
+	ENDIF(NOT BUILD_ENET_SVC)
+	
+	FIND_PACKAGE(wxWidgets COMPONENTS aui core base REQUIRED)
+	INCLUDE(${wxWidgets_USE_FILE})
+	
+ELSE(BUILD_WXSVC)
+	MESSAGE(STATUS "wxsvc client disabled.")
+ENDIF(BUILD_WXSVC)
 
 
 
@@ -116,8 +128,6 @@ INCLUDE_DIRECTORIES(
 	src/common
 	src/libsvc
 	jimtcl
-# FIXME: this is only for SVC[D/DC/C/CC] targets!
-#	src/network/svc/common
 #	${ENET_INCLUDE_DIR}
 #	${CELT_INCLUDE_DIR}
 #	${PORTAUDIO_INCLUDE_DIR}
@@ -150,51 +160,9 @@ ADD_LIBRARY(svc ${LIBSVC_TYPE}
 	src/libsvc/network_packet.c
 )
 
-
-
-# Build SVC main daemon
-IF(BUILD_SVCD)
-	MESSAGE(STATUS "Main SVC daemon build enabled.")
-	ADD_EXECUTABLE(svcd
-		src/network/svc/server/main.c
-		src/network/svc/server/peer.c
-		src/network/svc/server/channels.c
-		src/network/svc/server/protocol.c
-		src/common/dstr.c
-		src/common/dstrutils.c
-	)
-	
-	TARGET_LINK_LIBRARIES(svcd
-		${ENET_LIBRARIES}
-	)
-ELSE(BUILD_SVCD)
-	MESSAGE(STATUS "Main SVC daemon build disabled.")
-ENDIF(BUILD_SVCD)
-
-
-
-# Build SVC main client daemon
-IF(BUILD_SVCC)
-	MESSAGE(STATUS "Main SVC client build enabled.")
-	ADD_EXECUTABLE(svcc
-		src/network/svc/client/main.c
-		src/common/dstr.c
-		src/common/dstrutils.c
-	)
-	
-	TARGET_LINK_LIBRARIES(svcc
-		svc
-		${ENET_LIBRARIES}
-	)
-ELSE(BUILD_SVCC)
-	MESSAGE(STATUS "Main SVC client build disabled.")
-ENDIF(BUILD_SVCC)
-
-
-
 # Build SVC P2P simple client
 IF(BUILD_P2P)
-	MESSAGE(STATUS "Simple P2P client enabled.")
+	MESSAGE(STATUS "Building simple P2P client enabled.")
 	ADD_EXECUTABLE(svcp2p
 		src/network/svcp2p/main.c
 		src/common/thread.c
@@ -206,7 +174,7 @@ IF(BUILD_P2P)
 		${PTHREAD_LIB}
 	)
 ELSE(BUILD_P2P)
-	MESSAGE(STATUS "Simple P2P client disabled.")
+	MESSAGE(STATUS "Building simple P2P client disabled.")
 ENDIF(BUILD_P2P)
 
 
@@ -222,22 +190,22 @@ LINK_DIRECTORIES(
 )
 
 # Build SVC ENet client and server
-IF(BUILD_ENET_SVC)
+IF(BUILD_SVC)
 
 	
 	MESSAGE(STATUS ${CELT_LIBRARIES})
 
-	ADD_EXECUTABLE(svceclient
+	ADD_EXECUTABLE(svcc
 		src/network/svcenet/client/main.c
 		src/common/dstr.c
 		src/common/dstrutils.c
 	)
 	
-	ADD_DEPENDENCIES(svceclient 
+	ADD_DEPENDENCIES(svcc
 		jim_lib
 	)
 	
-	TARGET_LINK_LIBRARIES(svceclient
+	TARGET_LINK_LIBRARIES(svcc
 		svc
 		${JIM_LIBRARIES}
 		${ENET_LIBRARIES}
@@ -246,17 +214,29 @@ IF(BUILD_ENET_SVC)
 		${PTHREAD_LIB}
 	)
 
-	ADD_EXECUTABLE(svceserver
+	ADD_EXECUTABLE(svcd
 		src/network/svcenet/server/main.c
 		src/common/dstr.c
 		src/common/dstrutils.c
 	)
-	TARGET_LINK_LIBRARIES(svceserver
+	TARGET_LINK_LIBRARIES(svcd
 		${JIM_LIBRARIES}
 		${ENET_LIBRARIES}
 		${PTHREAD_LIB}
 	)
-ENDIF(BUILD_ENET_SVC)
+ENDIF(BUILD_SVC)
+
+
+# Build wxWidget SVC ENet
+IF(BUILD_WXSVC)
+	ADD_EXECUTABLE(wxsvc
+		src/network/svcenet/wx/app.cpp
+	)
+	
+	TARGET_LINK_LIBRARIES(wxsvc
+		${wxWidgets_LIBRARIES}
+	)
+ENDIF(BUILD_WXSVC)
 
 
 # Build tests
@@ -318,7 +298,7 @@ IF(BUILD_TESTS)
 		src/tests/tests_utils.c
 	)
 	
-ELSE(BUILD_TESTS)
+ELSE(BUILD_WXSVC)
 	
 	MESSAGE(STATUS "Tests disabled.")
 	
