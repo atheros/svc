@@ -14,6 +14,22 @@
 #include <wx/aui/framemanager.h>
 #include <wx/aui/auibook.h>
 
+class SVCReaderThread: public wxThread {
+private:
+	wxInputStream* stream;
+	wxStringList* output;
+	wxMutex* lock;
+	wxMutex endLock;
+	bool endReceived;
+
+public:
+	SVCReaderThread(wxInputStream* stream, wxStringList* output, wxMutex* lock);
+	virtual ~SVCReaderThread();
+	virtual void *Entry();
+
+	void signalEnd();
+	bool shouldEnd();
+};
 
 class SVCWindow: public wxFrame {
 private:
@@ -32,6 +48,11 @@ private:
 	wxAuiManager*		frameManager;
 
 	wxProcess*			svc;
+	SVCReaderThread*	stdoutThread;
+	SVCReaderThread*	stderrThread;
+	wxMutex				stdLock;
+	wxStringList		stdoutList;
+	wxStringList		stderrList;
 
 	wxTimer*			ioTimer;
 
@@ -42,7 +63,7 @@ private:
 	void OnCommand(wxCommandEvent& event);
 
 	void openSVC();
-
+	void killSVC();
 public:
 	SVCWindow();
 	~SVCWindow();

@@ -7,35 +7,81 @@
 
 #include "svcwindow.hpp"
 
+SVCReaderThread::SVCReaderThread(wxInputStream* stream, wxStringList* output,
+		wxMutex* lock)
+: wxThread(wxTHREAD_JOINABLE)
+{
+	this->stream = stream;
+	this->output = output;
+	this->lock = lock;
+	this->endReceived = false;
+}
+
+SVCReaderThread::~SVCReaderThread() {
+
+}
+
+void* SVCReaderThread::Entry() {
+	wxString buffer;
+	int c;
+	while (!stream->Eof() && !shouldEnd()) {
+		c = stream->GetC();
+		if (c == '\n') {
+			wxMutexLocker locker(*lock);
+			output->Add(buffer);
+			buffer.Clear();
+		} else {
+			buffer.Append(c, 1);
+		}
+	}
+}
+
+void SVCReaderThread::signalEnd() {
+	wxMutexLocker locker(endLock);
+	endReceived = true;
+}
+
+bool SVCReaderThread::shouldEnd() {
+	wxMutexLocker locker(endLock);
+	return endReceived;
+}
+
+
 
 BEGIN_EVENT_TABLE(SVCWindow, wxFrame)
-	//EVT_END_PROCESS(ID_SVC, SVCWindow::OnSVCTerminate)
-	EVT_TIMER(ID_IOTIMER, SVCWindow::OnIOTimer)
-	EVT_COMMAND(ID_COMMAND_INPUT, wxEVT_COMMAND_TEXT_ENTER, SVCWindow::OnCommand)
-END_EVENT_TABLE()
-
+//EVT_END_PROCESS(ID_SVC, SVCWindow::OnSVCTerminate)
+				EVT_TIMER(ID_IOTIMER, SVCWindow::OnIOTimer) EVT_COMMAND(ID_COMMAND_INPUT, wxEVT_COMMAND_TEXT_ENTER, SVCWindow::OnCommand)
+				END_EVENT_TABLE()
 
 SVCWindow::SVCWindow() :
-			wxFrame(NULL, wxID_ANY, wxT("wxSVC"), wxDefaultPosition,
-					wxSize(800, 600)) {
+	wxFrame(NULL, wxID_ANY, wxT("wxSVC"), wxDefaultPosition, wxSize(800, 600)) {
 	frameManager = new wxAuiManager(this);
 
 	// content notebook
-	contentNotebook = new wxAuiNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-			wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE | wxAUI_NB_SCROLL_BUTTONS);
+	contentNotebook = new wxAuiNotebook(
+			this,
+			wxID_ANY,
+			wxDefaultPosition,
+			wxDefaultSize,
+			wxAUI_NB_TOP | wxAUI_NB_TAB_SPLIT | wxAUI_NB_TAB_MOVE
+					| wxAUI_NB_SCROLL_BUTTONS);
 
 	// human readable log panel and command input
 	logPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
-	logOutput = new wxTextCtrl(logPanel, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize,
-			wxTE_RICH
-			| wxTE_MULTILINE
-			| wxTE_NOHIDESEL
-			| wxTE_READONLY);
-	logOutput->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+	logOutput = new wxTextCtrl(logPanel, wxID_ANY, wxT(""), wxDefaultPosition,
+			wxDefaultSize,
+			wxTE_RICH | wxTE_MULTILINE | wxTE_NOHIDESEL | wxTE_READONLY);
+	logOutput->SetFont(
+			wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL,
+					wxFONTWEIGHT_NORMAL));
 
-	wxStaticText* commandLabel = new wxStaticText(logPanel, wxID_ANY, wxT("Command: "));
-	input = new wxTextCtrl(logPanel, ID_COMMAND_INPUT, wxT(""), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	input->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+	wxStaticText* commandLabel = new wxStaticText(logPanel, wxID_ANY,
+			wxT("Command: "));
+	input = new wxTextCtrl(logPanel, ID_COMMAND_INPUT, wxT(""),
+			wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	input->SetFont(
+			wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL,
+					wxFONTWEIGHT_NORMAL));
 
 	wxBoxSizer *sizer1, *sizer2;
 	sizer1 = new wxBoxSizer(wxVERTICAL);
@@ -48,14 +94,13 @@ SVCWindow::SVCWindow() :
 	sizer1->Add(sizer2, 0, wxEXPAND);
 	logPanel->SetSizer(sizer1);
 
-
 	// raw SVC I/O panel
-	ioOutput = new wxTextCtrl(this, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize,
-			wxTE_RICH
-			| wxTE_MULTILINE
-			| wxTE_NOHIDESEL
-			| wxTE_READONLY);
-	ioOutput->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+	ioOutput = new wxTextCtrl(this, wxID_ANY, wxT(""), wxDefaultPosition,
+			wxDefaultSize,
+			wxTE_RICH | wxTE_MULTILINE | wxTE_NOHIDESEL | wxTE_READONLY);
+	ioOutput->SetFont(
+			wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL,
+					wxFONTWEIGHT_NORMAL));
 
 	contentNotebook->AddPage(logPanel, wxT("Console"), true);
 	contentNotebook->AddPage(ioOutput, wxT("SVCC log"), false);
@@ -87,54 +132,84 @@ SVCWindow::SVCWindow() :
 
 SVCWindow::~SVCWindow() {
 	frameManager->UnInit();
+	killSVC();
 }
-
 
 void SVCWindow::processIO() {
 	char buff[1024];
 	size_t length;
 	wxInputStream* in;
 
-
 	if (!svc) {
 		printf("svc == null\n");
 		return;
 	}
 
-	in = svc->GetErrorStream();
-	if (in && !in->Eof()) {
-		printf("error available\n");
-		while(!in->Eof()) {
-			in->Read(buff, 1024);
-			length = in->LastRead();
-			if (length) {
-				ioStderr(wxString::FromUTF8(buff, length));
-			}
-		}
-	}
-
-	in = svc->GetErrorStream();
-	if (in && !in->Eof()) {
-		printf("input available\n");
-		while(!in->Eof()) {
-			in->Read(buff, 1024);
-			length = in->LastRead();
-			if (length) {
-				ioStdout(wxString::FromUTF8(buff, length));
-			}
-		}
-	}
-
 	if (!wxProcess::Exists(svc->GetPid())) {
 		log(wxT("SVCC terminated with code\n"));
-		delete svc;
+		killSVC();
 		openSVC();
+	} else {
+		wxString line;
+
+		wxMutexLocker locker(stdLock);
+
+		while (!stdoutList.empty()) {
+			ioStdout(stdoutList.GetFirst()->GetData());
+			stdoutList.DeleteNode(stdoutList.GetFirst());
+		}
+
+		while (!stderrList.empty()) {
+			ioStderr(stderrList.GetFirst()->GetData());
+			stderrList.DeleteNode(stderrList.GetFirst());
+		}
 	}
 }
 
 void SVCWindow::openSVC() {
 	svc = wxProcess::Open(wxT("./svcc"), wxEXEC_ASYNC);
 	printf("IsInputOpened %i\n", svc->IsInputOpened() ? 1 : 0);
+
+	stdoutThread = new SVCReaderThread(svc->GetInputStream(), &stdoutList,
+			&stdLock);
+	stderrThread = new SVCReaderThread(svc->GetErrorStream(), &stderrList,
+			&stdLock);
+
+	stdoutThread->Create();
+	stderrThread->Create();
+
+	stdoutThread->Run();
+	stderrThread->Run();
+}
+
+void SVCWindow::killSVC() {
+	if (!svc) {
+		return;
+	}
+
+	if (wxProcess::Exists(svc->GetPid())) {
+		wxProcess::Kill(svc->GetPid(), wxSIGTERM);
+	}
+
+	if (stdoutThread) {
+		stdoutThread->signalEnd();
+	}
+
+	if (stderrThread) {
+		stderrThread->signalEnd();
+	}
+
+	if (stdoutThread) {
+		stdoutThread->Wait();
+		delete stdoutThread;
+	}
+
+	if (stderrThread) {
+		stderrThread->Wait();
+		delete stderrThread;
+	}
+
+	delete svc;
 }
 
 void SVCWindow::OnSVCTerminate(wxProcessEvent& event) {
@@ -149,31 +224,32 @@ void SVCWindow::OnCommand(wxCommandEvent& event) {
 	printf("SVCWindow::OnCommand()\n");
 	if (svc && input->GetNumberOfLines()) {
 		wxOutputStream* out = svc->GetOutputStream();
+		wxString msg = input->GetValue() + wxT("\n");
 		if (out) {
-			out->Write(input->GetValue().mb_str(), strlen(input->GetValue().mb_str()));
+			out->Write(msg.mb_str(),
+					strlen(msg.mb_str()));
 		}
 	}
 
 	logCommand(input->GetValue());
+	ioStdin(input->GetValue());
 	input->Clear();
 
 }
 
 void SVCWindow::ioStdout(const wxString& text) {
 	ioOutput->SetForegroundColour(wxColour(0, 0, 0, 255));
-	ioOutput->AppendText(text);
-	printf("stdout: %s\n", text.mb_str().data());
+	ioOutput->AppendText(text + wxT("\n"));
 }
 
 void SVCWindow::ioStderr(const wxString& text) {
 	ioOutput->SetForegroundColour(wxColour(255, 0, 0, 255));
-	ioOutput->AppendText(text);
-	printf("stderr: %s\n", text.mb_str().data());
+	ioOutput->AppendText(text + wxT("\n"));
 }
 
 void SVCWindow::ioStdin(const wxString& text) {
 	ioOutput->SetForegroundColour(wxColour(0, 0, 255, 255));
-	ioOutput->AppendText(text);
+	ioOutput->AppendText(text + wxT("\n"));
 }
 
 void SVCWindow::log(const wxString& text) {

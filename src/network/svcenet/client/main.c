@@ -844,6 +844,8 @@ int main(int argc, char* argv[]) {
 		}
 		mutex_unlock(&client.input_lock);
 
+		fflush(stdout);
+		fflush(stderr);
 	}
 
 	fprintf(stdout, ":STATE exiting\n");
