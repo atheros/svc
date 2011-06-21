@@ -13,6 +13,7 @@ IF(NOT CFLAGS)
 ENDIF(NOT CFLAGS)
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -std=c89 -Wall ${CFLAGS} -D_XOPEN_SOURCE=501L")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 # tell where to look for additional cmake modules
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
@@ -232,6 +233,7 @@ IF(BUILD_WXSVC)
 	ADD_EXECUTABLE(wxsvc
 		src/network/svcenet/wx/app.cpp
 		src/network/svcenet/wx/svcwindow.cpp
+		src/network/svcenet/wx/readerthread.cpp
 	)
 	
 	TARGET_LINK_LIBRARIES(wxsvc

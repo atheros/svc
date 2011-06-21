@@ -14,27 +14,15 @@
 #include <wx/aui/framemanager.h>
 #include <wx/aui/auibook.h>
 
-class SVCReaderThread: public wxThread {
-private:
-	wxInputStream* stream;
-	wxStringList* output;
-	wxMutex* lock;
-	wxMutex endLock;
-	bool endReceived;
-
-public:
-	SVCReaderThread(wxInputStream* stream, wxStringList* output, wxMutex* lock);
-	virtual ~SVCReaderThread();
-	virtual void *Entry();
-
-	void signalEnd();
-	bool shouldEnd();
-};
+class SVCApp;
 
 class SVCWindow: public wxFrame {
+	DECLARE_EVENT_TABLE()
 private:
+	SVCApp*				app;
 	wxMenuBar*			menuBar;
 	wxMenu*				menuFile;
+	wxStatusBar*		statusBar;
 
 	wxPanel*			logPanel;
 
@@ -47,31 +35,24 @@ private:
 	wxAuiNotebook*		contentNotebook;
 	wxAuiManager*		frameManager;
 
-	wxProcess*			svc;
-	SVCReaderThread*	stdoutThread;
-	SVCReaderThread*	stderrThread;
-	wxMutex				stdLock;
-	wxStringList		stdoutList;
-	wxStringList		stderrList;
 
 	wxTimer*			ioTimer;
 
-	DECLARE_EVENT_TABLE()
-
-	void OnSVCTerminate(wxProcessEvent& event);
 	void OnIOTimer(wxTimerEvent& event);
 	void OnCommand(wxCommandEvent& event);
 
-	void openSVC();
-	void killSVC();
 public:
-	SVCWindow();
+	SVCWindow(SVCApp* app);
 	~SVCWindow();
 
 	enum {
-		ID_SVC	= wxID_HIGHEST + 1,
-		ID_IOTIMER,
+		ID_IOTIMER = wxID_HIGHEST + 1,
 		ID_COMMAND_INPUT
+	};
+
+	enum {
+		STATUS_SVCC = 0,
+		__STATUS_COUNT
 	};
 
 	void ioStdout(const wxString& text);
@@ -79,10 +60,12 @@ public:
 	void ioStdin(const wxString& text);
 
 	void log(const wxString& text);
+	void logError(const wxString& text);
+	void logSVCError(const wxString& text);
 	void logCommand(const wxString& text);
 	void logConnection(const wxString& text);
 
-	void processIO();
+	void updateSVCState();
 };
 
 #endif /* IDEWINDOW_HPP_ */
