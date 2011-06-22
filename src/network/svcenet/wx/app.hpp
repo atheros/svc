@@ -10,9 +10,11 @@
 
 #include <wx/wx.h>
 #include "svcwindow.hpp"
-#include "readerthread.hpp"
+#include "svcstate.hpp"
 
 class SVCApp: public wxApp {
+public:
+
 private:
 	/**
 	 * wxSVC main window.
@@ -20,50 +22,12 @@ private:
 	SVCWindow* window;
 
 	/**
-	 * SVC process.
+	 * SVC state.
 	 */
-	wxProcess* svc;
-
-	/**
-	 * SVC pid.
-	 */
-	long int svcPid;
-
-	/**
-	 * SVC stdout reader thread
-	 * FIXME: will use 100% CPU time in 2.9.2
-	 */
-	ReaderThread* stdoutThread;
-
-
-	/**
-	 * SVC stderr reader thread
-	 * FIXME: will use 100% CPU time in 2.9.2
-	 */
-	ReaderThread* stderrThread;
-
-	/**
-	 * stdoutList/stderrList lock.
-	 */
-	wxMutex stdLock;
-
-	/**
-	 * SVC output lines.
-	 */
-	wxStringList stdoutList;
-
-	/**
-	 * SVC error lines.
-	 */
-	wxStringList stderrList;
-
-
-	/**
-	 * SVCC path.
-	 */
-	wxString svccPath;
+	SVCState* state;
 
 public:
+
 
 	/**
 	 * Initialize application.
@@ -76,33 +40,11 @@ public:
 	virtual int OnExit();
 
 	/**
-	 * Open SVC process.
-	 *
-	 * NOTE: svc process should be closed before calling this function.
+	 * Returns SVC state.
 	 */
-	void openSVC();
-
-	/**
-	 * Kill SVC process.
-	 */
-	void killSVC();
-
-	/**
-	 * Process SVC IO.
-	 */
-	void processIO();
-
-	/**
-	 * Returns SVC process instance.
-	 */
-	wxProcess* getSVC() {
-		return svc;
+	SVCState* getState() {
+		return state;
 	}
-
-	/**
-	 * Check if SVC is ready to accept IO.
-	 */
-	bool isSVCReady();
 
 	/**
 	 * Execute SVC command.
@@ -115,7 +57,6 @@ public:
 	 * Execute command supplied by user.
 	 */
 	void sendUserCommand(const wxString& command);
-
 
 };
 

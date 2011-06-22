@@ -98,17 +98,45 @@ SVCWindow::SVCWindow(SVCApp* app) :
 	frameManager->AddPane(channels, channelsInfo);
 	frameManager->Update();
 
+	// initialize state
+	stateConnectionState = SVCState::SVCCON_DISCONNECTED;
+	stateLocallyMuted = false;
+	stateLocallyDeafen = false;
+
 	// processIO update timer.
+	firstStateChange = true;
 	ioTimer = new wxTimer(this, ID_IOTIMER);
 	ioTimer->Start(100, false);
 }
 
 SVCWindow::~SVCWindow() {
 	frameManager->UnInit();
+	delete frameManager;
 }
 
 void SVCWindow::OnIOTimer(wxTimerEvent& event) {
-	app->processIO();
+	wxString line, rest;
+	app->getState()->processIO();
+
+	while (app->getState()->getSVCOutput(line)) {
+		ioStdout(line);
+	}
+
+	while (app->getState()->getSVCError(line)) {
+		ioStderr(line);
+	}
+
+	while (app->getState()->getLog(line)) {
+		if (line.StartsWith(wxT("error: "), &rest)) {
+			logError(rest);
+		} else {
+			log(line);
+		}
+	}
+
+	if (app->getState()->isStateChanged()) {
+		updateSVCState();
+	}
 }
 
 void SVCWindow::OnCommand(wxCommandEvent& event) {
@@ -159,10 +187,39 @@ void SVCWindow::logConnection(const wxString& text) {
 }
 
 void SVCWindow::updateSVCState() {
-	if (!app->isSVCReady()) {
+	SVCState* state = app->getState();
+	if (!state->isReady()) {
 		statusBar->SetStatusText(wxT("svcc not running"));
 		return;
 	}
 
-	statusBar->SetStatusText(wxT("svcc running"));
+	if (stateConnectionState != state->getConnectionState() || firstStateChange) {
+		firstStateChange = false;
+		stateConnectionState = state->getConnectionState();
+		if (stateConnectionState == SVCState::SVCCON_CONNECTED) {
+			statusBar->SetStatusText(wxT("svcc running - connected"));
+		} else if (stateConnectionState == SVCState::SVCCON_CONNECTING) {
+			statusBar->SetStatusText(wxT("svcc running - connecting..."));
+		} else if (stateConnectionState == SVCState::SVCCON_DISCONNECTED) {
+			statusBar->SetStatusText(wxT("svcc running - disconnected"));
+		}
+	}
+
+	if (stateLocallyMuted != state->isLocallyMuted()) {
+		stateLocallyMuted = state->isLocallyMuted();
+		if (stateLocallyMuted) {
+			log(wxT("You are now locally muted"));
+		} else {
+			log(wxT("You are no longer locally muted"));
+		}
+	}
+
+	if (stateLocallyDeafen != state->isLocallyDeafen()) {
+		stateLocallyDeafen = state->isLocallyDeafen();
+		if (stateLocallyDeafen) {
+			log(wxT("You are now locally deafen"));
+		} else {
+			log(wxT("You are no longer locally deafen"));
+		}
+	}
 }

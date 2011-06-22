@@ -13,6 +13,7 @@
 #include <wx/treectrl.h>
 #include <wx/aui/framemanager.h>
 #include <wx/aui/auibook.h>
+#include "svcstate.hpp"
 
 class SVCApp;
 
@@ -41,6 +42,11 @@ private:
 	void OnIOTimer(wxTimerEvent& event);
 	void OnCommand(wxCommandEvent& event);
 
+	// state log
+	SVCState::ConnectionState stateConnectionState;
+	bool stateLocallyMuted;
+	bool stateLocallyDeafen;
+	bool firstStateChange;
 public:
 	SVCWindow(SVCApp* app);
 	~SVCWindow();
