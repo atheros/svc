@@ -1,0 +1,9 @@
+Peer info keys defined by the basic server implementation
+
+	"NICK"			Peer nick name
+	"CHANNEL"		Channel this peer is located in
+	"MUTED"			Peer is muted on the server
+	"DEAFEN"		Peer is deafen on the server
+	"SPEAKING"		Peer is speaking now
+	"ADMIN"			Peer is server admin (unused yet)
+

@@ -236,6 +236,8 @@ IF(BUILD_WXSVC)
 		src/network/svcenet/wx/readerthread.cpp
 		src/network/svcenet/wx/svcparser.cpp
 		src/network/svcenet/wx/svcstate.cpp
+		src/network/svcenet/wx/svcobjectinfo.cpp
+		src/network/svcenet/wx/svcevent.cpp
 	)
 	
 	TARGET_LINK_LIBRARIES(wxsvc

@@ -10,6 +10,7 @@
 #include "svcparser.hpp"
 
 
+
 SVCState::SVCState() {
 	// process related variables
 	svccPath = wxT("svcc");
@@ -19,7 +20,6 @@ SVCState::SVCState() {
 	svcPid = 0;
 
 	// SVC state variables
-	stateChanged = true;
 	locallyMuted = false;
 	locallyDeafen = false;
 	connectionState = SVCCON_DISCONNECTED;
@@ -30,7 +30,7 @@ SVCState::~SVCState() {
 	killSVC();
 }
 
-void SVCState::parseCommand(wxString& command) {
+void SVCState::parseCommand(const wxString& command) {
 	SVCParserError res;
 	wxArrayString cmd;
 
@@ -66,6 +66,46 @@ void SVCState::parseCommand(wxString& command) {
 	}
 }
 
+void SVCState::handleCommandSSET(wxArrayString& cmd) {
+	if (cmd.size() != 3) {
+		stateLog.Add(wxT("error: Invalid number of arguments in SSET"));
+		return;
+	}
+
+	serverInfo[cmd[1]] = cmd[2];
+	eventList.Append(SVCEvent::createServerSet(cmd[1], cmd[2]));
+}
+
+void SVCState::handleCommandYARE(wxArrayString& cmd) {
+
+}
+
+void SVCState::handleCommandPADD(wxArrayString& cmd) {
+
+}
+
+void SVCState::handleCommandPDEL(wxArrayString& cmd) {
+
+}
+
+void SVCState::handleCommandPSET(wxArrayString& cmd) {
+	long int peerId = 0;
+	if (cmd.size() != 4) {
+		stateLog.Add(wxT("error: Invalid number of arguments in PSET"));
+		return;
+	}
+
+	peers[peerId] = SVCPeerInfo();
+	peers[peerId][cmd[2]] = cmd[3];
+
+	eventList.Append(SVCEvent::createPeerSet(peerId, cmd[2], cmd[3]));
+
+}
+
+void SVCState::handleCommandMESG(wxArrayString& cmd) {
+
+}
+
 void SVCState::handleStateMuted(wxArrayString& cmd) {
 	if (cmd.size() != 2) {
 		stateLog.Add(wxT("error: Invalid number of arguments in :MUTED"));
@@ -74,10 +114,10 @@ void SVCState::handleStateMuted(wxArrayString& cmd) {
 
 	if (cmd[1] == wxT("0") && locallyMuted == true) {
 		locallyMuted = false;
-		stateChanged = true;
+		eventList.Append(SVCEvent::createMuted(false));
 	} else if (cmd[1] == wxT("1") && locallyMuted == false) {
 		locallyMuted = true;
-		stateChanged = true;
+		eventList.Append(SVCEvent::createMuted(true));
 	}
 }
 
@@ -89,10 +129,10 @@ void SVCState::handleStateDeafen(wxArrayString& cmd) {
 
 	if (cmd[1] == wxT("0") && locallyDeafen == true) {
 		locallyDeafen = false;
-		stateChanged = true;
+		eventList.Append(SVCEvent::createDefean(false));
 	} else if (cmd[1] == wxT("1") && locallyDeafen == false) {
 		locallyDeafen = true;
-		stateChanged = true;
+		eventList.Append(SVCEvent::createDefean(true));
 	}
 }
 
@@ -104,13 +144,13 @@ void SVCState::handleStateConnection(wxArrayString& cmd) {
 
 	if (cmd[1] == wxT("connecting") && connectionState != SVCCON_CONNECTING) {
 		connectionState = SVCCON_CONNECTING;
-		stateChanged = true;
+		eventList.Append(SVCEvent::createConnectionState(SVCCON_CONNECTING));
 	} else if (cmd[1] == wxT("connected") && connectionState != SVCCON_CONNECTED) {
 		connectionState = SVCCON_CONNECTED;
-		stateChanged = true;
+		eventList.Append(SVCEvent::createConnectionState(SVCCON_CONNECTED));
 	} else if (cmd[1] == wxT("disconnected") && connectionState != SVCCON_DISCONNECTED) {
 		connectionState = SVCCON_DISCONNECTED;
-		stateChanged = true;
+		eventList.Append(SVCEvent::createConnectionState(SVCCON_DISCONNECTED));
 	} else {
 		stateLog.Add(wxT("error: Invalid connection state"));
 	}
@@ -127,7 +167,9 @@ void SVCState::handleStateServer(wxArrayString& cmd) {
 	serverAddress = cmd[2];
 	cmd[3].ToULong(&port, 10);
 	serverPort = port;
-	stateChanged = true;
+
+
+	eventList.Append(SVCEvent::createServer(serverHost, serverAddress, serverPort));
 }
 
 
@@ -180,7 +222,6 @@ void SVCState::openSVC() {
 		stateLog.Add(wxT("svcc running"));
 	}
 	svcPid = svc->GetPid();
-	stateChanged = true;
 
 	stdoutThread = new ReaderThread(svc->GetInputStream(), &stdoutList,
 			&stdLock);

@@ -14,6 +14,7 @@
 #include <wx/aui/framemanager.h>
 #include <wx/aui/auibook.h>
 #include "svcstate.hpp"
+#include "svcobjectinfo.hpp"
 
 class SVCApp;
 
@@ -36,6 +37,9 @@ private:
 	wxAuiNotebook*		contentNotebook;
 	wxAuiManager*		frameManager;
 
+	SVCObjectInfo*		serverInfo;
+	SVCObjectInfo*		peerInfo;
+
 
 	wxTimer*			ioTimer;
 
@@ -44,12 +48,13 @@ private:
 
 	// state log
 	SVCState::ConnectionState stateConnectionState;
-	bool stateLocallyMuted;
-	bool stateLocallyDeafen;
 	wxString stateServerHost;
 	wxString stateServerAddress;
 	unsigned int stateServerPort;
 	bool firstStateChange;
+
+	void handleConnectionState(const SVCEvent& event);
+
 public:
 	SVCWindow(SVCApp* app);
 	~SVCWindow();

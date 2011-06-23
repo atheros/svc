@@ -12,6 +12,12 @@
 #include <wx/hashmap.h>
 #include <wx/process.h>
 #include "readerthread.hpp"
+#include "svcevent.hpp"
+
+
+WX_DECLARE_STRING_HASH_MAP(wxString, SVCPeerInfo);
+WX_DECLARE_STRING_HASH_MAP(wxString, SVCServerInfo);
+WX_DECLARE_HASH_MAP(int, SVCPeerInfo, wxIntegerHash, wxIntegerEqual, SVCPeerInfoMap);
 
 
 class SVCState {
@@ -98,19 +104,29 @@ private:
 	 */
 	ConnectionState connectionState;
 
-	void parseCommand(wxString& command);
 
 	wxArrayString svcOutput;
 	wxArrayString svcError;
 	wxArrayString stateLog;
 
-	bool stateChanged;
+	SVCPeerInfoMap peers;
+	SVCServerInfo serverInfo;
 
+	SVCEventList eventList;
+
+	void parseCommand(const wxString& command);
 
 	void handleStateMuted(wxArrayString& cmd);
 	void handleStateDeafen(wxArrayString& cmd);
 	void handleStateConnection(wxArrayString& cmd);
 	void handleStateServer(wxArrayString& cmd);
+
+	void handleCommandSSET(wxArrayString& cmd);
+	void handleCommandYARE(wxArrayString& cmd);
+	void handleCommandPADD(wxArrayString& cmd);
+	void handleCommandPDEL(wxArrayString& cmd);
+	void handleCommandPSET(wxArrayString& cmd);
+	void handleCommandMESG(wxArrayString& cmd);
 
 public:
 
@@ -204,10 +220,20 @@ public:
 	bool getSVCError(wxString& line);
 	bool getLog(wxString& line);
 
-	bool isStateChanged() {
-		bool r = stateChanged;
-		stateChanged = false;
-		return r;
+	/**
+	 * Check if server info or peer info changed.
+	 */
+	bool hasEvents() {
+		return eventList.size() ? true : false;
+	}
+
+	SVCEvent getNextEvent() {
+		SVCEvent event;
+		if (!eventList.empty()) {
+			event = *eventList.GetFirst()->GetData();
+			eventList.erase(eventList.begin());
+		}
+		return event;
 	}
 };
 

@@ -136,6 +136,26 @@ Known commands:
 		CMD whatever
 
 
+5.4.2. Channel 1
+
+	Channel 1 is used for audio packet transmission.
+	
+
+5.4.3. Server info
+
+	Server info is propagated to it's peers using SSET command. This command
+may accept any key/value pairs. The client is not required to understand the
+meaning of those pairs. For a list of known key/value pairs,
+read ServerInfo.txt.
+
+
+5.4.4. Peer info
+
+	Peer info (peer public data) is additional information that may be used
+to manage peers by the server and the client. Client software doesn't need
+to understand those, they are only hints on how to display peers. For a list
+of knonw key/value pairs, read PeerInfo.txt. 
+
 6. License
 
 Copyright 2011 Przemysław Grzywacz. All rights reserved.

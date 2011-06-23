@@ -74,8 +74,17 @@ SVCWindow::SVCWindow(SVCApp* app) :
 			wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL,
 					wxFONTWEIGHT_NORMAL));
 
+	// peer info panel
+	peerInfo = new SVCObjectInfo(this);
+
+	// server info panel
+	serverInfo = new SVCObjectInfo(this);
+
+	// add content panels
 	contentNotebook->AddPage(logPanel, wxT("Console"), true);
 	contentNotebook->AddPage(ioOutput, wxT("SVCC log"), false);
+	contentNotebook->AddPage(peerInfo, wxT("Peer info"), false);
+	contentNotebook->AddPage(serverInfo, wxT("Server info"), false);
 
 	// Channels and peers tree
 	channels = new wxTreeCtrl(this, wxID_ANY);
@@ -85,7 +94,7 @@ SVCWindow::SVCWindow(SVCApp* app) :
 	// content AUI setup
 	contentInfo.Name(wxT("content"));
 	contentInfo.Caption(wxT("Content"));
-	contentInfo.MinSize(wxSize(200, 200));
+	contentInfo.MinSize(wxSize(300, 200));
 	contentInfo.CentrePane();
 	// channels AUI setup
 	channelsInfo.Name(wxT("channels"));
@@ -100,8 +109,6 @@ SVCWindow::SVCWindow(SVCApp* app) :
 
 	// initialize state
 	stateConnectionState = SVCState::SVCCON_DISCONNECTED;
-	stateLocallyMuted = false;
-	stateLocallyDeafen = false;
 
 	// processIO update timer.
 	firstStateChange = true;
@@ -134,9 +141,7 @@ void SVCWindow::OnIOTimer(wxTimerEvent& event) {
 		}
 	}
 
-	if (app->getState()->isStateChanged()) {
-		updateSVCState();
-	}
+	updateSVCState();
 }
 
 void SVCWindow::OnCommand(wxCommandEvent& event) {
@@ -186,68 +191,86 @@ void SVCWindow::logConnection(const wxString& text) {
 	logOutput->AppendText(text + wxT("\n"));
 }
 
+void SVCWindow::handleConnectionState(const SVCEvent& event) {
+	// update connection and server status
+	stateConnectionState = (SVCState::ConnectionState)event.connectionState;
+
+	wxString status;
+
+	// construct status line
+	if (stateConnectionState == SVCState::SVCCON_CONNECTED) {
+		status
+			<< wxT("svcc running - connected to ")
+			<< stateServerHost
+			<< wxT(" (")
+			<< stateServerAddress
+			<< wxT(":")
+			<< stateServerPort
+			<< wxT(")");
+	} else if (stateConnectionState == SVCState::SVCCON_CONNECTING) {
+		status
+			<< wxT("svcc running - connecting to ")
+			<< stateServerHost
+			<< wxT(" (")
+			<< stateServerAddress
+			<< wxT(":")
+			<< stateServerPort
+			<< wxT(")");
+	} else if (stateConnectionState == SVCState::SVCCON_DISCONNECTED) {
+		status = wxT("svcc running - disconnected");
+	}
+	// update status
+	statusBar->SetStatusText(status, 0);
+}
+
 void SVCWindow::updateSVCState() {
 	SVCState* state = app->getState();
 	if (!state->isReady()) {
 		statusBar->SetStatusText(wxT("svcc not running"));
+		while (state->hasEvents()) {
+			// drain events.
+			state->getNextEvent();
+		}
 		return;
 	}
 
-	if (stateConnectionState != state->getConnectionState() || firstStateChange) {
+	if (firstStateChange) {
+		statusBar->SetStatusText(wxT("svcc running - disconnected"), 0);
 		firstStateChange = false;
-
-		// update connection and server status
-		stateConnectionState = state->getConnectionState();
-		stateServerHost = state->getServerHost();
-		stateServerAddress = state->getServerAddress();
-		stateServerPort = state->getServerPort();
-
-		wxString status;
-
-		// construct status line
-		if (stateConnectionState == SVCState::SVCCON_CONNECTED) {
-			status
-				<< wxT("svcc running - connected to ")
-				<< stateServerHost
-				<< wxT(" (")
-				<< stateServerAddress
-				<< wxT(":")
-				<< stateServerPort
-				<< wxT(")");
-		} else if (stateConnectionState == SVCState::SVCCON_CONNECTING) {
-			status
-				<< wxT("svcc running - connecting to ")
-				<< stateServerHost
-				<< wxT(" (")
-				<< stateServerAddress
-				<< wxT(":")
-				<< stateServerPort
-				<< wxT(")");
-		} else if (stateConnectionState == SVCState::SVCCON_DISCONNECTED) {
-			status = wxT("svcc running - disconnected");
-		}
-		// update status
-		statusBar->SetStatusText(status, 0);
 	}
 
-	// update muted status
-	if (stateLocallyMuted != state->isLocallyMuted()) {
-		stateLocallyMuted = state->isLocallyMuted();
-		if (stateLocallyMuted) {
-			log(wxT("You are now locally muted"));
-		} else {
-			log(wxT("You are no longer locally muted"));
+	while(state->hasEvents()) {
+		SVCEvent event = state->getNextEvent();
+
+		switch (event.eventType) {
+		case SVCEvent::EVENT_CONNECTION_STATE:
+			handleConnectionState(event);
+			break;
+
+		case SVCEvent::EVENT_MUTED:
+			if (event.flag) {
+				log(wxT("You are now locally muted"));
+			} else {
+				log(wxT("You are no longer locally muted"));
+			}
+			break;
+
+		case SVCEvent::EVENT_DEAFEN:
+			if (event.flag) {
+				log(wxT("You are now locally deafen"));
+			} else {
+				log(wxT("You are no longer locally deafen"));
+			}
+			break;
+
+		case SVCEvent::EVENT_SERVER:
+			stateServerAddress = event.address;
+			stateServerHost = event.host;
+			stateServerPort = event.port;
+			break;
+
+		default:
+			break;
 		}
 	}
-
-	// update deafen status
-	if (stateLocallyDeafen != state->isLocallyDeafen()) {
-		stateLocallyDeafen = state->isLocallyDeafen();
-		if (stateLocallyDeafen) {
-			log(wxT("You are now locally deafen"));
-		} else {
-			log(wxT("You are no longer locally deafen"));
-		}
-	}
-
 }
