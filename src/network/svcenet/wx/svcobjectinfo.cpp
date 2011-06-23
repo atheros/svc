@@ -7,6 +7,11 @@
 
 #include "svcobjectinfo.hpp"
 
+BEGIN_EVENT_TABLE(SVCObjectInfo, wxPanel)
+	EVT_LISTBOX(ID_KEYS, SVCObjectInfo::OnItemSelect)
+END_EVENT_TABLE()
+
+
 SVCObjectInfo::SVCObjectInfo(wxWindow* parent)
 : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
 {
@@ -24,6 +29,7 @@ SVCObjectInfo::SVCObjectInfo(wxWindow* parent)
 			| wxTE_DONTWRAP
 	);
 
+	keysBox->SetFont(wxFont(9, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
 
 	splitter->SplitVertically(keysBox, valueBox, 200);
 	splitter->SetSashGravity(0.0);
@@ -48,8 +54,30 @@ void SVCObjectInfo::clearOptions() {
 void SVCObjectInfo::setOption(const wxString& name, const wxString& value) {
 	if (values.find(name) == values.end()) {
 		// new value
-		keysBox->Insert(name, -1);
+		keysBox->Insert(name, 0);
+		values[name] = value;
+	} else {
+		values[name] = value;
+		int i = keysBox->FindString(name, true);
+		if (keysBox->GetSelection() == i) {
+			displayOption(name);
+		}
 	}
-	values[name] = value;
 }
 
+void SVCObjectInfo::displayOption(const wxString& name) {
+	wxString val = values[name];
+	if (val.IsEmpty()) {
+		valueBox->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_NORMAL));
+		valueBox->SetValue(wxT("(empty)"));
+	} else {
+		valueBox->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+		valueBox->SetValue(val);
+	}
+}
+
+void SVCObjectInfo::OnItemSelect(wxCommandEvent& event) {
+	if (keysBox->GetSelection() >= 0) {
+		displayOption(keysBox->GetString(keysBox->GetSelection()));
+	}
+}

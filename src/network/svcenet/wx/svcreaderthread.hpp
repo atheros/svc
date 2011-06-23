@@ -5,8 +5,8 @@
  *      Author: przemek
  */
 
-#ifndef READERTHREAD_HPP_
-#define READERTHREAD_HPP_
+#ifndef SVCREADERTHREAD_HPP_
+#define SVCREADERTHREAD_HPP_
 
 #include <wx/thread.h>
 #include <wx/stream.h>
@@ -17,7 +17,7 @@
  * NOTE: This reader is only usefull to read lines, and this is what it
  *       reports to output wxStringList.
  */
-class ReaderThread: public wxThread {
+class SVCReaderThread: public wxThread {
 private:
 	/**
 	 * Line stream to read from.
@@ -50,8 +50,8 @@ public:
 	 *
 	 * NOTE: you still need to call Create() then Run().
 	 */
-	ReaderThread(wxInputStream* stream, wxStringList* output, wxMutex* lock);
-	virtual ~ReaderThread();
+	SVCReaderThread(wxInputStream* stream, wxStringList* output, wxMutex* lock);
+	virtual ~SVCReaderThread();
 
 	virtual void *Entry();
 
@@ -69,4 +69,4 @@ public:
 
 };
 
-#endif /* READERTHREAD_HPP_ */
+#endif /* SVCREADERTHREAD_HPP_ */

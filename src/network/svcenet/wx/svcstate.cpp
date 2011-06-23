@@ -36,10 +36,11 @@ void SVCState::parseCommand(const wxString& command) {
 
 	res = SVCParser::parse(command, cmd);
 	if (res == SVCPARSER_ESCAPE) {
-		fprintf(stderr, "SVC command has an unterminated escape sequence\n");
+		stateLog.Add(wxT("error: SVC command has an unterminated escape sequence"));
 		return;
 	} else if (res == SVCPARSER_STRING) {
-		fprintf(stderr, "SVC command has an unterminated string\n");
+		stateLog.Add(wxT("error: SVC command has an unterminated string"));
+		return;
 	}
 
 	if (cmd.IsEmpty()) {
@@ -62,6 +63,10 @@ void SVCState::parseCommand(const wxString& command) {
 			handleStateServer(cmd);
 		}
 	} else {
+		if (cmd[0] == wxT("SSET")) {
+			// set server value
+			handleCommandSSET(cmd);
+		}
 		// some command from server
 	}
 }
@@ -223,9 +228,9 @@ void SVCState::openSVC() {
 	}
 	svcPid = svc->GetPid();
 
-	stdoutThread = new ReaderThread(svc->GetInputStream(), &stdoutList,
+	stdoutThread = new SVCReaderThread(svc->GetInputStream(), &stdoutList,
 			&stdLock);
-	stderrThread = new ReaderThread(svc->GetErrorStream(), &stderrList,
+	stderrThread = new SVCReaderThread(svc->GetErrorStream(), &stderrList,
 			&stdLock);
 
 	stdoutThread->Create();
@@ -272,7 +277,7 @@ void SVCState::killSVC() {
 }
 
 bool SVCState::isReady() {
-	if (svc && wxProcess::Exists(svcPid)) {
+	if (svc && svcPid && wxProcess::Exists(svcPid)) {
 		return true;
 	} else {
 		return false;

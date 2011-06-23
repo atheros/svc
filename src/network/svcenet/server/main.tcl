@@ -93,5 +93,3 @@ proc channel_peers {channel} {
 	return $cpeers	
 }
 
-
-

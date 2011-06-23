@@ -11,7 +11,7 @@
 #include <wx/string.h>
 #include <wx/hashmap.h>
 #include <wx/process.h>
-#include "readerthread.hpp"
+#include "svcreaderthread.hpp"
 #include "svcevent.hpp"
 
 
@@ -44,14 +44,14 @@ private:
 	 * SVC stdout reader thread
 	 * FIXME: will use 100% CPU time in 2.9.2
 	 */
-	ReaderThread* stdoutThread;
+	SVCReaderThread* stdoutThread;
 
 
 	/**
 	 * SVC stderr reader thread
 	 * FIXME: will use 100% CPU time in 2.9.2
 	 */
-	ReaderThread* stderrThread;
+	SVCReaderThread* stderrThread;
 
 	/**
 	 * stdoutList/stderrList lock.

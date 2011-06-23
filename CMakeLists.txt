@@ -233,7 +233,7 @@ IF(BUILD_WXSVC)
 	ADD_EXECUTABLE(wxsvc
 		src/network/svcenet/wx/app.cpp
 		src/network/svcenet/wx/svcwindow.cpp
-		src/network/svcenet/wx/readerthread.cpp
+		src/network/svcenet/wx/svcreaderthread.cpp
 		src/network/svcenet/wx/svcparser.cpp
 		src/network/svcenet/wx/svcstate.cpp
 		src/network/svcenet/wx/svcobjectinfo.cpp

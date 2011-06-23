@@ -5,9 +5,9 @@
  *      Author: przemek
  */
 
-#include "readerthread.hpp"
+#include "svcreaderthread.hpp"
 
-ReaderThread::ReaderThread(wxInputStream* stream, wxStringList* output,
+SVCReaderThread::SVCReaderThread(wxInputStream* stream, wxStringList* output,
 		wxMutex* lock) :
 	wxThread(wxTHREAD_JOINABLE) {
 	this->stream = stream;
@@ -16,11 +16,11 @@ ReaderThread::ReaderThread(wxInputStream* stream, wxStringList* output,
 	this->endReceived = false;
 }
 
-ReaderThread::~ReaderThread() {
+SVCReaderThread::~SVCReaderThread() {
 
 }
 
-void* ReaderThread::Entry() {
+void* SVCReaderThread::Entry() {
 	wxString buffer;
 	int c;
 	while (!stream->Eof() && !shouldEnd()) {
@@ -33,14 +33,16 @@ void* ReaderThread::Entry() {
 			buffer.Append(c, 1);
 		}
 	}
+
+	return NULL;
 }
 
-void ReaderThread::signalEnd() {
+void SVCReaderThread::signalEnd() {
 	wxMutexLocker locker(endLock);
 	endReceived = true;
 }
 
-bool ReaderThread::shouldEnd() {
+bool SVCReaderThread::shouldEnd() {
 	wxMutexLocker locker(endLock);
 	return endReceived;
 }

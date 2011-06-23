@@ -193,14 +193,23 @@ void SVCWindow::logConnection(const wxString& text) {
 
 void SVCWindow::handleConnectionState(const SVCEvent& event) {
 	// update connection and server status
+	SVCState::ConnectionState oldState = stateConnectionState;
 	stateConnectionState = (SVCState::ConnectionState)event.connectionState;
 
-	wxString status;
+	wxString status, message;
 
 	// construct status line
 	if (stateConnectionState == SVCState::SVCCON_CONNECTED) {
 		status
 			<< wxT("svcc running - connected to ")
+			<< stateServerHost
+			<< wxT(" (")
+			<< stateServerAddress
+			<< wxT(":")
+			<< stateServerPort
+			<< wxT(")");
+		message
+			<< wxT("You are now connected to ")
 			<< stateServerHost
 			<< wxT(" (")
 			<< stateServerAddress
@@ -216,11 +225,27 @@ void SVCWindow::handleConnectionState(const SVCEvent& event) {
 			<< wxT(":")
 			<< stateServerPort
 			<< wxT(")");
+		message
+			<< wxT("Connecting to ")
+			<< stateServerHost
+			<< wxT(" (")
+			<< stateServerAddress
+			<< wxT(":")
+			<< stateServerPort
+			<< wxT(")");
 	} else if (stateConnectionState == SVCState::SVCCON_DISCONNECTED) {
 		status = wxT("svcc running - disconnected");
+		if (oldState == SVCState::SVCCON_CONNECTED) {
+			message = wxT("Disconnected");
+		} else if (oldState == SVCState::SVCCON_CONNECTING) {
+			message = wxT("Connection failed");
+		}
 	}
 	// update status
 	statusBar->SetStatusText(status, 0);
+	if (!message.IsEmpty()) {
+		logConnection(message);
+	}
 }
 
 void SVCWindow::updateSVCState() {
@@ -267,6 +292,10 @@ void SVCWindow::updateSVCState() {
 			stateServerAddress = event.address;
 			stateServerHost = event.host;
 			stateServerPort = event.port;
+			break;
+
+		case SVCEvent::EVENT_SERVER_SET:
+			serverInfo->setOption(event.key, event.value);
 			break;
 
 		default:

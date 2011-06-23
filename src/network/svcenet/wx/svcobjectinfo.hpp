@@ -24,6 +24,11 @@ private:
 		ID_KEYS = wxID_HIGHEST + 10
 	};
 
+	void displayOption(const wxString& name);
+
+	DECLARE_EVENT_TABLE();
+
+	void OnItemSelect(wxCommandEvent& event);
 public:
 	SVCObjectInfo(wxWindow* parent);
 	~SVCObjectInfo();
