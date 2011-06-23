@@ -823,6 +823,7 @@ int main(int argc, char* argv[]) {
 			if (code > 0) {
 				if (event.type == ENET_EVENT_TYPE_CONNECT) {
 					client.state = SVCECLIENT_STATE_CONNECTED;
+					client.server_info = dsdict_new();
 					msg_state();
 				} else {
 					mutex_lock(&client.network_lock);
