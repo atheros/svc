@@ -156,6 +156,8 @@ void SVCState::handleStateConnection(wxArrayString& cmd) {
 	} else if (cmd[1] == wxT("disconnected") && connectionState != SVCCON_DISCONNECTED) {
 		connectionState = SVCCON_DISCONNECTED;
 		eventList.Append(SVCEvent::createConnectionState(SVCCON_DISCONNECTED));
+		serverInfo.clear();
+		peers.clear();
 	} else {
 		stateLog.Add(wxT("error: Invalid connection state"));
 	}

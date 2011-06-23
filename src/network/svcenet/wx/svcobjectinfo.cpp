@@ -49,6 +49,7 @@ SVCObjectInfo::~SVCObjectInfo() {
 void SVCObjectInfo::clearOptions() {
 	keysBox->Clear();
 	values.clear();
+	valueBox->SetValue(wxT(""));
 }
 
 void SVCObjectInfo::setOption(const wxString& name, const wxString& value) {

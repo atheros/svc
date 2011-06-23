@@ -237,6 +237,8 @@ void SVCWindow::handleConnectionState(const SVCEvent& event) {
 		status = wxT("svcc running - disconnected");
 		if (oldState == SVCState::SVCCON_CONNECTED) {
 			message = wxT("Disconnected");
+			serverInfo->clearOptions();
+			peerInfo->clearOptions();
 		} else if (oldState == SVCState::SVCCON_CONNECTING) {
 			message = wxT("Connection failed");
 		}
