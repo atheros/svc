@@ -578,30 +578,29 @@ void handle_peer_connect(Jim_Interp* interp, ENetHost* host, ENetEvent* event) {
 		return;
 	}
 
-	/* add server config to the packet */
 	packet_buff = dnew();
+	sprintf(buff, "%i\n", peer_id);
+	dcatcs(packet_buff, "YARE ");
+	dcatcs(packet_buff, buff);
+
+	/* add server config to the packet */
 	ddn = server_data->front;
 	while(ddn) {
-		dcatcs(packet_buff, "SSET ");
+		dcatcs(packet_buff, "SSET \"");
 		/* encode key */
 		escape_buff = dstrlex_escape(ddn->key);
 		dcat(packet_buff, escape_buff);
 		dfree(escape_buff);
-		dcatcs(packet_buff, " ");
+		dcatcs(packet_buff, "\" \"");
 		/* encode value */
 		escape_buff = dstrlex_escape(ddn->value);
 		dcat(packet_buff, escape_buff);
 		dfree(escape_buff);
-		dcatcs(packet_buff, "\n");
-
+		dcatcs(packet_buff, "\"\n");
 		ddn = ddn->next;
 	}
 
 	/* we need to broadcast him pub data from every peer */
-	sprintf(buff, "%i\n", peer_id);
-	dcpycs(packet_buff, "YARE ");
-	dcatcs(packet_buff, buff);
-
 	for(i = 0; i < peers_size; i++) {
 		if (peers[i].empty) continue;
 		/* add the peer (PADD) */
@@ -615,17 +614,17 @@ void handle_peer_connect(Jim_Interp* interp, ENetHost* host, ENetEvent* event) {
 		while (ddn) {
 			dcatcs(packet_buff, "PSET ");
 			dcatcs(packet_buff, buff);
-			dcatcs(packet_buff, " ");
+			dcatcs(packet_buff, " \"");
 			/* encode key */
 			escape_buff = dstrlex_escape(ddn->key);
 			dcat(packet_buff, escape_buff);
 			dfree(escape_buff);
-			dcatcs(packet_buff, " ");
+			dcatcs(packet_buff, "\" \"");
 			/* encode value */
 			escape_buff = dstrlex_escape(ddn->value);
 			dcat(packet_buff, escape_buff);
 			dfree(escape_buff);
-			dcatcs(packet_buff, "\n");
+			dcatcs(packet_buff, "\"\n");
 
 			ddn = ddn->next;
 		}
@@ -781,17 +780,17 @@ static void send_modified_data() {
 	while(ddn) {
 		if (ddn->dirty) {
 			ddn->dirty = 0;
-			dcatcs(packet_buff, "SSET ");
+			dcatcs(packet_buff, "SSET \"");
 			/* encode key */
 			escape_buff = dstrlex_escape(ddn->key);
 			dcat(packet_buff, escape_buff);
 			dfree(escape_buff);
-			dcatcs(packet_buff, " ");
+			dcatcs(packet_buff, "\" \"");
 			/* encode value */
 			escape_buff = dstrlex_escape(ddn->value);
 			dcat(packet_buff, escape_buff);
 			dfree(escape_buff);
-			dcatcs(packet_buff, "\n");
+			dcatcs(packet_buff, "\"\n");
 		}
 		ddn = ddn->next;
 	}
@@ -807,17 +806,17 @@ static void send_modified_data() {
 				ddn->dirty = 0;
 				dcatcs(packet_buff, "PSET ");
 				dcatcs(packet_buff, buff);
-				dcatcs(packet_buff, " ");
+				dcatcs(packet_buff, " \"");
 				/* encode key */
 				escape_buff = dstrlex_escape(ddn->key);
 				dcat(packet_buff, escape_buff);
 				dfree(escape_buff);
-				dcatcs(packet_buff, " ");
+				dcatcs(packet_buff, "\" \"");
 				/* encode value */
 				escape_buff = dstrlex_escape(ddn->value);
 				dcat(packet_buff, escape_buff);
 				dfree(escape_buff);
-				dcatcs(packet_buff, "\n");
+				dcatcs(packet_buff, "\"\n");
 			}
 			ddn = ddn->next;
 		}
