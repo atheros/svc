@@ -89,7 +89,7 @@ additional local state changes:
 	:STATE (connecting|connected|disconnected)
 	:MUTED (0|1) 
 	:DEAFEN (0|1)
-
+	:SERVER host_name host_address host_port 
 
 5.3. State
 

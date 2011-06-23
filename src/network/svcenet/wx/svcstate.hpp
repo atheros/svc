@@ -79,6 +79,21 @@ private:
 	bool locallyDeafen;
 
 	/**
+	 * Server host name.
+	 */
+	wxString serverHost;
+
+	/**
+	 * Server IP address.
+	 */
+	wxString serverAddress;
+
+	/**
+	 * Server port.
+	 */
+	unsigned int serverPort;
+
+	/**
 	 * SVC connection state.
 	 */
 	ConnectionState connectionState;
@@ -91,9 +106,11 @@ private:
 
 	bool stateChanged;
 
+
 	void handleStateMuted(wxArrayString& cmd);
 	void handleStateDeafen(wxArrayString& cmd);
 	void handleStateConnection(wxArrayString& cmd);
+	void handleStateServer(wxArrayString& cmd);
 
 public:
 
@@ -153,6 +170,27 @@ public:
 	 */
 	ConnectionState getConnectionState() {
 		return connectionState;
+	}
+
+	/**
+	 * Returns server host name.
+	 */
+	const wxString& getServerHost() {
+		return serverHost;
+	}
+
+	/**
+	 * Returns server IP address.
+	 */
+	const wxString& getServerAddress() {
+		return serverAddress;
+	}
+
+	/**
+	 * Returns server port.
+	 */
+	unsigned int getServerPort() {
+		return serverPort;
 	}
 
 	/**

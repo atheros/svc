@@ -195,16 +195,42 @@ void SVCWindow::updateSVCState() {
 
 	if (stateConnectionState != state->getConnectionState() || firstStateChange) {
 		firstStateChange = false;
+
+		// update connection and server status
 		stateConnectionState = state->getConnectionState();
+		stateServerHost = state->getServerHost();
+		stateServerAddress = state->getServerAddress();
+		stateServerPort = state->getServerPort();
+
+		wxString status;
+
+		// construct status line
 		if (stateConnectionState == SVCState::SVCCON_CONNECTED) {
-			statusBar->SetStatusText(wxT("svcc running - connected"));
+			status
+				<< wxT("svcc running - connected to ")
+				<< stateServerHost
+				<< wxT(" (")
+				<< stateServerAddress
+				<< wxT(":")
+				<< stateServerPort
+				<< wxT(")");
 		} else if (stateConnectionState == SVCState::SVCCON_CONNECTING) {
-			statusBar->SetStatusText(wxT("svcc running - connecting..."));
+			status
+				<< wxT("svcc running - connecting to ")
+				<< stateServerHost
+				<< wxT(" (")
+				<< stateServerAddress
+				<< wxT(":")
+				<< stateServerPort
+				<< wxT(")");
 		} else if (stateConnectionState == SVCState::SVCCON_DISCONNECTED) {
-			statusBar->SetStatusText(wxT("svcc running - disconnected"));
+			status = wxT("svcc running - disconnected");
 		}
+		// update status
+		statusBar->SetStatusText(status, 0);
 	}
 
+	// update muted status
 	if (stateLocallyMuted != state->isLocallyMuted()) {
 		stateLocallyMuted = state->isLocallyMuted();
 		if (stateLocallyMuted) {
@@ -214,6 +240,7 @@ void SVCWindow::updateSVCState() {
 		}
 	}
 
+	// update deafen status
 	if (stateLocallyDeafen != state->isLocallyDeafen()) {
 		stateLocallyDeafen = state->isLocallyDeafen();
 		if (stateLocallyDeafen) {
@@ -222,4 +249,5 @@ void SVCWindow::updateSVCState() {
 			log(wxT("You are no longer locally deafen"));
 		}
 	}
+
 }

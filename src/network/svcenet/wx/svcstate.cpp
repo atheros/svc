@@ -57,6 +57,9 @@ void SVCState::parseCommand(wxString& command) {
 		} else if (cmd[0] == wxT(":DEAFEN")) {
 			// locally deafen
 			handleStateDeafen(cmd);
+		} else if (cmd[0] == wxT(":SERVER")) {
+			// server address info
+			handleStateServer(cmd);
 		}
 	} else {
 		// some command from server
@@ -94,7 +97,6 @@ void SVCState::handleStateDeafen(wxArrayString& cmd) {
 }
 
 void SVCState::handleStateConnection(wxArrayString& cmd) {
-	printf("SVCState::handleStateConnection()\n");
 	if (cmd.size() != 2) {
 		stateLog.Add(wxT("error: Invalid number of arguments in :DEAFEN"));
 		return;
@@ -113,6 +115,21 @@ void SVCState::handleStateConnection(wxArrayString& cmd) {
 		stateLog.Add(wxT("error: Invalid connection state"));
 	}
 }
+
+void SVCState::handleStateServer(wxArrayString& cmd) {
+	unsigned long port;
+	if (cmd.size() != 4) {
+		stateLog.Add(wxT("error: Invalid number of arguments in :SERVER"));
+		return;
+	}
+
+	serverHost = cmd[1];
+	serverAddress = cmd[2];
+	cmd[3].ToULong(&port, 10);
+	serverPort = port;
+	stateChanged = true;
+}
+
 
 
 void SVCState::processIO() {

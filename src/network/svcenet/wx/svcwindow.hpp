@@ -46,6 +46,9 @@ private:
 	SVCState::ConnectionState stateConnectionState;
 	bool stateLocallyMuted;
 	bool stateLocallyDeafen;
+	wxString stateServerHost;
+	wxString stateServerAddress;
+	unsigned int stateServerPort;
 	bool firstStateChange;
 public:
 	SVCWindow(SVCApp* app);

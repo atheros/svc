@@ -65,6 +65,10 @@ typedef struct {
 	ENetHost*		host;
 	ENetPeer*		client;
 
+	dstring*		server_host_name;
+	dstring*		server_host_addr;
+	unsigned int	server_host_port;
+
 	int				main_done;
 
 	thread_t		input_thread;
@@ -181,11 +185,20 @@ static void *input_thread(void* dummy) {
  */
 static void msg_state() {
 	switch (client.state) {
-	case SVCECLIENT_STATE_CONNECTED:	fprintf(stdout, ":STATE connected\n"); break;
-	case SVCECLIENT_STATE_CONNECTING:	fprintf(stdout, ":STATE connecting\n"); break;
-	case SVCECLIENT_STATE_DISCONNECTED:	fprintf(stdout, ":STATE disconnected\n"); break;
+	case SVCECLIENT_STATE_CONNECTED:
+		fprintf(stdout, ":SERVER \"%s\" \"%s\" %i\n", client.server_host_name->data, client.server_host_addr->data, client.server_host_port);
+		fprintf(stdout, ":STATE connected\n");
+		break;
+	case SVCECLIENT_STATE_CONNECTING:
+		fprintf(stdout, ":SERVER \"%s\" \"%s\" %i\n", client.server_host_name->data, client.server_host_addr->data, client.server_host_port);
+		fprintf(stdout, ":STATE connecting\n");
+		break;
+	case SVCECLIENT_STATE_DISCONNECTED:
+		fprintf(stdout, ":STATE disconnected\n");
+		break;
 	default:
 		fprintf(stdout, ":STATE unknown!!!\n");
+		fprintf(stderr, "Unknown connection state!\n");
 		break;
 	}
 }
@@ -258,6 +271,11 @@ int init_client_state() {
 	client.peers_size = 0;
 	client.my_id = -1;
 
+	client.server_host_name = dnew();
+	client.server_host_addr = dnew();
+	client.server_host_port = 0;
+
+
 	return 0;
 }
 
@@ -295,6 +313,9 @@ void quit_client_state() {
 	free(client.input_buffer);
 	dlist_free(client.input_queue);
 
+	dfree(client.server_host_addr);
+	dfree(client.server_host_name);
+
 	free_server_info();
 }
 
@@ -305,6 +326,7 @@ void quit_client_state() {
  */
 static int cmd_connect(int argc, dstring** argv) {
 	ENetAddress address;
+	char buffer[100];
 
 	/* check if client is in correct state to connect */
 	if (client.state != SVCECLIENT_STATE_DISCONNECTED) {
@@ -328,6 +350,12 @@ static int cmd_connect(int argc, dstring** argv) {
 	if (enet_address_set_host(&address, argv[1]->data)) {
 		fprintf(stderr, "Failed to resolve '%s'\n", argv[1]->data);
 		return 0;
+	} else {
+		dcpy(client.server_host_name, argv[1]);
+		buffer[0] = 0;
+		enet_address_get_host_ip(&address, buffer, 100);
+		dcpycs(client.server_host_addr, buffer);
+		client.server_host_port = address.port;
 	}
 
 	mutex_lock(&client.network_lock);
