@@ -11,6 +11,7 @@ svceserver
 svcp2p
 svcd
 svcc
+wxsvc
 
 .project
 .cproject
