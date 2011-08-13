@@ -837,8 +837,8 @@ int main(int argc, char* argv[]) {
 				}
 			}
 		} else {
-			/* sleep for 5ms */
-			usleep(5000);
+			/* sleep for 8ms */
+			usleep(8000);
 		}
 
 		/* play with the input queue */
@@ -875,6 +875,9 @@ int main(int argc, char* argv[]) {
 
 		fflush(stdout);
 		fflush(stderr);
+
+		/* sleep for 8ms */
+		usleep(8000);
 	}
 
 	fprintf(stdout, ":STATE exiting\n");
