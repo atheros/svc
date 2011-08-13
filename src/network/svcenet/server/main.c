@@ -557,7 +557,7 @@ void handle_peer_connect(Jim_Interp* interp, ENetHost* host, ENetEvent* event) {
 
 	if (Jim_Eval(interp, buff) == JIM_ERR) {
 		fprintf(stderr, "on_peer_connect failed (%s:%i): %s\n",
-				interp->errorFileName, interp->errorLine,
+				Jim_GetString(interp->errorFileNameObj, NULL), interp->errorLine,
 				Jim_GetString(interp->result, NULL));
 		enet_peer_disconnect(event->peer, 0);
 		free_peer(peer_id);
@@ -660,7 +660,7 @@ static void handle_peer_disconnect(Jim_Interp* interp, ENetEvent* event) {
 	sprintf(buff, "on_peer_disconnect %i", peer_id);
 	if (Jim_Eval(interp, buff) == JIM_ERR) {
 		fprintf(stderr, "on_peer_disconnect failed (%s:%i): %s\n",
-				interp->errorFileName, interp->errorLine,
+				Jim_GetString(interp->errorFileNameObj, NULL), interp->errorLine,
 				Jim_GetString(interp->result, NULL));
 	}
 
@@ -671,6 +671,7 @@ static void handle_peer_disconnect(Jim_Interp* interp, ENetEvent* event) {
 		if (peers[i].empty || i == peer_id) continue;
 		packet = enet_packet_create(buff, len, ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send(peers[i].peer, 0, packet);
+		printf("PDEL %i sent to #%i\n", peer_id, i);
 	}
 
 	free_peer(peer_id);
@@ -717,7 +718,7 @@ static void handle_packet_input_audio(Jim_Interp* interp, ENetHost* host, ENetEv
 	sprintf(buff, "on_audio_packet %i", peer_id);
 	if (Jim_Eval(interp, buff) == JIM_ERR) {
 		fprintf(stderr, "on_audio_packet failed (%s:%i): %s\n",
-				interp->errorFileName, interp->errorLine,
+				Jim_GetString(interp->errorFileNameObj, NULL), interp->errorLine,
 				Jim_GetString(interp->result, NULL));
 	}
 
@@ -753,7 +754,7 @@ static void handle_packet_input_command(Jim_Interp* interp, ENetHost* host, ENet
 	if (Jim_EvalObjVector(interp, 2, args) == JIM_ERR) {
 		fprintf(stderr, "Failed to execute commands from #%i (%s:%i)\n",
 				peer_id,
-				interp->errorFileName, interp->errorLine);
+				Jim_GetString(interp->errorFileNameObj, NULL), interp->errorLine);
 		return;
 	}
 
@@ -880,7 +881,7 @@ int main(int argc, char* argv[]) {
 		if (Jim_EvalFile(jim, argv[i]) == JIM_ERR) {
 			fprintf(stderr, "Jim script %s raised an error (%s:%i): %s\n",
 					argv[i],
-					jim->errorFileName, jim->errorLine,
+					Jim_GetString(jim->errorFileNameObj, NULL), jim->errorLine,
 					Jim_GetString(Jim_GetResult(jim), NULL));
 			Jim_FreeInterp(jim);
 			enet_deinitialize();
@@ -952,7 +953,7 @@ int main(int argc, char* argv[]) {
 		sprintf(buff, "on_logic %lu", delta);
 		if (Jim_Eval(jim, buff) == JIM_ERR) {
 			fprintf(stderr, "on_logic raised an error (%s:%i): %s\n",
-					jim->errorFileName, jim->errorLine,
+					Jim_GetString(jim->errorFileNameObj, NULL), jim->errorLine,
 					Jim_GetString(Jim_GetResult(jim), NULL));
 		}
 
