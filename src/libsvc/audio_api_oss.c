@@ -46,7 +46,7 @@ static void oss_open(unsigned int rate) {
 	if ((fd = open(dsp, O_RDWR)) == -1) {
 		error(1, errno, "failed to open %s", dsp);
 	}
-
+	
 	int i, j;
 #define SET(what, to) i = to; \
 	j = ioctl(fd, what, &i); \
@@ -73,12 +73,12 @@ static void *reader(void *_) {
 		}
 
 		for (i = 0; i < fs; i++)
-			input_audio_data->data[i] = buf[i];
+			input_audio_data->data[i] = ((float)(buf[i]))/32678.0f;
 
 		oss_callback(input_audio_data, output_audio_data);
 
 		for (i = 0; i < fs; i++)
-			buf[i] = output_audio_data->data[i];
+			buf[i] = output_audio_data->data[i]*32678.0f;
 
 		i = 0;
 		while (i < s) {
