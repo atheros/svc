@@ -54,7 +54,7 @@ void svc_init(svc_send_callback_t send_callback){
 	svc_running = 1;
 	svc_options = malloc(sizeof(svc_options_t));
 	svc_options->frame_size = 1024;
-	svc_options->sample_rate = 44100;
+	svc_options->sample_rate = 48000;
 	svc_options->byte_per_packet = 256;
 	
 	svc_encoder = svc_encoder_create(svc_options->sample_rate, svc_options->frame_size, svc_options->byte_per_packet);
